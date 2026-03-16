@@ -1,0 +1,495 @@
+// eslint-disable-next-line react-refresh/only-export-components
+import { useState, useEffect } from "react";
+
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
+
+const styles = `
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background: #F5F3EE; color: #0A0A0A; overflow-x: hidden; }
+
+  :root {
+    --cream: #FAF8F3;
+    --cream-dark: #F0EDE4;
+    --bg: #F5F3EE;
+    --green-deep: #1B4332;
+    --green-mid: #2D6A4F;
+    --green-light: #40916C;
+    --green-pale: #D8F3DC;
+    --ink: #0A0A0A;
+    --ink-muted: #3A3A3A;
+    --ink-subtle: #6B6B6B;
+    --amber: #D4A017;
+    --amber-pale: rgba(212,160,23,0.1);
+    --white: #FFFFFF;
+    --border: rgba(10,10,10,0.08);
+    --sidebar-w: 260px;
+    --topbar-h: 64px;
+    --bottomnav-h: 72px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.09);
+  }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes slideInLeft { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+
+  .shell-root { display:flex; min-height:100vh; }
+
+  .sidebar {
+    width: var(--sidebar-w); flex-shrink:0;
+    background: var(--ink); height:100vh;
+    position:fixed; top:0; left:0; z-index:50;
+    display:flex; flex-direction:column;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    overflow: hidden;
+  }
+  .sidebar-bg {
+    position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none;
+    width:300px; height:300px; top:-80px; right:-80px;
+    background: radial-gradient(circle, rgba(64,145,108,0.18) 0%, transparent 70%);
+  }
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    display:flex; align-items:center; gap:8px;
+    font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:700; color:var(--white);
+    border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0;
+  }
+  .sidebar-logo-dot { width:7px; height:7px; border-radius:50%; background:var(--amber); }
+  .sidebar-section-label {
+    padding: 20px 24px 8px;
+    font-size:0.65rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+    color:rgba(255,255,255,0.22); flex-shrink:0;
+  }
+  .sidebar-nav { flex:1; overflow-y:auto; padding-bottom:16px; }
+  .sidebar-nav::-webkit-scrollbar { display:none; }
+  .nav-item {
+    display:flex; align-items:center; gap:12px;
+    padding:11px 24px; margin:2px 12px; border-radius:12px;
+    cursor:pointer; transition:all 0.18s;
+    color:rgba(255,255,255,0.5); font-size:0.9rem; font-weight:600;
+    position:relative; text-decoration:none;
+  }
+  .nav-item:hover { background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.85); }
+  .nav-item.active { background:rgba(64,145,108,0.18); color:var(--white); border:1px solid rgba(64,145,108,0.25); }
+  .nav-item.active .nav-icon { color:var(--green-light); }
+  .nav-icon { font-size:1.05rem; width:20px; text-align:center; flex-shrink:0; }
+  .nav-badge { margin-left:auto; background:var(--amber); color:var(--ink); font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:100px; }
+  .nav-active-bar { position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:60%; background:var(--green-light); border-radius:0 4px 4px 0; }
+  .sidebar-bottom { padding:16px 12px; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
+  .sidebar-profile { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; cursor:pointer; transition:all 0.18s; }
+  .sidebar-profile:hover { background:rgba(255,255,255,0.06); }
+  .profile-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, var(--green-mid), var(--green-light)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:var(--white); flex-shrink:0; }
+  .profile-name { font-size:0.875rem; font-weight:700; color:var(--white); }
+  .profile-chevron { margin-left:auto; color:rgba(255,255,255,0.3); font-size:0.7rem; }
+  .premium-pill { display:inline-flex; align-items:center; gap:4px; background:var(--amber-pale); color:var(--amber); font-size:0.65rem; font-weight:800; padding:2px 8px; border-radius:100px; border:1px solid rgba(212,160,23,0.25); margin-top:2px; }
+  .sidebar-upgrade { margin:0 12px 12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px; }
+  .upgrade-title { font-size:0.82rem; font-weight:700; color:var(--white); margin-bottom:4px; }
+  .upgrade-sub { font-size:0.75rem; color:rgba(255,255,255,0.4); line-height:1.5; margin-bottom:12px; }
+  .upgrade-btn { width:100%; padding:9px; border-radius:8px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s; }
+  .upgrade-btn:hover { opacity:0.9; }
+
+  .main-content { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; transition:margin-left 0.3s ease; }
+
+  .desktop-topbar { height:var(--topbar-h); background:var(--cream); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 32px; position:sticky; top:0; z-index:40; flex-shrink:0; }
+  .topbar-page-title { font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:700; color:var(--ink); letter-spacing:-0.01em; }
+  .topbar-breadcrumb { font-size:0.78rem; color:var(--ink-subtle); margin-top:1px; }
+  .topbar-right { display:flex; align-items:center; gap:12px; }
+  .topbar-icon-btn { width:38px; height:38px; border-radius:10px; border:1.5px solid var(--border); background:var(--white); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.18s; font-size:0.95rem; position:relative; }
+  .topbar-icon-btn:hover { border-color:rgba(10,10,10,0.2); background:var(--cream-dark); }
+  .notif-dot { position:absolute; top:6px; right:6px; width:7px; height:7px; border-radius:50%; background:var(--amber); border:1.5px solid var(--white); }
+  .topbar-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--green-mid),var(--green-light)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:var(--white); cursor:pointer; transition:opacity 0.2s; }
+  .topbar-avatar:hover { opacity:0.85; }
+
+  .mobile-topbar { display:none; height:var(--topbar-h); background:var(--cream); border-bottom:1px solid var(--border); align-items:center; justify-content:space-between; padding:0 20px; position:sticky; top:0; z-index:40; flex-shrink:0; }
+  .mobile-back-btn { width:36px; height:36px; border-radius:10px; border:1.5px solid var(--border); background:var(--white); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.9rem; color:var(--ink-muted); transition:all 0.18s; }
+  .mobile-back-btn:hover { background:var(--cream-dark); }
+  .mobile-logo { font-family:'Playfair Display',serif; font-size:1.25rem; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px; }
+  .mobile-logo-dot { width:6px; height:6px; border-radius:50%; background:var(--amber); }
+  .mobile-topbar-right { display:flex; align-items:center; gap:8px; }
+  .mobile-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--green-mid),var(--green-light)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem; color:var(--white); cursor:pointer; }
+  .mobile-menu-btn { width:34px; height:34px; border-radius:10px; border:1.5px solid var(--border); background:var(--white); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.85rem; color:var(--ink-muted); }
+
+  .page-content { flex:1; padding:32px; overflow-y:auto; padding-bottom:40px; animation:fadeUp 0.3s ease; }
+
+  .bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; height:var(--bottomnav-h); background:var(--white); border-top:1px solid var(--border); z-index:50; align-items:center; justify-content:space-around; padding:0 8px; padding-bottom:env(safe-area-inset-bottom); box-shadow:0 -4px 24px rgba(0,0,0,0.06); }
+  .bottom-nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 16px; border-radius:12px; cursor:pointer; transition:all 0.18s; flex:1; max-width:72px; }
+  .bottom-nav-item.active { background:var(--green-pale); }
+  .bottom-nav-icon { font-size:1.25rem; transition:transform 0.18s; }
+  .bottom-nav-item.active .bottom-nav-icon { transform:scale(1.15); }
+  .bottom-nav-label { font-size:0.65rem; font-weight:700; color:var(--ink-subtle); transition:color 0.18s; }
+  .bottom-nav-item.active .bottom-nav-label { color:var(--green-deep); }
+
+  .drawer-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:60; animation:fadeIn 0.2s ease; }
+  .drawer-overlay.open { display:block; }
+  .drawer { position:fixed; top:0; left:0; bottom:0; width:280px; background:var(--ink); z-index:70; transform:translateX(-100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; overflow:hidden; }
+  .drawer.open { transform:translateX(0); }
+  .drawer-close { position:absolute; top:20px; right:16px; width:32px; height:32px; border-radius:8px; border:none; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.6); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+  @media (max-width: 900px) {
+    .sidebar { display:none; }
+    .main-content { margin-left:0; }
+    .desktop-topbar { display:none; }
+    .mobile-topbar { display:flex; }
+    .bottom-nav { display:flex; }
+    .page-content { padding:20px 16px; padding-bottom:calc(var(--bottomnav-h) + 20px); }
+  }
+
+  .page-stub { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; gap:12px; color:var(--ink-subtle); animation:fadeUp 0.3s ease; }
+  .page-stub-icon { font-size:3rem; }
+  .page-stub-title { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:700; color:var(--ink); }
+  .page-stub-sub { font-size:0.9rem; color:var(--ink-subtle); text-align:center; max-width:300px; line-height:1.6; }
+  .page-stub-badge { background:var(--green-pale); color:var(--green-deep); padding:5px 14px; border-radius:100px; font-size:0.78rem; font-weight:700; }
+
+  .fab { display:none; position:fixed; bottom:calc(var(--bottomnav-h) + 16px); right:20px; width:52px; height:52px; border-radius:50%; z-index:45; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-size:1.5rem; border:none; cursor:pointer; box-shadow:0 6px 24px rgba(27,67,50,0.4); transition:all 0.2s; align-items:center; justify-content:center; }
+  @media (max-width:900px) { .fab { display:flex; } }
+
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:80; display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s ease; }
+  .modal-sheet { background:var(--white); border-radius:24px 24px 0 0; padding:28px 24px 40px; width:100%; max-width:480px; animation:slideInLeft 0.3s ease; }
+  .modal-handle { width:40px; height:4px; border-radius:100px; background:var(--border); margin:0 auto 20px; }
+  .modal-title { font-family:'Playfair Display',serif; font-size:1.25rem; font-weight:700; margin-bottom:16px; }
+  .modal-input-row { display:flex; gap:10px; margin-bottom:14px; }
+  .modal-input { flex:1; padding:13px 16px; border:1.5px solid var(--border); border-radius:12px; font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:500; color:var(--ink); background:var(--cream); outline:none; transition:border-color 0.2s; }
+  .modal-input:focus { border-color:var(--green-light); }
+  .modal-btn { padding:14px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; width:100%; }
+
+  .trial-banner { background:linear-gradient(90deg,var(--green-deep),var(--green-mid)); padding:10px 32px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; flex-wrap:wrap; gap:8px; }
+  @media(max-width:900px) { .trial-banner { padding:10px 16px; } }
+  .trial-banner-text { font-size:0.82rem; color:rgba(255,255,255,0.85); font-weight:500; }
+  .trial-banner-text strong { color:var(--white); font-weight:700; }
+  .trial-banner-cta { background:var(--amber); color:var(--ink); border:none; border-radius:100px; padding:5px 16px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.78rem; font-weight:800; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+  .trial-banner-cta:hover { background:#e0b020; }
+
+  .topbar-search { display:flex; align-items:center; gap:8px; background:var(--cream-dark); border:1.5px solid var(--border); border-radius:10px; padding:0 14px; height:36px; transition:all 0.2s; cursor:text; }
+  .topbar-search:focus-within { border-color:var(--green-light); background:var(--white); box-shadow:0 0 0 3px rgba(64,145,108,0.1); }
+  .topbar-search input { border:none; background:transparent; outline:none; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.85rem; color:var(--ink); width:160px; }
+  .topbar-search input::placeholder { color:rgba(10,10,10,0.35); }
+  .search-icon { color:var(--ink-subtle); font-size:0.85rem; }
+`;
+
+// ── NAV CONFIG ────────────────────────────────────────────────────────────────
+const NAV_ITEMS = [
+  { id: "dashboard", icon: "⊞", label: "Dashboard", badge: null },
+  { id: "expenses",  icon: "₦", label: "Expenses",  badge: null },
+  { id: "budget",    icon: "◎", label: "Budget",    badge: null },
+  { id: "insights",  icon: "↗", label: "Insights",  badge: "PRO" },
+  { id: "settings",  icon: "⚙", label: "Settings",  badge: null },
+];
+
+const BOTTOM_NAV = [
+  { id: "dashboard", icon: "🏠", label: "Home" },
+  { id: "expenses",  icon: "💸", label: "Expenses" },
+  { id: "budget",    icon: "🎯", label: "Budget" },
+  { id: "insights",  icon: "📊", label: "Insights" },
+  { id: "settings",  icon: "⚙️", label: "Settings" },
+];
+
+const PAGE_META = {
+  dashboard: { title: "Dashboard", breadcrumb: "Good morning, Adaeze 👋" },
+  expenses:  { title: "Expenses",  breadcrumb: "Track & manage your spending" },
+  budget:    { title: "Budget",    breadcrumb: "Manage your active budget" },
+  insights:  { title: "Insights",  breadcrumb: "Deep-dive into your patterns" },
+  settings:  { title: "Settings",  breadcrumb: "Preferences & account" },
+  upgrade:   { title: "Upgrade",   breadcrumb: "Unlock Premium features" },
+};
+
+// ── PAGE STUBS ────────────────────────────────────────────────────────────────
+const PageStubs = {
+  dashboard: () => (
+    <div className="page-stub">
+      <div className="page-stub-icon">🏠</div>
+      <div className="page-stub-title">Dashboard</div>
+      <p className="page-stub-sub">Summary cards, budget pace, AI panels, quick-add — all coming here.</p>
+      <span className="page-stub-badge">Next to build →</span>
+    </div>
+  ),
+  expenses: () => (
+    <div className="page-stub">
+      <div className="page-stub-icon">💸</div>
+      <div className="page-stub-title">Expenses</div>
+      <p className="page-stub-sub">Search, filter, add, edit, delete expenses. CSV export for premium.</p>
+    </div>
+  ),
+  budget: () => (
+    <div className="page-stub">
+      <div className="page-stub-icon">🎯</div>
+      <div className="page-stub-title">Budget</div>
+      <p className="page-stub-sub">Edit active budget, category caps, recurring expenses.</p>
+    </div>
+  ),
+  insights: () => (
+    <div className="page-stub">
+      <div className="page-stub-icon">📊</div>
+      <div className="page-stub-title">Insights</div>
+      <p className="page-stub-sub">Pie chart, bar chart, trend line, budget breakdown. Premium only.</p>
+      <span className="page-stub-badge">⭐ Premium</span>
+    </div>
+  ),
+  settings: () => (
+    <div className="page-stub">
+      <div className="page-stub-icon">⚙️</div>
+      <div className="page-stub-title">Settings</div>
+      <p className="page-stub-sub">Profile, password, currency, notifications, plan details.</p>
+    </div>
+  ),
+  upgrade: () => (
+    <div className="page-stub">
+      <div className="page-stub-icon">⭐</div>
+      <div className="page-stub-title">Upgrade to Premium</div>
+      <p className="page-stub-sub">Feature list, comparison table, FAQ, Paystack payment button.</p>
+    </div>
+  ),
+};
+
+// ── QUICK ADD MODAL ───────────────────────────────────────────────────────────
+function QuickAddModal({ onClose }) {
+  const [desc,   setDesc]   = useState("");
+  const [amount, setAmount] = useState("");
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-handle" />
+        <div className="modal-title">Add expense</div>
+        <div className="modal-input-row">
+          <input
+            className="modal-input"
+            type="text"
+            placeholder='e.g. "Lunch at Chicken Republic"'
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+          />
+        </div>
+        <div className="modal-input-row">
+          <input
+            className="modal-input"
+            type="text"
+            inputMode="numeric"
+            placeholder="Amount (₦)"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            style={{ flex: 1 }}
+          />
+          <select className="modal-input" style={{ flex: "0 0 130px" }}>
+            <option>🍔 Food</option>
+            <option>🚗 Transport</option>
+            <option>🛍️ Shopping</option>
+            <option>💊 Health</option>
+            <option>🎬 Entertainment</option>
+            <option>📱 Airtime</option>
+          </select>
+        </div>
+        <button className="modal-btn" onClick={onClose}>Log Expense</button>
+      </div>
+    </div>
+  );
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────────────────────
+function Sidebar({ activePage, onNavigate, showUpgrade = true }) {
+  return (
+    <aside className="sidebar">
+      <div className="sidebar-bg" />
+      <div className="sidebar-logo">
+        <span className="sidebar-logo-dot" />
+        Truvllo
+      </div>
+      <div className="sidebar-section-label">Main</div>
+      <nav className="sidebar-nav">
+        {NAV_ITEMS.map((item) => (
+          <div
+            key={item.id}
+            className={`nav-item${activePage === item.id ? " active" : ""}`}
+            onClick={() => onNavigate(item.id)}
+          >
+            {activePage === item.id && <div className="nav-active-bar" />}
+            <span className="nav-icon">{item.icon}</span>
+            {item.label}
+            {item.badge && <span className="nav-badge">{item.badge}</span>}
+          </div>
+        ))}
+      </nav>
+      {showUpgrade && (
+        <div className="sidebar-upgrade">
+          <div className="upgrade-title">7-day Trial Active</div>
+          <div className="upgrade-sub">5 days remaining. Upgrade to keep all AI features after your trial.</div>
+          <button className="upgrade-btn" onClick={() => onNavigate("upgrade")}>
+            Upgrade to Premium
+          </button>
+        </div>
+      )}
+      <div className="sidebar-bottom">
+        <div className="sidebar-profile">
+          <div className="profile-avatar">A</div>
+          <div>
+            <div className="profile-name">Adaeze Okafor</div>
+            <div className="premium-pill">✦ Trial</div>
+          </div>
+          <span className="profile-chevron">⋯</span>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// ── MOBILE DRAWER ─────────────────────────────────────────────────────────────
+function MobileDrawer({ open, activePage, onNavigate, onClose }) {
+  return (
+    <>
+      <div className={`drawer-overlay${open ? " open" : ""}`} onClick={onClose} />
+      <div className={`drawer${open ? " open" : ""}`}>
+        <button className="drawer-close" onClick={onClose}>✕</button>
+        <div className="sidebar-logo" style={{ paddingTop: 24 }}>
+          <span className="sidebar-logo-dot" />
+          Truvllo
+        </div>
+        <div className="sidebar-section-label">Navigation</div>
+        <nav className="sidebar-nav">
+          {NAV_ITEMS.map((item) => (
+            <div
+              key={item.id}
+              className={`nav-item${activePage === item.id ? " active" : ""}`}
+              onClick={() => { onNavigate(item.id); onClose(); }}
+            >
+              {activePage === item.id && <div className="nav-active-bar" />}
+              <span className="nav-icon">{item.icon}</span>
+              {item.label}
+              {item.badge && <span className="nav-badge">{item.badge}</span>}
+            </div>
+          ))}
+        </nav>
+        <div className="sidebar-bottom">
+          <div className="sidebar-upgrade">
+            <div className="upgrade-title">7-day Trial Active</div>
+            <div className="upgrade-sub">5 days remaining.</div>
+            <button className="upgrade-btn" onClick={() => { onNavigate("upgrade"); onClose(); }}>
+              Upgrade to Premium
+            </button>
+          </div>
+          <div className="sidebar-profile" style={{ marginTop: 8 }}>
+            <div className="profile-avatar">A</div>
+            <div>
+              <div className="profile-name">Adaeze Okafor</div>
+              <div className="premium-pill">✦ Trial</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── APP SHELL ─────────────────────────────────────────────────────────────────
+export default function AppShell() {
+  const [activePage,   setActivePage]   = useState("dashboard");
+  const [drawerOpen,   setDrawerOpen]   = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [searchVal,    setSearchVal]    = useState("");
+
+  const meta          = PAGE_META[activePage] || PAGE_META.dashboard;
+  const PageComponent = PageStubs[activePage] || PageStubs.dashboard;
+
+  useEffect(() => {
+    const handler = () => { if (window.innerWidth > 900) setDrawerOpen(false); };
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+
+  const navigate = (page) => {
+    setActivePage(page);
+    window.scrollTo(0, 0);
+  };
+
+  return (
+    <>
+      <style>{FONTS + styles}</style>
+
+      <MobileDrawer
+        open={drawerOpen}
+        activePage={activePage}
+        onNavigate={navigate}
+        onClose={() => setDrawerOpen(false)}
+      />
+
+      {quickAddOpen && <QuickAddModal onClose={() => setQuickAddOpen(false)} />}
+
+      <div className="shell-root">
+        <Sidebar activePage={activePage} onNavigate={navigate} />
+
+        <div className="main-content">
+          <div className="trial-banner">
+            <div className="trial-banner-text">
+              🎁 <strong>5 days left</strong> on your free Premium trial — AI
+              features, category caps, and advanced charts are all active.
+            </div>
+            <button className="trial-banner-cta" onClick={() => navigate("upgrade")}>
+              Upgrade now
+            </button>
+          </div>
+
+          <div className="desktop-topbar">
+            <div>
+              <div className="topbar-page-title">{meta.title}</div>
+              <div className="topbar-breadcrumb">{meta.breadcrumb}</div>
+            </div>
+            <div className="topbar-right">
+              <div className="topbar-search">
+                <span className="search-icon">🔍</span>
+                <input
+                  placeholder="Search expenses..."
+                  value={searchVal}
+                  onChange={(e) => setSearchVal(e.target.value)}
+                />
+              </div>
+              <div className="topbar-icon-btn" title="Notifications">
+                🔔
+                <div className="notif-dot" />
+              </div>
+              <div className="topbar-icon-btn" title="Add expense" onClick={() => setQuickAddOpen(true)}>
+                ＋
+              </div>
+              <div className="topbar-avatar" title="Account">A</div>
+            </div>
+          </div>
+
+          <div className="mobile-topbar">
+            <button
+              className="mobile-back-btn"
+              onClick={() => activePage !== "dashboard" ? navigate("dashboard") : null}
+              style={{ opacity: activePage === "dashboard" ? 0.3 : 1 }}
+            >
+              ←
+            </button>
+            <div className="mobile-logo">
+              <span className="mobile-logo-dot" />
+              Truvllo
+            </div>
+            <div className="mobile-topbar-right">
+              <div className="mobile-avatar">A</div>
+              <div className="mobile-menu-btn" onClick={() => setDrawerOpen(true)}>☰</div>
+            </div>
+          </div>
+
+          <div className="page-content" key={activePage}>
+            <PageComponent />
+          </div>
+        </div>
+
+        <nav className="bottom-nav">
+          {BOTTOM_NAV.map((item) => (
+            <div
+              key={item.id}
+              className={`bottom-nav-item${activePage === item.id ? " active" : ""}`}
+              onClick={() => navigate(item.id)}
+            >
+              <span className="bottom-nav-icon">{item.icon}</span>
+              <span className="bottom-nav-label">{item.label}</span>
+            </div>
+          ))}
+        </nav>
+
+        <button className="fab" onClick={() => setQuickAddOpen(true)}>＋</button>
+      </div>
+    </>
+  );
+}

@@ -1,6 +1,6 @@
-// supabase/functions/send-trial-activated/index.ts
-// Triggered by a Supabase DB webhook on the profiles table
-// when plan changes from 'free' to 'trial'
+// supabase/functions/send-welcome/index.ts
+// Called by a Supabase DB webhook on INSERT to the profiles table.
+// Payload format: { type: "INSERT", record: { id, email, first_name, ... } }
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -11,94 +11,65 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
 
   try {
-    // Called by Supabase DB webhook — payload contains the updated profile row
-    const payload = await req.json();
-    const record = payload.record ?? payload; // handle both webhook and direct call
-    const { email, first_name, trial_ends_at } = record;
+    const body = await req.json();
 
-    if (!email)
+    // Support both DB webhook payload and direct call
+    const record = body.record ?? body;
+    const email = record.email;
+    const name = record.first_name || email?.split("@")[0] || "there";
+
+    if (!email) {
       return new Response(JSON.stringify({ error: "No email in payload" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
-
-    const name = first_name || email.split("@")[0];
-    const trialEnd = trial_ends_at
-      ? new Date(trial_ends_at).toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })
-      : "in 7 days";
+    }
 
     await sendEmail({
       to: email,
-      subject: "Your 7-day Premium trial is now active ✨",
+      subject: `Welcome to Truvllo, ${name} 🎉`,
       html: emailBase(`
-        <h2 style="font-size:1.4rem;font-weight:700;margin:0 0 16px;">Your Premium trial just activated, ${name}! ✨</h2>
+        <h2 style="font-size:1.4rem;font-weight:700;margin:0 0 16px;">Welcome aboard, ${name}! 🎉</h2>
         <p style="font-size:0.95rem;color:#3A3A3A;line-height:1.7;margin:0 0 20px;">
-          You logged your first expense and unlocked all of Truvllo's AI features — automatically, no credit card needed.
+          You've just joined thousands of people using Truvllo to take control of their money. We're glad you're here.
         </p>
 
-        <div style="background:#1B4332;border-radius:14px;padding:24px;margin-bottom:24px;">
-          <p style="font-size:0.82rem;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;margin:0 0 16px;">What's now unlocked</p>
+        <div style="background:#D8F3DC;border-radius:14px;padding:24px;margin-bottom:24px;">
+          <p style="font-size:0.9rem;font-weight:700;color:#1B4332;margin:0 0 14px;">Get started in 3 steps:</p>
           <table width="100%" cellpadding="0" cellspacing="0">
-            ${[
-              [
-                "🔍",
-                "AI Spending Analyst",
-                "Weekly breakdown of your spending patterns",
-              ],
-              [
-                "💬",
-                "Natural Language Entry",
-                'Type "spent 45 on lunch" — Truvllo logs it',
-              ],
-              [
-                "🎯",
-                "AI Savings Coach",
-                "One actionable tip per week to save more",
-              ],
-              [
-                "🏷️",
-                "Smart Categorisation",
-                "Auto-suggests the right category for every expense",
-              ],
-              [
-                "📁",
-                "Category Caps",
-                "Set limits per category, get warned before you overshoot",
-              ],
-              [
-                "📊",
-                "Advanced Charts",
-                "Trend lines, breakdowns, and month-over-month comparisons",
-              ],
-            ]
-              .map(
-                ([icon, title, desc]) => `
-              <tr>
-                <td style="padding:7px 0;vertical-align:top;width:28px;font-size:1rem;">${icon}</td>
-                <td style="padding:7px 0;vertical-align:top;">
-                  <span style="font-size:0.88rem;font-weight:700;color:#FFFFFF;">${title}</span>
-                  <span style="font-size:0.8rem;color:rgba(255,255,255,0.5);display:block;">${desc}</span>
-                </td>
-              </tr>
-            `,
-              )
-              .join("")}
+            <tr>
+              <td style="padding:8px 0;vertical-align:top;">
+                <span style="display:inline-block;width:24px;height:24px;background:#1B4332;border-radius:50%;text-align:center;line-height:24px;font-size:0.75rem;font-weight:700;color:#FFFFFF;margin-right:12px;">1</span>
+                <span style="font-size:0.9rem;color:#2D6A4F;font-weight:600;">Set your first budget</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;vertical-align:top;">
+                <span style="display:inline-block;width:24px;height:24px;background:#1B4332;border-radius:50%;text-align:center;line-height:24px;font-size:0.75rem;font-weight:700;color:#FFFFFF;margin-right:12px;">2</span>
+                <span style="font-size:0.9rem;color:#2D6A4F;font-weight:600;">Log your first expense — this activates your free trial</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;vertical-align:top;">
+                <span style="display:inline-block;width:24px;height:24px;background:#1B4332;border-radius:50%;text-align:center;line-height:24px;font-size:0.75rem;font-weight:700;color:#FFFFFF;margin-right:12px;">3</span>
+                <span style="font-size:0.9rem;color:#2D6A4F;font-weight:600;">Check your Safe-to-Spend number every morning</span>
+              </td>
+            </tr>
           </table>
         </div>
 
-        <div style="background:#FFF8E7;border-radius:12px;padding:16px 20px;margin-bottom:24px;border-left:3px solid #D4A017;">
-          <p style="font-size:0.88rem;color:#3A3A3A;margin:0;line-height:1.6;">
-            <strong>⏰ Trial ends ${trialEnd}.</strong> After that, you can upgrade to keep all AI features for just ₦6,500/month — or continue on the free plan with core features.
+        <div style="background:#FAF8F3;border-radius:12px;padding:16px 20px;margin-bottom:24px;border-left:3px solid #D4A017;">
+          <p style="font-size:0.85rem;color:#3A3A3A;margin:0;line-height:1.6;">
+            <strong style="color:#0A0A0A;">💡 Pro tip:</strong> Log your very first expense and you'll automatically unlock a <strong>7-day Premium trial</strong> — all AI features, no credit card required.
           </p>
         </div>
 
-        ${btn("Explore Premium features →", "https://truvlloapp.vercel.app/dashboard")}
+        ${btn("Go to my dashboard →", "https://truvlloapp.vercel.app/dashboard")}
         ${divider()}
-        <p style="font-size:0.82rem;color:#6B6B6B;margin:0;">The Truvllo Team · Reply to this email with any questions.</p>
+        <p style="font-size:0.85rem;color:#6B6B6B;line-height:1.6;margin:0;">
+          Questions? Just reply to this email — we read and respond to everything.<br/>
+          <strong style="color:#3A3A3A;">The Truvllo Team</strong>
+        </p>
       `),
     });
 
@@ -106,7 +77,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error(err);
+    console.error("send-welcome error:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

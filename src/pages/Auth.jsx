@@ -158,20 +158,22 @@ function LoginForm({ onSwitch }) {
     setErrors({});
     setGlobalError("");
     setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      navigate("/dashboard");
-    } catch (err) {
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
       setGlobalError(
-        err.message || "Invalid email or password. Please try again.",
+        error.message || "Invalid email or password. Please try again.",
       );
-    } finally {
       setLoading(false);
+      return;
     }
+
+    // Don't setLoading(false) here — let the page navigate away
+    navigate("/dashboard");
   };
 
   const handleForgotPassword = async () => {

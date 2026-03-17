@@ -299,7 +299,7 @@ export function AuthProvider({ children }) {
    * re-fetches a fresh profile with onboarding_complete = true.
    */
   const completeOnboarding = useCallback(
-    async ({ currency, budgetName, period }) => {
+    async ({ currency, _budgetName, _period }) => {
       if (!user) return { error: "Not logged in" };
 
       const { error } = await supabase

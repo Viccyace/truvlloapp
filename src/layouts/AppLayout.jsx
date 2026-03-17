@@ -1,5 +1,21 @@
 import { useState, useEffect } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom"; // eslint-disable-line no-unused-vars
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Receipt,
+  Target,
+  BarChart2,
+  Settings2,
+  Home,
+  TrendingUp,
+  Menu,
+  ArrowLeft,
+  Bell,
+  Search,
+  Plus,
+  X,
+  LogOut,
+} from "lucide-react"; // eslint-disable-line no-unused-vars
 import { useAuth } from "../providers/AuthProvider";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
@@ -129,33 +145,57 @@ const styles = `
 `;
 
 const NAV_ITEMS = [
-  { id: "dashboard", path: "/dashboard", icon: "⊞", label: "Dashboard", badge: null },
-  { id: "expenses",  path: "/expenses",  icon: "₦", label: "Expenses",  badge: null },
-  { id: "budget",    path: "/budget",    icon: "◎", label: "Budget",    badge: null },
-  { id: "insights",  path: "/insights",  icon: "↗", label: "Insights",  badge: "PRO" },
-  { id: "settings",  path: "/settings",  icon: "⚙", label: "Settings",  badge: null },
+  {
+    id: "dashboard",
+    path: "/dashboard",
+    Icon: LayoutDashboard,
+    label: "Dashboard",
+    badge: null,
+  },
+  {
+    id: "expenses",
+    path: "/expenses",
+    Icon: Receipt,
+    label: "Expenses",
+    badge: null,
+  },
+  { id: "budget", path: "/budget", Icon: Target, label: "Budget", badge: null },
+  {
+    id: "insights",
+    path: "/insights",
+    Icon: BarChart2,
+    label: "Insights",
+    badge: "PRO",
+  },
+  {
+    id: "settings",
+    path: "/settings",
+    Icon: Settings2,
+    label: "Settings",
+    badge: null,
+  },
 ];
 
 const BOTTOM_NAV = [
-  { id: "dashboard", path: "/dashboard", icon: "🏠", label: "Home" },
-  { id: "expenses",  path: "/expenses",  icon: "💸", label: "Expenses" },
-  { id: "budget",    path: "/budget",    icon: "🎯", label: "Budget" },
-  { id: "insights",  path: "/insights",  icon: "📊", label: "Insights" },
-  { id: "settings",  path: "/settings",  icon: "⚙️", label: "Settings" },
+  { id: "dashboard", path: "/dashboard", Icon: Home, label: "Home" },
+  { id: "expenses", path: "/expenses", Icon: Receipt, label: "Expenses" },
+  { id: "budget", path: "/budget", Icon: Target, label: "Budget" },
+  { id: "insights", path: "/insights", Icon: TrendingUp, label: "Insights" },
+  { id: "settings", path: "/settings", Icon: Settings2, label: "Settings" },
 ];
 
 const PAGE_META = {
   dashboard: { title: "Dashboard", breadcrumb: "Good morning 👋" },
-  expenses:  { title: "Expenses",  breadcrumb: "Track & manage your spending" },
-  budget:    { title: "Budget",    breadcrumb: "Manage your active budget" },
-  insights:  { title: "Insights",  breadcrumb: "Deep-dive into your patterns" },
-  settings:  { title: "Settings",  breadcrumb: "Preferences & account" },
-  upgrade:   { title: "Upgrade",   breadcrumb: "Unlock Premium features" },
+  expenses: { title: "Expenses", breadcrumb: "Track & manage your spending" },
+  budget: { title: "Budget", breadcrumb: "Manage your active budget" },
+  insights: { title: "Insights", breadcrumb: "Deep-dive into your patterns" },
+  settings: { title: "Settings", breadcrumb: "Preferences & account" },
+  upgrade: { title: "Upgrade", breadcrumb: "Unlock Premium features" },
 };
 
 // eslint-disable-next-line no-unused-vars
 function QuickAddModal({ onClose }) {
-  const [desc,   setDesc]   = useState("");
+  const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -163,12 +203,24 @@ function QuickAddModal({ onClose }) {
         <div className="modal-handle" />
         <div className="modal-title">Add expense</div>
         <div className="modal-input-row">
-          <input className="modal-input" type="text" placeholder='e.g. "Lunch at Chicken Republic"'
-            value={desc} onChange={(e) => setDesc(e.target.value)} />
+          <input
+            className="modal-input"
+            type="text"
+            placeholder='e.g. "Lunch at Chicken Republic"'
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+          />
         </div>
         <div className="modal-input-row">
-          <input className="modal-input" type="text" inputMode="numeric" placeholder="Amount (₦)"
-            value={amount} onChange={(e) => setAmount(e.target.value)} style={{ flex: 1 }} />
+          <input
+            className="modal-input"
+            type="text"
+            inputMode="numeric"
+            placeholder="Amount (₦)"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            style={{ flex: 1 }}
+          />
           <select className="modal-input" style={{ flex: "0 0 130px" }}>
             <option>🍔 Food</option>
             <option>🚗 Transport</option>
@@ -178,47 +230,68 @@ function QuickAddModal({ onClose }) {
             <option>📱 Airtime</option>
           </select>
         </div>
-        <button className="modal-btn" onClick={onClose}>Log Expense</button>
+        <button className="modal-btn" onClick={onClose}>
+          Log Expense
+        </button>
       </div>
     </div>
   );
 }
 
 export default function AppLayout() {
-  const location                    = useLocation();
-  const navigate                    = useNavigate();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { displayName, initials, isTrialing, trialDaysLeft } = useAuth();
-  const [drawerOpen,   setDrawerOpen]   = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [searchVal,    setSearchVal]    = useState("");
+  const [searchVal, setSearchVal] = useState("");
 
   const activePage = location.pathname.replace("/", "") || "dashboard";
-  const meta       = PAGE_META[activePage] || PAGE_META.dashboard;
+  const meta = PAGE_META[activePage] || PAGE_META.dashboard;
 
   useEffect(() => {
-    const handler = () => { if (window.innerWidth > 900) setDrawerOpen(false); };
+    const handler = () => {
+      if (window.innerWidth > 900) setDrawerOpen(false);
+    };
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
   }, []);
 
-  const goTo = (path) => { navigate(path); window.scrollTo(0, 0); };
+  const goTo = (path) => {
+    navigate(path);
+    window.scrollTo(0, 0);
+  };
 
   return (
     <>
       <style>{FONTS + styles}</style>
 
       {/* Mobile drawer */}
-      <div className={`drawer-overlay${drawerOpen ? " open" : ""}`} onClick={() => setDrawerOpen(false)} />
+      <div
+        className={`drawer-overlay${drawerOpen ? " open" : ""}`}
+        onClick={() => setDrawerOpen(false)}
+      />
       <div className={`drawer${drawerOpen ? " open" : ""}`}>
-        <button className="drawer-close" onClick={() => setDrawerOpen(false)}>✕</button>
-        <div className="sidebar-logo" style={{ paddingTop: 24 }}><span className="sidebar-logo-dot" />Truvllo</div>
+        <button className="drawer-close" onClick={() => setDrawerOpen(false)}>
+          <X size={14} />
+        </button>
+        <div className="sidebar-logo" style={{ paddingTop: 24 }}>
+          <span className="sidebar-logo-dot" />
+          Truvllo
+        </div>
         <div className="sidebar-section-label">Navigation</div>
         <nav className="sidebar-nav">
           {NAV_ITEMS.map((item) => (
-            <div key={item.id} className={`nav-item${activePage === item.id ? " active" : ""}`}
-              onClick={() => { goTo(item.path); setDrawerOpen(false); }}>
+            <div
+              key={item.id}
+              className={`nav-item${activePage === item.id ? " active" : ""}`}
+              onClick={() => {
+                goTo(item.path);
+                setDrawerOpen(false);
+              }}
+            >
               {activePage === item.id && <div className="nav-active-bar" />}
-              <span className="nav-icon">{item.icon}</span>
+              <item.Icon size={16} style={{ flexShrink: 0 }} />
               {item.label}
               {item.badge && <span className="nav-badge">{item.badge}</span>}
             </div>
@@ -226,9 +299,19 @@ export default function AppLayout() {
         </nav>
         <div className="sidebar-bottom">
           <div className="sidebar-upgrade">
-            <div className="upgrade-title">{trialDaysLeft} days left on trial</div>
+            <div className="upgrade-title">
+              {trialDaysLeft} days left on trial
+            </div>
             <div className="upgrade-sub">Upgrade to keep all AI features.</div>
-            <button className="upgrade-btn" onClick={() => { goTo("/upgrade"); setDrawerOpen(false); }}>Upgrade to Premium</button>
+            <button
+              className="upgrade-btn"
+              onClick={() => {
+                goTo("/upgrade");
+                setDrawerOpen(false);
+              }}
+            >
+              Upgrade to Premium
+            </button>
           </div>
         </div>
       </div>
@@ -239,13 +322,20 @@ export default function AppLayout() {
         {/* Sidebar */}
         <aside className="sidebar">
           <div className="sidebar-bg" />
-          <div className="sidebar-logo"><span className="sidebar-logo-dot" />Truvllo</div>
+          <div className="sidebar-logo">
+            <span className="sidebar-logo-dot" />
+            Truvllo
+          </div>
           <div className="sidebar-section-label">Main</div>
           <nav className="sidebar-nav">
             {NAV_ITEMS.map((item) => (
-              <div key={item.id} className={`nav-item${activePage === item.id ? " active" : ""}`} onClick={() => goTo(item.path)}>
+              <div
+                key={item.id}
+                className={`nav-item${activePage === item.id ? " active" : ""}`}
+                onClick={() => goTo(item.path)}
+              >
                 {activePage === item.id && <div className="nav-active-bar" />}
-                <span className="nav-icon">{item.icon}</span>
+                <item.Icon size={16} style={{ flexShrink: 0 }} />
                 {item.label}
                 {item.badge && <span className="nav-badge">{item.badge}</span>}
               </div>
@@ -253,17 +343,27 @@ export default function AppLayout() {
           </nav>
           {isTrialing && (
             <div className="sidebar-upgrade">
-              <div className="upgrade-title">Trial Active — {trialDaysLeft} days left</div>
-              <div className="upgrade-sub">Upgrade to keep AI features after your trial.</div>
-              <button className="upgrade-btn" onClick={() => goTo("/upgrade")}>Upgrade to Premium</button>
+              <div className="upgrade-title">
+                Trial Active — {trialDaysLeft} days left
+              </div>
+              <div className="upgrade-sub">
+                Upgrade to keep AI features after your trial.
+              </div>
+              <button className="upgrade-btn" onClick={() => goTo("/upgrade")}>
+                Upgrade to Premium
+              </button>
             </div>
           )}
           <div className="sidebar-bottom">
             <div className="sidebar-profile">
               <div className="profile-avatar">{initials}</div>
               <div>
-                <div className="profile-name">{displayName || "My Account"}</div>
-                <div className="premium-pill">✦ {isTrialing ? "Trial" : "Free"}</div>
+                <div className="profile-name">
+                  {displayName || "My Account"}
+                </div>
+                <div className="premium-pill">
+                  ✦ {isTrialing ? "Trial" : "Free"}
+                </div>
               </div>
               <span className="profile-chevron">⋯</span>
             </div>
@@ -274,9 +374,15 @@ export default function AppLayout() {
           {isTrialing && (
             <div className="trial-banner">
               <div className="trial-banner-text">
-                🎁 <strong>{trialDaysLeft} days left</strong> on your free Premium trial
+                🎁 <strong>{trialDaysLeft} days left</strong> on your free
+                Premium trial
               </div>
-              <button className="trial-banner-cta" onClick={() => goTo("/upgrade")}>Upgrade now</button>
+              <button
+                className="trial-banner-cta"
+                onClick={() => goTo("/upgrade")}
+              >
+                Upgrade now
+              </button>
             </div>
           )}
 
@@ -289,23 +395,52 @@ export default function AppLayout() {
             <div className="topbar-right">
               <div className="topbar-search">
                 <span className="search-icon">🔍</span>
-                <input placeholder="Search expenses..." value={searchVal} onChange={(e) => setSearchVal(e.target.value)} />
+                <input
+                  placeholder="Search expenses..."
+                  value={searchVal}
+                  onChange={(e) => setSearchVal(e.target.value)}
+                />
               </div>
-              <div className="topbar-icon-btn" title="Notifications">🔔<div className="notif-dot" /></div>
-              <div className="topbar-icon-btn" title="Add expense" onClick={() => setQuickAddOpen(true)}>＋</div>
-              <div className="topbar-avatar" title="Account">{initials}</div>
+              <div className="topbar-icon-btn" title="Notifications">
+                <Bell size={16} />
+                <div className="notif-dot" />
+              </div>
+              <div
+                className="topbar-icon-btn"
+                title="Add expense"
+                onClick={() => setQuickAddOpen(true)}
+              >
+                <Plus size={16} />
+              </div>
+              <div className="topbar-avatar" title="Account">
+                {initials}
+              </div>
             </div>
           </div>
 
           {/* Mobile topbar */}
           <div className="mobile-topbar">
-            <button className="mobile-back-btn"
-              onClick={() => activePage !== "dashboard" ? goTo("/dashboard") : null}
-              style={{ opacity: activePage === "dashboard" ? 0.3 : 1 }}>←</button>
-            <div className="mobile-logo"><span className="mobile-logo-dot" />Truvllo</div>
+            <button
+              className="mobile-back-btn"
+              onClick={() =>
+                activePage !== "dashboard" ? goTo("/dashboard") : null
+              }
+              style={{ opacity: activePage === "dashboard" ? 0.3 : 1 }}
+            >
+              <ArrowLeft size={16} />
+            </button>
+            <div className="mobile-logo">
+              <span className="mobile-logo-dot" />
+              Truvllo
+            </div>
             <div className="mobile-topbar-right">
               <div className="mobile-avatar">{initials}</div>
-              <div className="mobile-menu-btn" onClick={() => setDrawerOpen(true)}>☰</div>
+              <div
+                className="mobile-menu-btn"
+                onClick={() => setDrawerOpen(true)}
+              >
+                <Menu size={18} />
+              </div>
             </div>
           </div>
 
@@ -318,14 +453,20 @@ export default function AppLayout() {
         {/* Bottom nav */}
         <nav className="bottom-nav">
           {BOTTOM_NAV.map((item) => (
-            <div key={item.id} className={`bottom-nav-item${activePage === item.id ? " active" : ""}`} onClick={() => goTo(item.path)}>
-              <span className="bottom-nav-icon">{item.icon}</span>
+            <div
+              key={item.id}
+              className={`bottom-nav-item${activePage === item.id ? " active" : ""}`}
+              onClick={() => goTo(item.path)}
+            >
+              <item.Icon size={22} />
               <span className="bottom-nav-label">{item.label}</span>
             </div>
           ))}
         </nav>
 
-        <button className="fab" onClick={() => setQuickAddOpen(true)}>＋</button>
+        <button className="fab" onClick={() => setQuickAddOpen(true)}>
+          <Plus size={22} />
+        </button>
       </div>
     </>
   );

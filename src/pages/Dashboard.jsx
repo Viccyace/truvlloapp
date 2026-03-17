@@ -1,4 +1,25 @@
 import { useState, useEffect, useRef } from "react";
+import {
+  Wallet,
+  ArrowUpRight,
+  PiggyBank,
+  CalendarDays,
+  Sparkles,
+  RefreshCw,
+  Zap,
+  Plus,
+  X,
+  Trash2,
+  Pencil,
+  UtensilsCrossed,
+  Car,
+  Lightbulb,
+  ShoppingBag,
+  Heart,
+  Clapperboard,
+  Smartphone,
+  Briefcase,
+} from "lucide-react";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
@@ -230,25 +251,70 @@ const MOCK = {
   currentDay: 16,
   daysLeft: 15,
   expectedSpend: 92900,
-  paceStatus: { key: "on_track", label: "On Track", color: "#52B788", bg: "rgba(82,183,136,0.12)" },
+  paceStatus: {
+    key: "on_track",
+    label: "On Track",
+    color: "#52B788",
+    bg: "rgba(82,183,136,0.12)",
+  },
   expenses: [
-    { id: 1, desc: "Chicken Republic — Lunch",  cat: "🍔", catName: "Food",      amount: 4500,  date: "Today",      bg: "#FFF3E0" },
-    { id: 2, desc: "Bolt — Office trip",        cat: "🚗", catName: "Transport", amount: 2800,  date: "Today",      bg: "#E8F5E9" },
-    { id: 3, desc: "Netflix subscription",      cat: "🎬", catName: "Entertain.",amount: 4800,  date: "Yesterday",  bg: "#F3E5F5" },
-    { id: 4, desc: "Chicken Republic — Dinner", cat: "🍔", catName: "Food",      amount: 5200,  date: "Yesterday",  bg: "#FFF3E0" },
-    { id: 5, desc: "MTN Data bundle",           cat: "📱", catName: "Airtime",   amount: 3000,  date: "2 days ago", bg: "#E3F2FD" },
+    {
+      id: 1,
+      desc: "Chicken Republic — Lunch",
+      cat: "🍔",
+      catName: "Food",
+      amount: 4500,
+      date: "Today",
+      bg: "#FFF3E0",
+    },
+    {
+      id: 2,
+      desc: "Bolt — Office trip",
+      cat: "🚗",
+      catName: "Transport",
+      amount: 2800,
+      date: "Today",
+      bg: "#E8F5E9",
+    },
+    {
+      id: 3,
+      desc: "Netflix subscription",
+      cat: "🎬",
+      catName: "Entertain.",
+      amount: 4800,
+      date: "Yesterday",
+      bg: "#F3E5F5",
+    },
+    {
+      id: 4,
+      desc: "Chicken Republic — Dinner",
+      cat: "🍔",
+      catName: "Food",
+      amount: 5200,
+      date: "Yesterday",
+      bg: "#FFF3E0",
+    },
+    {
+      id: 5,
+      desc: "MTN Data bundle",
+      cat: "📱",
+      catName: "Airtime",
+      amount: 3000,
+      date: "2 days ago",
+      bg: "#E3F2FD",
+    },
   ],
 };
 
 const CATEGORIES = [
-  { id: "food",      icon: "🍔", label: "Food",      bg: "#FFF3E0" },
-  { id: "transport", icon: "🚗", label: "Transport",  bg: "#E8F5E9" },
-  { id: "bills",     icon: "🏠", label: "Bills",      bg: "#FCE4EC" },
-  { id: "shop",      icon: "🛍️", label: "Shopping",   bg: "#F3E5F5" },
-  { id: "health",    icon: "💊", label: "Health",     bg: "#E0F7FA" },
-  { id: "data",      icon: "📱", label: "Airtime",    bg: "#E3F2FD" },
-  { id: "fun",       icon: "🎬", label: "Entertain.", bg: "#F9FBE7" },
-  { id: "other",     icon: "💼", label: "Other",      bg: "#F5F5F5" },
+  { id: "food", icon: "🍔", label: "Food", bg: "#FFF3E0" },
+  { id: "transport", icon: "🚗", label: "Transport", bg: "#E8F5E9" },
+  { id: "bills", icon: "🏠", label: "Bills", bg: "#FCE4EC" },
+  { id: "shop", icon: "🛍️", label: "Shopping", bg: "#F3E5F5" },
+  { id: "health", icon: "💊", label: "Health", bg: "#E0F7FA" },
+  { id: "data", icon: "📱", label: "Airtime", bg: "#E3F2FD" },
+  { id: "fun", icon: "🎬", label: "Entertain.", bg: "#F9FBE7" },
+  { id: "other", icon: "💼", label: "Other", bg: "#F5F5F5" },
 ];
 
 const AI_INSIGHTS = [
@@ -289,26 +355,39 @@ function SummaryCards({ budget, spent, remaining, safe }) {
   return (
     <div className="summary-grid">
       <div className="sum-card hero-card">
-        <div className="sum-card-bg" style={{ background: "rgba(255,255,255,0.1)" }} />
-        <div className="sum-icon white">💰</div>
+        <div
+          className="sum-card-bg"
+          style={{ background: "rgba(255,255,255,0.1)" }}
+        />
+        <div className="sum-icon white">
+          <Wallet size={18} color="rgba(255,255,255,0.9)" />
+        </div>
         <div className="sum-label">Total Budget</div>
         <div className="sum-value">₦{fmt(budget)}</div>
         <div className="sum-change neutral">March 2026 · {pct}% used</div>
       </div>
       <div className="sum-card">
-        <div className="sum-icon red">💸</div>
+        <div className="sum-icon red">
+          <ArrowUpRight size={18} color="#E53935" />
+        </div>
         <div className="sum-label">Total Spent</div>
         <div className="sum-value red">₦{fmt(spent)}</div>
         <div className="sum-change down">↑ ₦8,200 vs last week</div>
       </div>
       <div className="sum-card">
-        <div className="sum-icon green">🏦</div>
+        <div className="sum-icon green">
+          <PiggyBank size={18} color="#2D6A4F" />
+        </div>
         <div className="sum-label">Remaining</div>
         <div className="sum-value green">₦{fmt(remaining)}</div>
-        <div className="sum-change up">✓ {Math.round((remaining / budget) * 100)}% of budget left</div>
+        <div className="sum-change up">
+          ✓ {Math.round((remaining / budget) * 100)}% of budget left
+        </div>
       </div>
       <div className="sum-card">
-        <div className="sum-icon amber">📅</div>
+        <div className="sum-icon amber">
+          <CalendarDays size={18} color="#D4A017" />
+        </div>
         <div className="sum-label">Safe-to-Spend</div>
         <div className="sum-value amber">₦{fmt(safe)}</div>
         <div className="sum-change neutral">Per day · 15 days left</div>
@@ -324,11 +403,13 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
     return () => clearTimeout(t);
   }, []);
 
-  const spentPct    = Math.min(100, Math.round((spent    / budget) * 100));
+  const spentPct = Math.min(100, Math.round((spent / budget) * 100));
   const expectedPct = Math.min(100, Math.round((expected / budget) * 100));
   const barColor =
     status.key === "over_budget" || status.key === "slightly_over"
-      ? status.key === "over_budget" ? "#FF8A80" : "#F0C040"
+      ? status.key === "over_budget"
+        ? "#FF8A80"
+        : "#F0C040"
       : "#52B788";
 
   return (
@@ -336,9 +417,14 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
       <div className="card-header">
         <div>
           <div className="card-title">Budget Pace</div>
-          <div className="card-sub">Day {currentDay} of {totalDays}</div>
+          <div className="card-sub">
+            Day {currentDay} of {totalDays}
+          </div>
         </div>
-        <span className="status-pill" style={{ background: status.bg, color: status.color }}>
+        <span
+          className="status-pill"
+          style={{ background: status.bg, color: status.color }}
+        >
           ● {status.label}
         </span>
       </div>
@@ -353,7 +439,9 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
         </div>
         <div className="pace-meta-item">
           <div className="pace-meta-label">Difference</div>
-          <div className={`pace-meta-value ${spent <= expected ? "green" : "red"}`}>
+          <div
+            className={`pace-meta-value ${spent <= expected ? "green" : "red"}`}
+          >
             {spent <= expected ? "-" : "+"}₦{fmt(Math.abs(spent - expected))}
           </div>
         </div>
@@ -364,9 +452,21 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
           <span>₦{fmt(budget)}</span>
         </div>
         <div className="pace-bar-track">
-          <div className="pace-bar-expected" style={{ width: rendered ? `${expectedPct}%` : "0%" }} />
-          <div className="pace-bar-actual" style={{ width: rendered ? `${spentPct}%` : "0%", background: `linear-gradient(90deg, ${barColor}cc, ${barColor})` }} />
-          <div className="pace-tick" style={{ left: rendered ? `${expectedPct}%` : "0%" }}>
+          <div
+            className="pace-bar-expected"
+            style={{ width: rendered ? `${expectedPct}%` : "0%" }}
+          />
+          <div
+            className="pace-bar-actual"
+            style={{
+              width: rendered ? `${spentPct}%` : "0%",
+              background: `linear-gradient(90deg, ${barColor}cc, ${barColor})`,
+            }}
+          />
+          <div
+            className="pace-tick"
+            style={{ left: rendered ? `${expectedPct}%` : "0%" }}
+          >
             <div className="pace-tick-label">Expected</div>
           </div>
         </div>
@@ -383,10 +483,10 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
 }
 
 function SafeCard({ amount, daysLeft, totalDays, currentDay }) {
-  const pct          = Math.round((currentDay / totalDays) * 100);
-  const r            = 20;
+  const pct = Math.round((currentDay / totalDays) * 100);
+  const r = 20;
   const circumference = 2 * Math.PI * r;
-  const dash         = circumference - (pct / 100) * circumference;
+  const dash = circumference - (pct / 100) * circumference;
 
   return (
     <div className="safe-card">
@@ -398,13 +498,31 @@ function SafeCard({ amount, daysLeft, totalDays, currentDay }) {
         <div className="safe-period">daily allowance</div>
       </div>
       <div className="safe-footer">
-        <div className="safe-days"><strong>{daysLeft}</strong> days remaining in March</div>
+        <div className="safe-days">
+          <strong>{daysLeft}</strong> days remaining in March
+        </div>
         <div className="safe-ring">
           <svg width="52" height="52" viewBox="0 0 52 52">
-            <circle cx="26" cy="26" r={r} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="4" />
-            <circle cx="26" cy="26" r={r} fill="none" stroke="rgba(255,255,255,0.7)"
-              strokeWidth="4" strokeDasharray={circumference} strokeDashoffset={dash}
-              strokeLinecap="round" style={{ transition: "stroke-dashoffset 1s ease" }} />
+            <circle
+              cx="26"
+              cy="26"
+              r={r}
+              fill="none"
+              stroke="rgba(255,255,255,0.1)"
+              strokeWidth="4"
+            />
+            <circle
+              cx="26"
+              cy="26"
+              r={r}
+              fill="none"
+              stroke="rgba(255,255,255,0.7)"
+              strokeWidth="4"
+              strokeDasharray={circumference}
+              strokeDashoffset={dash}
+              strokeLinecap="round"
+              style={{ transition: "stroke-dashoffset 1s ease" }}
+            />
           </svg>
           <div className="safe-ring-pct">{pct}%</div>
         </div>
@@ -416,37 +534,67 @@ function SafeCard({ amount, daysLeft, totalDays, currentDay }) {
 function AIPanel({ type, insight, onRefresh, loading }) {
   const isAnalyst = type === "analyst";
   const glowColor = isAnalyst ? "rgba(212,160,23,0.6)" : "rgba(64,145,108,0.6)";
-  const dotColor  = isAnalyst ? "var(--amber)"       : "var(--green-light)";
-  const tagColor  = isAnalyst ? "var(--amber)"       : "var(--green-light)";
-  const title     = isAnalyst ? "AI Spending Analyst" : "AI Savings Coach";
-  const icon      = isAnalyst ? "🔍"                 : "🎯";
+  const dotColor = isAnalyst ? "var(--amber)" : "var(--green-light)";
+  const tagColor = isAnalyst ? "var(--amber)" : "var(--green-light)";
+  const title = isAnalyst ? "AI Spending Analyst" : "AI Savings Coach";
+  const icon = isAnalyst ? "🔍" : "🎯";
 
   return (
     <div className="ai-card">
-      <div className="ai-card-glow" style={{ background: `radial-gradient(circle, ${glowColor} 0%, transparent 70%)`, top: -60, right: -60 }} />
+      <div
+        className="ai-card-glow"
+        style={{
+          background: `radial-gradient(circle, ${glowColor} 0%, transparent 70%)`,
+          top: -60,
+          right: -60,
+        }}
+      />
       <div className="ai-tag">
         <div className="ai-dot" style={{ background: dotColor }} />
-        <span className="ai-tag-text" style={{ color: tagColor }}>{icon} {title}</span>
+        <span className="ai-tag-text" style={{ color: tagColor }}>
+          {icon} {title}
+        </span>
       </div>
-      <div className="ai-card-title">{isAnalyst ? "This month's breakdown" : "Your top savings tip"}</div>
+      <div className="ai-card-title">
+        {isAnalyst ? "This month's breakdown" : "Your top savings tip"}
+      </div>
       <div className="ai-card-body">
-        {loading
-          ? <div className="ai-loading"><div className="ai-loading-dot" /><div className="ai-loading-dot" /><div className="ai-loading-dot" /></div>
-          : <span dangerouslySetInnerHTML={{ __html: insight }} />
-        }
+        {loading ? (
+          <div className="ai-loading">
+            <div className="ai-loading-dot" />
+            <div className="ai-loading-dot" />
+            <div className="ai-loading-dot" />
+          </div>
+        ) : (
+          <span dangerouslySetInnerHTML={{ __html: insight }} />
+        )}
       </div>
       <div className="ai-card-footer">
-        <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.25)", fontWeight: 600 }}>Powered by Claude AI</span>
-        <button className="ai-refresh-btn" onClick={onRefresh}>↺ Refresh</button>
+        <span
+          style={{
+            fontSize: "0.72rem",
+            color: "rgba(255,255,255,0.25)",
+            fontWeight: 600,
+          }}
+        >
+          Powered by Claude AI
+        </span>
+        <button
+          className="ai-refresh-btn"
+          onClick={onRefresh}
+          style={{ display: "flex", alignItems: "center", gap: 5 }}
+        >
+          <RefreshCw size={11} /> Refresh
+        </button>
       </div>
     </div>
   );
 }
 
 function NLEntry({ onAdd }) {
-  const [val,         setVal]         = useState("");
-  const [loading,     setLoading]     = useState(false);
-  const [parsed,      setParsed]      = useState(null);
+  const [val, setVal] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [parsed, setParsed] = useState(null);
   const [placeholder, setPlaceholder] = useState(NL_EXAMPLES[0]);
   // Use a ref for the index so the interval doesn't need to re-register
   const idxRef = useRef(0);
@@ -464,10 +612,29 @@ function NLEntry({ onAdd }) {
     setLoading(true);
     setTimeout(() => {
       const amount = val.match(/\d[\d,]*/)?.[0]?.replace(/,/g, "") ?? "0";
-      const cats = { lunch:"Food", dinner:"Food", bolt:"Transport", uber:"Transport", netflix:"Entertainment", groceries:"Food", data:"Airtime", airtime:"Airtime" };
-      const cat  = Object.entries(cats).find(([k]) => val.toLowerCase().includes(k))?.[1] ?? "Other";
-      const desc = val.replace(/\d[\d,]*/g, "").replace(/spent|on|for|at/gi, "").trim();
-      setParsed({ amount: parseInt(amount), category: cat, description: desc || val });
+      const cats = {
+        lunch: "Food",
+        dinner: "Food",
+        bolt: "Transport",
+        uber: "Transport",
+        netflix: "Entertainment",
+        groceries: "Food",
+        data: "Airtime",
+        airtime: "Airtime",
+      };
+      const cat =
+        Object.entries(cats).find(([k]) =>
+          val.toLowerCase().includes(k),
+        )?.[1] ?? "Other";
+      const desc = val
+        .replace(/\d[\d,]*/g, "")
+        .replace(/spent|on|for|at/gi, "")
+        .trim();
+      setParsed({
+        amount: parseInt(amount),
+        category: cat,
+        description: desc || val,
+      });
       setLoading(false);
     }, 900);
   };
@@ -481,10 +648,14 @@ function NLEntry({ onAdd }) {
   return (
     <div className="nl-card">
       <div className="nl-header">
-        <div className="nl-icon">✨</div>
+        <div className="nl-icon">
+          <Sparkles size={18} color="#D4A017" />
+        </div>
         <div>
           <div className="nl-title">Natural Language Entry</div>
-          <div className="nl-sub">Just type what you spent — AI parses it instantly</div>
+          <div className="nl-sub">
+            Just type what you spent — AI parses it instantly
+          </div>
         </div>
       </div>
       <div className="nl-input-wrap">
@@ -493,22 +664,42 @@ function NLEntry({ onAdd }) {
           type="text"
           placeholder={placeholder}
           value={val}
-          onChange={(e) => { setVal(e.target.value); setParsed(null); }}
+          onChange={(e) => {
+            setVal(e.target.value);
+            setParsed(null);
+          }}
           onKeyDown={(e) => e.key === "Enter" && parse()}
         />
-        <button className="nl-btn" onClick={parse} disabled={!val.trim() || loading}>
-          {loading
-            ? <div className="spinner" style={{ borderTopColor: "var(--ink)", borderColor: "rgba(10,10,10,0.2)" }} />
-            : <>Parse ✦</>
-          }
+        <button
+          className="nl-btn"
+          onClick={parse}
+          disabled={!val.trim() || loading}
+        >
+          {loading ? (
+            <div
+              className="spinner"
+              style={{
+                borderTopColor: "var(--ink)",
+                borderColor: "rgba(10,10,10,0.2)",
+              }}
+            />
+          ) : (
+            <>
+              <Zap size={15} /> Parse
+            </>
+          )}
         </button>
       </div>
       {parsed && (
         <div className="nl-parsed">
           <div className="nl-parsed-text">
-            Log <span>₦{fmt(parsed.amount)}</span> for <span>{parsed.description}</span> under <span>{parsed.category}</span>?
+            Log <span>₦{fmt(parsed.amount)}</span> for{" "}
+            <span>{parsed.description}</span> under{" "}
+            <span>{parsed.category}</span>?
           </div>
-          <button className="nl-confirm-btn" onClick={confirm}>✓ Log it</button>
+          <button className="nl-confirm-btn" onClick={confirm}>
+            Log it
+          </button>
         </div>
       )}
     </div>
@@ -516,18 +707,27 @@ function NLEntry({ onAdd }) {
 }
 
 function QuickAdd({ onAdd }) {
-  const [desc,   setDesc]   = useState("");
+  const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
-  const [cat,    setCat]    = useState("food");
-  const [date,   setDate]   = useState("");
+  const [cat, setCat] = useState("food");
+  const [date, setDate] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const reset = () => { setDesc(""); setAmount(""); setCat("food"); setDate(""); };
+  const reset = () => {
+    setDesc("");
+    setAmount("");
+    setCat("food");
+    setDate("");
+  };
 
   const submit = () => {
     if (!desc.trim() || !amount) return;
     setLoading(true);
-    setTimeout(() => { setLoading(false); onAdd?.({ desc, amount, cat }); reset(); }, 700);
+    setTimeout(() => {
+      setLoading(false);
+      onAdd?.({ desc, amount, cat });
+      reset();
+    }, 700);
   };
 
   return (
@@ -541,26 +741,46 @@ function QuickAdd({ onAdd }) {
       <div className="quick-grid">
         <div style={{ gridColumn: "1/-1" }}>
           <label className="field-label">Description</label>
-          <input className="field-input" type="text" placeholder="e.g. Chicken Republic lunch"
-            value={desc} onChange={(e) => setDesc(e.target.value)} />
+          <input
+            className="field-input"
+            type="text"
+            placeholder="e.g. Chicken Republic lunch"
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+          />
         </div>
         <div>
           <label className="field-label">Amount</label>
           <div className="amount-wrap">
             <span className="amount-sym">₦</span>
-            <input className="field-input" type="text" inputMode="numeric" placeholder="0"
-              value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ""))} />
+            <input
+              className="field-input"
+              type="text"
+              inputMode="numeric"
+              placeholder="0"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ""))}
+            />
           </div>
         </div>
         <div>
           <label className="field-label">Date</label>
-          <input className="field-input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <input
+            className="field-input"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
         </div>
         <div style={{ gridColumn: "1/-1" }}>
           <label className="field-label">Category</label>
           <div className="cat-grid">
             {CATEGORIES.map((c) => (
-              <div key={c.id} className={`cat-pill${cat === c.id ? " active" : ""}`} onClick={() => setCat(c.id)}>
+              <div
+                key={c.id}
+                className={`cat-pill${cat === c.id ? " active" : ""}`}
+                onClick={() => setCat(c.id)}
+              >
                 {c.icon} {c.label}
               </div>
             ))}
@@ -568,9 +788,21 @@ function QuickAdd({ onAdd }) {
         </div>
       </div>
       <div className="quick-footer">
-        <button className="quick-btn-ghost" onClick={reset}>Clear</button>
-        <button className="quick-btn-primary" onClick={submit} disabled={!desc.trim() || !amount || loading}>
-          {loading ? <div className="spinner" /> : <>+ Log Expense</>}
+        <button className="quick-btn-ghost" onClick={reset}>
+          Clear
+        </button>
+        <button
+          className="quick-btn-primary"
+          onClick={submit}
+          disabled={!desc.trim() || !amount || loading}
+        >
+          {loading ? (
+            <div className="spinner" />
+          ) : (
+            <>
+              <Plus size={16} /> Log Expense
+            </>
+          )}
         </button>
       </div>
     </div>
@@ -581,11 +813,17 @@ function RecentExpenses({ expenses, onDelete }) {
   if (!expenses.length) {
     return (
       <div className="recent-card">
-        <div className="recent-header"><div><div className="card-title">Recent Expenses</div></div></div>
+        <div className="recent-header">
+          <div>
+            <div className="card-title">Recent Expenses</div>
+          </div>
+        </div>
         <div className="empty-state">
           <div className="empty-icon">🧾</div>
           <div className="empty-title">No expenses yet</div>
-          <p className="empty-sub">Log your first expense above to start tracking your budget pace.</p>
+          <p className="empty-sub">
+            Log your first expense above to start tracking your budget pace.
+          </p>
         </div>
       </div>
     );
@@ -602,16 +840,29 @@ function RecentExpenses({ expenses, onDelete }) {
       <div className="expense-list">
         {expenses.map((e) => (
           <div key={e.id} className="expense-row">
-            <div className="expense-cat-icon" style={{ background: e.bg }}>{e.cat}</div>
+            <div className="expense-cat-icon" style={{ background: e.bg }}>
+              {e.cat}
+            </div>
             <div className="expense-info">
               <div className="expense-desc">{e.desc}</div>
-              <div className="expense-meta">{e.catName} · {e.date}</div>
+              <div className="expense-meta">
+                {e.catName} · {e.date}
+              </div>
             </div>
             <div className="expense-row-actions">
-              <button className="exp-action-btn">✎</button>
-              <button className="exp-action-btn del" onClick={() => onDelete(e.id)}>✕</button>
+              <button className="exp-action-btn">
+                <Pencil size={12} />
+              </button>
+              <button
+                className="exp-action-btn del"
+                onClick={() => onDelete(e.id)}
+              >
+                <Trash2 size={12} />
+              </button>
             </div>
-            <div className={`expense-amount${e.amount >= 10000 ? " large" : ""}`}>
+            <div
+              className={`expense-amount${e.amount >= 10000 ? " large" : ""}`}
+            >
               −₦{fmt(e.amount)}
             </div>
           </div>
@@ -638,17 +889,18 @@ function Toast({ msg, onDone }) {
 
 // ── Dashboard root ────────────────────────────────────────────────────────────
 export default function Dashboard() {
-  const [expenses,   setExpenses]   = useState(MOCK.expenses);
+  const [expenses, setExpenses] = useState(MOCK.expenses);
   const [analystIdx, setAnalystIdx] = useState(0);
-  const [coachIdx,   setCoachIdx]   = useState(0);
-  const [aiLoading,  setAiLoading]  = useState(false);
-  const [toast,      setToast]      = useState(null);
-  const [spent,      setSpent]      = useState(MOCK.spent);
+  const [coachIdx, setCoachIdx] = useState(0);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [spent, setSpent] = useState(MOCK.spent);
 
   const refreshAI = (type) => {
     setAiLoading(true);
     setTimeout(() => {
-      if (type === "analyst") setAnalystIdx((i) => (i + 1) % AI_INSIGHTS.length);
+      if (type === "analyst")
+        setAnalystIdx((i) => (i + 1) % AI_INSIGHTS.length);
       else setCoachIdx((i) => (i + 1) % AI_TIPS.length);
       setAiLoading(false);
     }, 900);
@@ -656,15 +908,17 @@ export default function Dashboard() {
 
   const addExpense = (data) => {
     const amount = parseInt(data.amount ?? 0);
-    const cat    = CATEGORIES.find((c) => c.id === (data.cat ?? data.category)) ?? CATEGORIES[7];
+    const cat =
+      CATEGORIES.find((c) => c.id === (data.cat ?? data.category)) ??
+      CATEGORIES[7];
     const newExp = {
-      id:      Date.now(),
-      desc:    data.desc ?? data.description ?? "Expense",
-      cat:     cat.icon,
+      id: Date.now(),
+      desc: data.desc ?? data.description ?? "Expense",
+      cat: cat.icon,
       catName: cat.label,
       amount,
-      bg:      cat.bg,
-      date:    "Just now",
+      bg: cat.bg,
+      date: "Just now",
     };
     setExpenses((prev) => [newExp, ...prev.slice(0, 4)]);
     setSpent((s) => s + amount);
@@ -679,7 +933,7 @@ export default function Dashboard() {
   };
 
   const remaining = Math.max(0, MOCK.budget - spent);
-  const safe      = Math.max(0, Math.round(remaining / MOCK.daysLeft));
+  const safe = Math.max(0, Math.round(remaining / MOCK.daysLeft));
 
   return (
     <>
@@ -689,23 +943,51 @@ export default function Dashboard() {
       <div className="dash">
         <div className="greeting">
           <div className="greeting-time">{getGreeting()}</div>
-          <div className="greeting-name">Welcome back, <em>{MOCK.name}</em></div>
-          <div className="greeting-sub">Here's where your money stands today — March 16, 2026</div>
+          <div className="greeting-name">
+            Welcome back, <em>{MOCK.name}</em>
+          </div>
+          <div className="greeting-sub">
+            Here's where your money stands today — March 16, 2026
+          </div>
         </div>
 
-        <SummaryCards budget={MOCK.budget} spent={spent} remaining={remaining} safe={safe} />
+        <SummaryCards
+          budget={MOCK.budget}
+          spent={spent}
+          remaining={remaining}
+          safe={safe}
+        />
 
         <div className="two-col">
           <PaceCard
-            budget={MOCK.budget} spent={spent} expected={MOCK.expectedSpend}
-            status={MOCK.paceStatus} currentDay={MOCK.currentDay} totalDays={MOCK.totalDays}
+            budget={MOCK.budget}
+            spent={spent}
+            expected={MOCK.expectedSpend}
+            status={MOCK.paceStatus}
+            currentDay={MOCK.currentDay}
+            totalDays={MOCK.totalDays}
           />
-          <SafeCard amount={safe} daysLeft={MOCK.daysLeft} totalDays={MOCK.totalDays} currentDay={MOCK.currentDay} />
+          <SafeCard
+            amount={safe}
+            daysLeft={MOCK.daysLeft}
+            totalDays={MOCK.totalDays}
+            currentDay={MOCK.currentDay}
+          />
         </div>
 
         <div className="ai-grid">
-          <AIPanel type="analyst" insight={AI_INSIGHTS[analystIdx]} loading={aiLoading} onRefresh={() => refreshAI("analyst")} />
-          <AIPanel type="coach"   insight={AI_TIPS[coachIdx]}       loading={aiLoading} onRefresh={() => refreshAI("coach")} />
+          <AIPanel
+            type="analyst"
+            insight={AI_INSIGHTS[analystIdx]}
+            loading={aiLoading}
+            onRefresh={() => refreshAI("analyst")}
+          />
+          <AIPanel
+            type="coach"
+            insight={AI_TIPS[coachIdx]}
+            loading={aiLoading}
+            onRefresh={() => refreshAI("coach")}
+          />
         </div>
 
         <NLEntry onAdd={addExpense} />

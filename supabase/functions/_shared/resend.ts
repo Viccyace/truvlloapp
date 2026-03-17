@@ -24,8 +24,8 @@ export async function sendEmail(payload: EmailPayload): Promise<void> {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      from: payload.from ?? "Truvllo <onboarding@resend.dev>",
-      reply_to: payload.replyTo ?? "hello@truvlloapp.vercel.app",
+      from: payload.from ?? "Truvllo <hello@truvllo.app>",
+      reply_to: payload.replyTo ?? "hello@truvllo.app",
       to: Array.isArray(payload.to) ? payload.to : [payload.to],
       subject: payload.subject,
       html: payload.html,
@@ -74,9 +74,9 @@ export const emailBase = (content: string) => `
             <td style="background:#F0EDE4;border-radius:0 0 16px 16px;border:1px solid rgba(10,10,10,0.07);border-top:none;padding:20px 36px;text-align:center;">
               <p style="margin:0;font-size:0.75rem;color:#6B6B6B;line-height:1.6;">
                 © 2026 Truvllo · The AI budgeting app that thinks with you<br/>
-                <a href="https://truvlloapp.vercel.app/privacy" style="color:#40916C;text-decoration:none;">Privacy Policy</a>
+                <a href="https://truvllo.app/privacy" style="color:#40916C;text-decoration:none;">Privacy Policy</a>
                 &nbsp;·&nbsp;
-                <a href="https://truvlloapp.vercel.app/terms" style="color:#40916C;text-decoration:none;">Terms</a>
+                <a href="https://truvllo.app/terms" style="color:#40916C;text-decoration:none;">Terms</a>
               </p>
             </td>
           </tr>
@@ -101,12 +101,3 @@ export const btn = (text: string, url: string) => `
 
 export const divider = () =>
   `<hr style="border:none;border-top:1px solid rgba(10,10,10,0.08);margin:24px 0;" />`;
-
-export const emailFooter = () => `
-  <p style="margin:0;font-size:0.75rem;color:#6B6B6B;line-height:1.6;">
-    © 2026 Truvllo · The AI budgeting app that thinks with you<br/>
-    <a href="https://truvlloapp.vercel.app/privacy" style="color:#40916C;text-decoration:none;">Privacy Policy</a>
-    &nbsp;·&nbsp;
-    <a href="https://truvlloapp.vercel.app/terms" style="color:#40916C;text-decoration:none;">Terms</a>
-  </p>
-`;

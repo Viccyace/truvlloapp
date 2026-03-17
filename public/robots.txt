@@ -8,4 +8,4 @@ Disallow: /insights
 Disallow: /settings
 Disallow: /upgrade
 
-Sitemap: https://truvlloapp.vercel.app/sitemap.xml
+Sitemap: https://truvllo.app/sitemap.xml

@@ -293,6 +293,7 @@ function LoginForm({ onSwitch }) {
 
 // ── Signup Form ───────────────────────────────────────────────────────────────
 function SignupForm({ onSwitch }) {
+  const navigate = useNavigate();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -377,6 +378,22 @@ function SignupForm({ onSwitch }) {
         },
         body: JSON.stringify({ email, first_name: firstName }),
       }).catch(console.error);
+
+      // Create profile row manually since trigger was dropped
+      await supabase.from("profiles").upsert(
+        {
+          id: data.user.id,
+          email: email,
+          full_name: `${firstName} ${lastName}`,
+          first_name: firstName,
+          last_name: lastName,
+          currency: "NGN",
+          plan: "free",
+          onboarding_completed: false,
+          onboarding_complete: false,
+        },
+        { onConflict: "id" },
+      );
 
       setLoading(false);
       navigate("/onboarding");

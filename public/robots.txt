@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /auth
+Disallow: /dashboard
+Disallow: /expenses
+Disallow: /budget
+Disallow: /insights
+Disallow: /settings
+Disallow: /upgrade
+
+Sitemap: https://truvlloapp.vercel.app/sitemap.xml

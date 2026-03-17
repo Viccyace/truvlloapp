@@ -1,77 +1,49 @@
-/**
- * InstallPrompt.jsx  —  src/components/InstallPrompt.jsx
- * ─────────────────────────────────────────────────────────────────────────────
- * Captures the browser's beforeinstallprompt event and shows a custom
- * branded install banner. Dismisses permanently using localStorage.
- *
- * Shows on:
- *   - Chrome/Edge on Android (most common for Nigerian users)
- *   - Chrome on desktop
- *   - Samsung Internet
- *
- * Does NOT show on:
- *   - iOS Safari (has its own "Add to Home Screen" flow)
- *   - Already installed PWAs
- *   - After user dismisses (stored in localStorage)
- *
- * Usage: render anywhere inside the app — suggestion is AppLayout.jsx
- *   <InstallPrompt />
- */
-
 import { useState, useEffect } from "react";
 
 const DISMISS_KEY = "truvllo_install_dismissed";
 
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap');
-
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  @keyframes slideDown {
+  @keyframes slideUp {
     from { opacity: 1; transform: translateY(0); }
-    to   { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 0; transform: translateY(-20px); }
   }
 
   .install-prompt {
     position: fixed;
-    bottom: 24px;
+    top: 16px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 300;
+    z-index: 9999;
     width: calc(100% - 32px);
     max-width: 420px;
     background: #0A0A0A;
     border-radius: 18px;
-    padding: 18px 20px;
+    padding: 14px 16px;
     display: flex;
     align-items: center;
-    gap: 14px;
-    box-shadow: 0 12px 48px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.07);
-    animation: slideUp 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
+    gap: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.07);
+    animation: slideDown 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
   }
   .install-prompt.dismissing {
-    animation: slideDown 0.3s ease forwards;
-  }
-
-  /* On mobile, sit above the bottom nav */
-  @media (max-width: 900px) {
-    .install-prompt {
-      bottom: calc(72px + 16px); /* bottomnav height + gap */
-    }
+    animation: slideUp 0.3s ease forwards;
+    pointer-events: none;
   }
 
   .install-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 13px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
     background: linear-gradient(135deg, #1B4332, #40916C);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'Playfair Display', serif;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: white;
     flex-shrink: 0;
@@ -79,8 +51,8 @@ const styles = `
   }
   .install-icon-dot {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: 5px;
+    right: 5px;
     width: 7px;
     height: 7px;
     border-radius: 50%;
@@ -93,28 +65,28 @@ const styles = `
   }
   .install-title {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.875rem;
+    font-size: 0.82rem;
     font-weight: 700;
     color: white;
     margin-bottom: 2px;
   }
   .install-sub {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: rgba(255,255,255,0.45);
     line-height: 1.4;
   }
 
   .install-actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
     flex-shrink: 0;
   }
   .install-btn {
-    padding: 9px 16px;
-    border-radius: 10px;
+    padding: 8px 14px;
+    border-radius: 100px;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.18s;
@@ -127,72 +99,93 @@ const styles = `
   }
   .install-btn.primary:hover { background: #2D6A4F; }
   .install-btn.ghost {
-    background: rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.08);
     color: rgba(255,255,255,0.5);
   }
-  .install-btn.ghost:hover { background: rgba(255,255,255,0.12); }
+  .install-btn.ghost:hover { background: rgba(255,255,255,0.14); }
 
-  /* iOS-specific prompt (manual instructions) */
+  /* iOS prompt */
   .ios-prompt {
     position: fixed;
-    bottom: 24px;
+    top: 16px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 300;
+    z-index: 9999;
     width: calc(100% - 32px);
     max-width: 380px;
     background: #0A0A0A;
     border-radius: 18px;
-    padding: 20px;
-    box-shadow: 0 12px 48px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.07);
-    animation: slideUp 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
+    padding: 18px 18px 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.07);
+    animation: slideDown 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
   }
-  .ios-prompt.dismissing { animation: slideDown 0.3s ease forwards; }
+  .ios-prompt.dismissing {
+    animation: slideUp 0.3s ease forwards;
+    pointer-events: none;
+  }
   .ios-close {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 10px;
+    right: 10px;
     width: 24px;
     height: 24px;
     border-radius: 50%;
     background: rgba(255,255,255,0.08);
     border: none;
     color: rgba(255,255,255,0.5);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.18s;
   }
-  .ios-close:hover { background: rgba(255,255,255,0.15); }
-  .ios-title {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.9rem;
+  .ios-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-right: 28px;
+  }
+  .ios-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #1B4332, #40916C);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
     font-weight: 700;
     color: white;
-    margin-bottom: 12px;
-    padding-right: 28px;
+    flex-shrink: 0;
+  }
+  .ios-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: white;
   }
   .ios-steps {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 9px;
   }
   .ios-step {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 0.8rem;
-    color: rgba(255,255,255,0.6);
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.55);
+    font-family: 'Plus Jakarta Sans', sans-serif;
   }
   .ios-step-num {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: rgba(64,145,108,0.25);
     color: #52B788;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     font-weight: 800;
     display: flex;
     align-items: center;
@@ -200,18 +193,6 @@ const styles = `
     flex-shrink: 0;
   }
   .ios-step strong { color: rgba(255,255,255,0.85); }
-
-  /* Arrow pointing down to Safari toolbar */
-  .ios-prompt::after {
-    content: "";
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 8px solid transparent;
-    border-top-color: #0A0A0A;
-    border-bottom: none;
-  }
 `;
 
 function isIOS() {
@@ -232,17 +213,14 @@ export default function InstallPrompt() {
   const [dismissing, setDismissing] = useState(false);
 
   useEffect(() => {
-    // Don't show if already installed or user dismissed before
     if (isInStandaloneMode()) return;
     if (localStorage.getItem(DISMISS_KEY)) return;
 
     if (isIOS()) {
-      // Show iOS manual instructions after a short delay
       const t = setTimeout(() => setShowIOS(true), 3000);
       return () => clearTimeout(t);
     }
 
-    // Android / Chrome desktop — capture the native prompt
     const handler = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -270,7 +248,7 @@ export default function InstallPrompt() {
     if (outcome === "accepted") {
       dismiss(true);
     } else {
-      dismiss(false); // dismissed in native dialog — don't store permanently
+      dismiss(false);
     }
     setDeferredPrompt(null);
   };
@@ -281,7 +259,7 @@ export default function InstallPrompt() {
     <>
       <style>{styles}</style>
 
-      {/* Android / Chrome prompt */}
+      {/* Android / Chrome */}
       {showAndroid && (
         <div
           className={`install-prompt${dismissing ? " dismissing" : ""}`}
@@ -295,7 +273,7 @@ export default function InstallPrompt() {
           <div className="install-body">
             <div className="install-title">Install Truvllo</div>
             <div className="install-sub">
-              Add to your home screen for the full app experience
+              Add to your home screen for the best experience
             </div>
           </div>
           <div className="install-actions">
@@ -303,7 +281,7 @@ export default function InstallPrompt() {
               className="install-btn ghost"
               onClick={() => dismiss(false)}
             >
-              Not now
+              Later
             </button>
             <button className="install-btn primary" onClick={install}>
               Install
@@ -312,7 +290,7 @@ export default function InstallPrompt() {
         </div>
       )}
 
-      {/* iOS Safari prompt */}
+      {/* iOS Safari */}
       {showIOS && (
         <div
           className={`ios-prompt${dismissing ? " dismissing" : ""}`}
@@ -322,7 +300,10 @@ export default function InstallPrompt() {
           <button className="ios-close" onClick={() => dismiss(true)}>
             ✕
           </button>
-          <div className="ios-title">Install Truvllo on your iPhone</div>
+          <div className="ios-header">
+            <div className="ios-icon">T</div>
+            <div className="ios-title">Add Truvllo to your home screen</div>
+          </div>
           <div className="ios-steps">
             <div className="ios-step">
               <div className="ios-step-num">1</div>
@@ -334,14 +315,13 @@ export default function InstallPrompt() {
             <div className="ios-step">
               <div className="ios-step-num">2</div>
               <span>
-                Scroll down and tap <strong>"Add to Home Screen"</strong>
+                Tap <strong>"Add to Home Screen"</strong>
               </span>
             </div>
             <div className="ios-step">
               <div className="ios-step-num">3</div>
               <span>
-                Tap <strong>"Add"</strong> — Truvllo will appear on your home
-                screen
+                Tap <strong>"Add"</strong> to confirm
               </span>
             </div>
           </div>

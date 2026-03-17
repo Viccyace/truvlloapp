@@ -345,35 +345,44 @@ function SignupForm({ onSwitch }) {
           },
         },
       });
-      if (error) throw error;
+
+      console.log("Supabase signup:", data, error);
+
+      if (error) {
+        if (error.message?.includes("already registered")) {
+          setGlobalError(
+            "An account with this email already exists. Try signing in instead.",
+          );
+        } else {
+          setGlobalError(
+            error.message || "Something went wrong. Please try again.",
+          );
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (!data?.user) {
+        setGlobalError("Signup failed. Please try again.");
+        setLoading(false);
+        return;
+      }
 
       // Fire welcome email — don't await, don't block
-      if (data.user) {
-        fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-welcome`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-            },
-            body: JSON.stringify({ email, first_name: firstName }),
-          },
-        ).catch(console.error);
-      }
+      fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-welcome`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ email, first_name: firstName }),
+      }).catch(console.error);
 
+      setLoading(false);
       setSubmitted(true);
     } catch (err) {
-      if (err.message?.includes("already registered")) {
-        setGlobalError(
-          "An account with this email already exists. Try signing in instead.",
-        );
-      } else {
-        setGlobalError(
-          err.message || "Something went wrong. Please try again.",
-        );
-      }
-    } finally {
+      console.error("Signup error:", err);
+      setGlobalError(err.message || "Something went wrong. Please try again.");
       setLoading(false);
     }
   };

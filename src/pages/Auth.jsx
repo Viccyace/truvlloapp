@@ -303,7 +303,7 @@ function SignupForm({ onSwitch }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted] = useState(false);
   const [errors, setErrors] = useState({});
   const [globalError, setGlobalError] = useState("");
 

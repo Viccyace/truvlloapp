@@ -379,7 +379,7 @@ function SignupForm({ onSwitch }) {
       }).catch(console.error);
 
       setLoading(false);
-      setSubmitted(true);
+      navigate("/onboarding");
     } catch (err) {
       console.error("Signup error:", err);
       setGlobalError(err.message || "Something went wrong. Please try again.");

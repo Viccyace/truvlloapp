@@ -1,16 +1,3 @@
-/**
- * AuthProvider.jsx  —  src/providers/AuthProvider.jsx
- *
- * Key behaviours (per spec):
- *  1. On first render, read the cached profile from localStorage SYNCHRONOUSLY
- *     so the app renders with real data immediately — no loading flash.
- *  2. Subscribe to Supabase onAuthStateChange to keep auth in sync.
- *  3. Write profile to localStorage whenever it changes.
- *  4. On logout, clear localStorage entirely.
- *  5. After onboarding completes, clear localStorage so the next load
- *     re-fetches a fresh profile with onboarding_complete = true.
- */
-
 import {
   createContext,
   useContext,
@@ -19,30 +6,11 @@ import {
   useCallback,
   useRef,
 } from "react";
-import { supabase } from "../lib/supabase"; // your supabase client
-
-// ─── Types / shape ────────────────────────────────────────────────────────────
-/**
- * Profile shape stored in Supabase `profiles` table:
- * {
- *   id:                  string  (= auth.users.id)
- *   email:               string
- *   first_name:          string
- *   last_name:           string
- *   avatar_url:          string | null
- *   currency:            'NGN' | 'USD' | 'GBP' | 'EUR' | 'KES' | 'GHS'
- *   onboarding_complete: boolean
- *   plan:                'free' | 'trial' | 'premium'
- *   trial_ends_at:       string | null  (ISO date)
- *   trial_activated:     boolean
- *   created_at:          string
- * }
- */
+import { supabase } from "../lib/supabase";
 
 const PROFILE_CACHE_KEY = "truvllo_profile";
 const SESSION_CACHE_KEY = "truvllo_session";
 
-// ─── Context ──────────────────────────────────────────────────────────────────
 const AuthContext = createContext(null);
 
 export function useAuth() {
@@ -51,7 +19,6 @@ export function useAuth() {
   return ctx;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 function readCachedProfile() {
   try {
     const raw = localStorage.getItem(PROFILE_CACHE_KEY);
@@ -63,11 +30,13 @@ function readCachedProfile() {
 
 function writeCachedProfile(profile) {
   try {
-    if (profile)
+    if (profile) {
       localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(profile));
-    else localStorage.removeItem(PROFILE_CACHE_KEY);
+    } else {
+      localStorage.removeItem(PROFILE_CACHE_KEY);
+    }
   } catch {
-    // storage full / private mode — silently ignore
+    // ignore storage errors
   }
 }
 
@@ -75,85 +44,129 @@ function clearAllCache() {
   try {
     localStorage.removeItem(PROFILE_CACHE_KEY);
     localStorage.removeItem(SESSION_CACHE_KEY);
-  } catch {}
+  } catch {
+    // ignore storage errors
+  }
 }
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
 export function AuthProvider({ children }) {
-  /**
-   * Initialise profile from localStorage SYNCHRONOUSLY.
-   * This means the very first render already has profile data —
-   * no blank screen, no loading spinner on subsequent visits.
-   */
-  const [profile, setProfile] = useState(() => readCachedProfile());
-  const [user, setUser] = useState(null);
+  const cachedProfile = readCachedProfile();
 
-  /**
-   * loading is true only on the very first cold load when we have no
-   * cached profile and haven't yet heard back from Supabase.
-   * If a cached profile exists, loading starts as false.
-   */
-  const [loading, setLoading] = useState(() => readCachedProfile() === null);
+  const [profile, setProfile] = useState(cachedProfile);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(() => cachedProfile === null);
 
   const profileFetchedRef = useRef(false);
 
-  // ── Fetch full profile from Supabase ────────────────────────────────────────
-  const fetchProfile = useCallback(async (userId) => {
-    if (profileFetchedRef.current) return; // already fetched this session
-    profileFetchedRef.current = true;
+  const createProfileIfMissing = useCallback(async (userId) => {
+    const {
+      data: { user: authUser },
+      error: getUserError,
+    } = await supabase.auth.getUser();
 
-    const { data, error } = await supabase
+    if (getUserError || !authUser) {
+      console.error("[AuthProvider] getUser error:", getUserError?.message);
+      return null;
+    }
+
+    const fullName =
+      authUser.user_metadata?.full_name ||
+      [authUser.user_metadata?.first_name, authUser.user_metadata?.last_name]
+        .filter(Boolean)
+        .join(" ")
+        .trim() ||
+      authUser.email ||
+      "";
+
+    const payload = {
+      id: userId,
+      email: authUser.email,
+      full_name: fullName,
+      currency: "NGN",
+      plan: "basic",
+      onboarding_completed: false,
+      onboarding_complete: false,
+    };
+
+    const { error: upsertError } = await supabase
+      .from("profiles")
+      .upsert(payload, { onConflict: "id" });
+
+    if (upsertError) {
+      console.error(
+        "[AuthProvider] createProfileIfMissing error:",
+        upsertError.message,
+      );
+      return null;
+    }
+
+    const { data: retryData, error: retryError } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
 
-    if (error) {
-      console.error("[AuthProvider] fetchProfile error:", error.message);
-      // Profile doesn't exist yet — create it
-      if (error.code === "PGRST116" || error.message?.includes("JSON")) {
-        const {
-          data: { user: authUser },
-        } = await supabase.auth.getUser();
-        if (authUser) {
-          await supabase.from("profiles").upsert(
-            {
-              id: userId,
-              email: authUser.email,
-              full_name: authUser.user_metadata?.full_name ?? authUser.email,
-              first_name: authUser.user_metadata?.first_name ?? "",
-              last_name: authUser.user_metadata?.last_name ?? "",
-              currency: "NGN",
-              plan: "free",
-              onboarding_completed: false,
-              onboarding_complete: false,
-            },
-            { onConflict: "id" },
-          );
-          // Retry fetch
-          const { data: retryData } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", userId)
-            .single();
-          if (retryData) {
-            setProfile(retryData);
-            writeCachedProfile(retryData);
-          }
-        }
-      }
-      setLoading(false);
-      return;
+    if (retryError) {
+      console.error(
+        "[AuthProvider] retry fetchProfile error:",
+        retryError.message,
+      );
+      return null;
     }
 
-    setProfile(data);
-    writeCachedProfile(data);
+    return retryData;
   }, []);
 
-  // ── Update profile (e.g. from settings page) ────────────────────────────────
+  const fetchProfile = useCallback(
+    async (userId, force = false) => {
+      if (!userId) {
+        setLoading(false);
+        return null;
+      }
+
+      if (profileFetchedRef.current && !force) return profile;
+
+      profileFetchedRef.current = true;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        const isMissingProfile =
+          error.code === "PGRST116" ||
+          error.message?.toLowerCase().includes("json") ||
+          error.message?.toLowerCase().includes("no rows");
+
+        if (isMissingProfile) {
+          const newProfile = await createProfileIfMissing(userId);
+
+          if (newProfile) {
+            setProfile(newProfile);
+            writeCachedProfile(newProfile);
+            setLoading(false);
+            return newProfile;
+          }
+        }
+
+        console.error("[AuthProvider] fetchProfile error:", error.message);
+        setLoading(false);
+        return null;
+      }
+
+      setProfile(data);
+      writeCachedProfile(data);
+      setLoading(false);
+      return data;
+    },
+    [createProfileIfMissing, profile],
+  );
+
   const updateProfile = useCallback(
     async (updates) => {
-      if (!user) return { error: "Not logged in" };
+      if (!user) return { error: { message: "Not logged in" } };
 
       const { data, error } = await supabase
         .from("profiles")
@@ -172,88 +185,80 @@ export function AuthProvider({ children }) {
     [user],
   );
 
-  // ── Auth state listener ──────────────────────────────────────────────────────
   useEffect(() => {
-    // Get current session immediately (synchronous check inside Supabase SDK)
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    let isMounted = true;
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!isMounted) return;
+
       if (session?.user) {
         setUser(session.user);
-        fetchProfile(session.user.id);
+        await fetchProfile(session.user.id, true);
+      } else {
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    // Subscribe to future auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
         setUser(session.user);
         profileFetchedRef.current = false;
-        await fetchProfile(session.user.id);
-        setLoading(false);
+        await fetchProfile(session.user.id, true);
+        return;
       }
 
       if (event === "INITIAL_SESSION" && session?.user) {
         setUser(session.user);
         profileFetchedRef.current = false;
-        await fetchProfile(session.user.id);
-        setLoading(false);
-      }
-
-      if (event === "SIGNED_OUT") {
-        setUser(null);
-        setProfile(null);
-        clearAllCache();
-        profileFetchedRef.current = false;
-        setLoading(false);
+        await fetchProfile(session.user.id, true);
+        return;
       }
 
       if (event === "USER_UPDATED" && session?.user) {
         setUser(session.user);
         profileFetchedRef.current = false;
-        await fetchProfile(session.user.id);
+        await fetchProfile(session.user.id, true);
+        return;
+      }
+
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+        setProfile(null);
+        profileFetchedRef.current = false;
+        clearAllCache();
+        setLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [fetchProfile]);
 
-  // ── Sign up ──────────────────────────────────────────────────────────────────
   const signUp = useCallback(
     async ({ email, password, firstName, lastName }) => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { first_name: firstName, last_name: lastName },
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            full_name: `${firstName ?? ""} ${lastName ?? ""}`.trim(),
+          },
         },
       });
 
-      if (error) return { error };
-
-      /**
-       * Supabase trigger `handle_new_user` should automatically insert a row
-       * into `profiles` when a new user signs up. If you haven't set that up,
-       * insert it manually here:
-       *
-       * await supabase.from("profiles").insert({
-       *   id: data.user.id,
-       *   email,
-       *   first_name: firstName,
-       *   last_name: lastName,
-       *   currency: "NGN",
-       *   onboarding_complete: false,
-       *   plan: "free",
-       * });
-       */
-
-      return { data };
+      return { data, error };
     },
     [],
   );
 
-  // ── Sign in ──────────────────────────────────────────────────────────────────
   const signIn = useCallback(async ({ email, password }) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -262,7 +267,6 @@ export function AuthProvider({ children }) {
     return { data, error };
   }, []);
 
-  // ── Sign in with Google ──────────────────────────────────────────────────────
   const signInWithGoogle = useCallback(async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -270,16 +274,15 @@ export function AuthProvider({ children }) {
         redirectTo: `${window.location.origin}/dashboard`,
       },
     });
+
     return { data, error };
   }, []);
 
-  // ── Sign out ─────────────────────────────────────────────────────────────────
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-    // onAuthStateChange SIGNED_OUT handles state clearing
+    const { error } = await supabase.auth.signOut();
+    return { error };
   }, []);
 
-  // ── Password reset ───────────────────────────────────────────────────────────
   const sendPasswordReset = useCallback(async (email) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth?mode=reset`,
@@ -292,58 +295,61 @@ export function AuthProvider({ children }) {
     return { error };
   }, []);
 
-  // ── Complete onboarding ──────────────────────────────────────────────────────
-  /**
-   * Called at the end of the onboarding flow.
-   * Per spec: clear localStorage BEFORE navigating to dashboard so the app
-   * re-fetches a fresh profile with onboarding_complete = true.
-   */
   const completeOnboarding = useCallback(
-    async ({ currency, _budgetName, _period }) => {
-      if (!user) return { error: "Not logged in" };
+    async ({ currency }) => {
+      if (!user) return { error: { message: "Not logged in" } };
+
+      const updates = {
+        currency,
+        onboarding_complete: true,
+        onboarding_completed: true,
+      };
 
       const { error } = await supabase
         .from("profiles")
-        .update({ currency, onboarding_complete: true })
+        .update(updates)
         .eq("id", user.id);
 
       if (error) return { error };
 
-      // Clear cache so next render picks up fresh profile
       clearAllCache();
       profileFetchedRef.current = false;
+      setProfile(null);
+
+      await fetchProfile(user.id, true);
 
       return { error: null };
     },
-    [user],
+    [user, fetchProfile],
   );
 
-  // ── Derived helpers ──────────────────────────────────────────────────────────
   const isLoggedIn = !!user;
   const isPremium = profile?.plan === "premium";
-  const isTrialing = profile?.plan === "trial";
-  const isPremiumOrTrial = isPremium || isTrialing;
-  const displayName = profile
-    ? `${profile.first_name} ${profile.last_name}`.trim()
-    : "";
-  const initials = profile
-    ? `${profile.first_name?.[0] ?? ""}${profile.last_name?.[0] ?? ""}`.toUpperCase()
-    : "?";
+  const isBasic = profile?.plan === "basic";
+  const isPremiumOrTrial = isPremium;
 
-  const trialDaysLeft = (() => {
-    if (!profile?.trial_ends_at) return 0;
-    const diff = new Date(profile.trial_ends_at) - new Date();
-    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-  })();
+  const displayName =
+    profile?.full_name ||
+    [profile?.first_name, profile?.last_name]
+      .filter(Boolean)
+      .join(" ")
+      .trim() ||
+    profile?.email ||
+    "";
 
-  // ── Context value ────────────────────────────────────────────────────────────
+  const initials =
+    displayName
+      ?.split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "?";
+
   const value = {
-    // State
     user,
     profile,
     loading,
 
-    // Auth actions
     signUp,
     signIn,
     signInWithGoogle,
@@ -351,94 +357,17 @@ export function AuthProvider({ children }) {
     sendPasswordReset,
     updatePassword,
 
-    // Profile actions
     updateProfile,
     completeOnboarding,
 
-    // Derived
     isLoggedIn,
     isPremium,
-    isTrialing,
+    isBasic,
     isPremiumOrTrial,
     displayName,
     initials,
-    trialDaysLeft,
     currency: profile?.currency ?? "NGN",
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-
-/* ─────────────────────────────────────────────────────────────────────────────
- * Supabase SQL — run this in your Supabase SQL editor
- * ─────────────────────────────────────────────────────────────────────────── *
-
--- profiles table
-create table public.profiles (
-  id                  uuid primary key references auth.users(id) on delete cascade,
-  email               text not null,
-  first_name          text not null default '',
-  last_name           text not null default '',
-  avatar_url          text,
-  currency            text not null default 'NGN',
-  onboarding_complete boolean not null default false,
-  plan                text not null default 'free',   -- 'free' | 'trial' | 'premium'
-  trial_ends_at       timestamptz,
-  trial_activated     boolean not null default false,
-  created_at          timestamptz not null default now()
-);
-
--- Auto-create profile on signup
-create or replace function public.handle_new_user()
-returns trigger language plpgsql security definer as $$
-begin
-  insert into public.profiles (id, email, first_name, last_name)
-  values (
-    new.id,
-    new.email,
-    coalesce(new.raw_user_meta_data->>'first_name', ''),
-    coalesce(new.raw_user_meta_data->>'last_name', '')
-  );
-  return new;
-end;
-$$;
-
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
-
--- Auto-activate trial when user logs their FIRST expense
-create or replace function public.activate_trial_on_first_expense()
-returns trigger language plpgsql security definer as $$
-declare
-  expense_count int;
-begin
-  select count(*) into expense_count
-  from public.expenses
-  where user_id = new.user_id;
-
-  if expense_count = 1 then
-    -- This is their first expense — activate trial
-    update public.profiles
-    set
-      plan             = 'trial',
-      trial_activated  = true,
-      trial_ends_at    = now() + interval '7 days'
-    where id = new.user_id
-      and trial_activated = false;
-  end if;
-
-  return new;
-end;
-$$;
-
-create trigger on_first_expense
-  after insert on public.expenses
-  for each row execute procedure public.activate_trial_on_first_expense();
-
--- RLS
-alter table public.profiles enable row level security;
-create policy "Users can read own profile"   on public.profiles for select using (auth.uid() = id);
-create policy "Users can update own profile" on public.profiles for update using (auth.uid() = id);
-
-*/

@@ -7,6 +7,41 @@ const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Di
 const styles = `
   /* your onboarding styles here */
 `;
+
+const CONFETTI_COLORS = [
+  "#40916C",
+  "#D4A017",
+  "#1B4332",
+  "#52B788",
+  "#F0C040",
+  "#74C69D",
+];
+
+function ConfettiPiece({ style }) {
+  return <div className="confetti-piece" style={style} />;
+}
+
+function Confetti({ show }) {
+  const pieces = Array.from({ length: 30 }, (_, i) => ({
+    left: `${Math.random() * 100}%`,
+    background: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+    animationDelay: `${Math.random() * 0.6}s`,
+    animationDuration: `${0.9 + Math.random() * 0.8}s`,
+    width: `${6 + Math.random() * 8}px`,
+    height: `${6 + Math.random() * 8}px`,
+    borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+  }));
+
+  if (!show) return null;
+
+  return (
+    <div className="confetti-wrap">
+      {pieces.map((piece, i) => (
+        <ConfettiPiece key={i} style={piece} />
+      ))}
+    </div>
+  );
+}
 export default function Onboarding() {
   const navigate = useNavigate();
   const { completeOnboarding } = useAuth();

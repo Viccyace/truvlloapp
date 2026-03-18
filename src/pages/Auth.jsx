@@ -124,17 +124,25 @@ const GoogleIcon = () => (
 );
 
 async function getProfileAndRoute(userId, navigate) {
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from("profiles")
-    .select("onboarding_complete, onboarding_completed")
+    .select("id, onboarding_complete, onboarding_completed")
     .eq("id", userId)
     .single();
+
+  if (error) {
+    console.error("Profile fetch error after login:", error);
+    navigate("/onboarding", { replace: true });
+    return;
+  }
 
   const hasCompletedOnboarding =
     profile?.onboarding_complete === true ||
     profile?.onboarding_completed === true;
 
-  navigate(hasCompletedOnboarding ? "/dashboard" : "/onboarding");
+  navigate(hasCompletedOnboarding ? "/dashboard" : "/onboarding", {
+    replace: true,
+  });
 }
 
 function LoginForm({ onSwitch }) {
@@ -168,26 +176,33 @@ function LoginForm({ onSwitch }) {
     setGlobalError("");
     setLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      setGlobalError(
-        error.message || "Invalid email or password. Please try again.",
-      );
+      if (error) {
+        setGlobalError(
+          error.message || "Invalid email or password. Please try again.",
+        );
+        setLoading(false);
+        return;
+      }
+
+      if (!data?.user) {
+        setGlobalError("Could not sign you in.");
+        setLoading(false);
+        return;
+      }
+
+      await getProfileAndRoute(data.user.id, navigate);
+    } catch (err) {
+      console.error("Login error:", err);
+      setGlobalError(err?.message || "Could not sign you in.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    if (!data?.user) {
-      setGlobalError("Could not sign you in.");
-      setLoading(false);
-      return;
-    }
-
-    await getProfileAndRoute(data.user.id, navigate);
   };
 
   const handleForgotPassword = async () => {

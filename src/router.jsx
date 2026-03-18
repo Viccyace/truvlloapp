@@ -14,9 +14,12 @@ import { useAuth } from "./providers/AuthProvider";
 function ProtectedRoute() {
   const { user, profile, loading } = useAuth();
 
-  if (loading) return null;
+  if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
   if (!user) return <Navigate to="/auth" replace />;
-  if (!profile) return null;
+
+  if (!profile) {
+    return <Navigate to="/onboarding" replace />;
+  }
 
   const hasCompletedOnboarding =
     profile.onboarding_complete === true ||
@@ -32,7 +35,7 @@ function ProtectedRoute() {
 function PublicRoute() {
   const { user, profile, loading } = useAuth();
 
-  if (loading) return null;
+  if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
 
   const hasCompletedOnboarding =
     profile?.onboarding_complete === true ||
@@ -42,15 +45,22 @@ function PublicRoute() {
     return <Navigate to="/dashboard" replace />;
   }
 
+  if (user && !hasCompletedOnboarding) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return <Outlet />;
 }
 
 function OnboardingRoute() {
   const { user, profile, loading } = useAuth();
 
-  if (loading) return null;
+  if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
   if (!user) return <Navigate to="/auth" replace />;
-  if (!profile) return null;
+
+  if (!profile) {
+    return <Onboarding />;
+  }
 
   const hasCompletedOnboarding =
     profile.onboarding_complete === true ||

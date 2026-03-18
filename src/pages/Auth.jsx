@@ -80,8 +80,6 @@ const styles = `
   .social-btn { width: 100%; padding: 13px; background: var(--white); color: var(--ink); border: 1.5px solid var(--border); border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
   .social-btn:hover { border-color: rgba(10,10,10,0.25); background: var(--cream-dark); }
   .google-icon { width: 18px; height: 18px; }
-  .terms-text { font-size: 0.78rem; color: var(--ink-subtle); text-align: center; line-height: 1.6; margin-top: 8px; }
-  .terms-text a { color: var(--green-mid); font-weight: 600; text-decoration: none; }
   .switch-text { text-align: center; font-size: 0.875rem; color: var(--ink-subtle); margin-top: 24px; }
   .switch-text a { color: var(--green-mid); font-weight: 700; text-decoration: none; cursor: pointer; }
   .trial-callout { background: var(--green-pale); border-radius: 12px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; border: 1px solid rgba(27,67,50,0.12); }
@@ -95,7 +93,6 @@ const styles = `
   .success-icon { font-size: 3rem; margin-bottom: 16px; }
   .success-title { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
   .success-sub { font-size: 0.9rem; color: var(--ink-subtle); line-height: 1.65; }
-  .reset-sent { background: var(--green-pale); border-radius: 12px; padding: 16px; text-align: center; font-size: 0.875rem; color: var(--green-deep); line-height: 1.6; font-weight: 500; margin-bottom: 16px; }
 `;
 
 const GoogleIcon = () => (
@@ -128,7 +125,7 @@ async function getProfileAndRoute(userId, navigate) {
     .from("profiles")
     .select("id, onboarding_complete, onboarding_completed")
     .eq("id", userId)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error("Profile fetch error after login:", error);
@@ -186,13 +183,11 @@ function LoginForm({ onSwitch }) {
         setGlobalError(
           error.message || "Invalid email or password. Please try again.",
         );
-        setLoading(false);
         return;
       }
 
       if (!data?.user) {
         setGlobalError("Could not sign you in.");
-        setLoading(false);
         return;
       }
 
@@ -391,24 +386,13 @@ function SignupForm({ onSwitch }) {
             error.message || "Something went wrong. Please try again.",
           );
         }
-        setLoading(false);
         return;
       }
 
       if (!data?.user) {
         setGlobalError("Signup failed. Please try again.");
-        setLoading(false);
         return;
       }
-
-      fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-welcome`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ email, first_name: firstName }),
-      }).catch(console.error);
 
       const { error: profileError } = await supabase.from("profiles").upsert(
         {
@@ -430,7 +414,6 @@ function SignupForm({ onSwitch }) {
       if (profileError) {
         console.error("Profile creation error:", profileError);
         setGlobalError(profileError.message || "Could not create profile.");
-        setLoading(false);
         return;
       }
 
@@ -441,6 +424,7 @@ function SignupForm({ onSwitch }) {
       }, 900);
     } catch (err) {
       setGlobalError(err.message || "Something went wrong. Please try again.");
+    } finally {
       setLoading(false);
     }
   };

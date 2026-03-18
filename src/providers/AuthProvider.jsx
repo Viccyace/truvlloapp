@@ -308,18 +308,35 @@ export function AuthProvider({ children }) {
     async ({ currency }) => {
       if (!user) return { error: { message: "Not logged in" } };
 
+      const baseProfile = {
+        id: user.id,
+        email: user.email,
+        full_name:
+          user.user_metadata?.full_name ||
+          `${user.user_metadata?.first_name ?? ""} ${user.user_metadata?.last_name ?? ""}`.trim() ||
+          user.email ||
+          "",
+        first_name: user.user_metadata?.first_name ?? "",
+        last_name: user.user_metadata?.last_name ?? "",
+        currency: currency || "NGN",
+        plan: "basic",
+        onboarding_complete: true,
+        onboarding_completed: true,
+        trial_activated: false,
+        trial_ends_at: null,
+        subscription_cancelled: false,
+      };
+
       const { data, error } = await supabase
         .from("profiles")
-        .update({
-          currency,
-          onboarding_complete: true,
-          onboarding_completed: true,
-        })
-        .eq("id", user.id)
+        .upsert(baseProfile, { onConflict: "id" })
         .select()
         .single();
 
-      if (error) return { error };
+      if (error) {
+        console.error("completeOnboarding error:", error);
+        return { error };
+      }
 
       setProfile(data);
       writeCachedProfile(data);

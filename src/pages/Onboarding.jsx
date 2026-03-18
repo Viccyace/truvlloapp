@@ -530,10 +530,7 @@ export default function Onboarding() {
         return;
       }
 
-      setDone(true);
-      setShowConfetti(true);
-      setLoading(false);
-      setTimeout(() => setShowConfetti(false), 1800);
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       console.error("Onboarding error:", err);
       setErrorMsg(
@@ -567,7 +564,6 @@ export default function Onboarding() {
         return;
       }
 
-      setLoading(false);
       navigate("/dashboard", { replace: true });
     } catch (err) {
       console.error("Skip onboarding error:", err);

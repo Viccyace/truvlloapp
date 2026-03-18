@@ -17,7 +17,6 @@ const styles = `
 
   .auth-root { display: flex; min-height: 100vh; }
 
-  /* LEFT PANEL */
   .auth-left {
     width: 44%; background: var(--ink);
     display: flex; flex-direction: column; justify-content: space-between;
@@ -44,19 +43,16 @@ const styles = `
   .auth-testimonial-name { font-size: 0.85rem; font-weight: 700; color: var(--white); }
   .auth-testimonial-role { font-size: 0.75rem; color: rgba(255,255,255,0.35); }
 
-  /* RIGHT PANEL */
   .auth-right { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 5%; background: var(--cream); min-height: 100vh; overflow-y: auto; }
   .auth-right-inner { width: 100%; max-width: 420px; }
   .auth-mobile-logo { display: none; align-items: center; justify-content: center; gap: 8px; font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-bottom: 36px; cursor: pointer; }
   .auth-mobile-logo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
   @media (max-width: 860px) { .auth-mobile-logo { display: flex; } }
 
-  /* TABS */
   .auth-tabs { display: flex; background: var(--cream-dark); border-radius: 14px; padding: 4px; margin-bottom: 36px; gap: 4px; }
   .auth-tab { flex: 1; border: none; border-radius: 10px; padding: 11px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.22s; background: transparent; color: var(--ink-subtle); }
   .auth-tab.active { background: var(--white); color: var(--ink); box-shadow: 0 2px 10px rgba(0,0,0,0.09); }
 
-  /* FORM */
   .auth-form-title { font-family: 'Playfair Display', serif; font-size: 1.9rem; font-weight: 800; color: var(--ink); margin-bottom: 6px; letter-spacing: -0.015em; }
   .auth-form-sub { font-size: 0.9rem; color: var(--ink-subtle); margin-bottom: 28px; line-height: 1.5; }
   .form-row { display: flex; gap: 14px; }
@@ -102,7 +98,6 @@ const styles = `
   .reset-sent { background: var(--green-pale); border-radius: 12px; padding: 16px; text-align: center; font-size: 0.875rem; color: var(--green-deep); line-height: 1.6; font-weight: 500; margin-bottom: 16px; }
 `;
 
-// ── Google SVG icon ───────────────────────────────────────────────────────────
 const GoogleIcon = () => (
   <svg
     className="google-icon"
@@ -128,7 +123,20 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// ── Login Form ────────────────────────────────────────────────────────────────
+async function getProfileAndRoute(userId, navigate) {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("onboarding_complete, onboarding_completed")
+    .eq("id", userId)
+    .single();
+
+  const hasCompletedOnboarding =
+    profile?.onboarding_complete === true ||
+    profile?.onboarding_completed === true;
+
+  navigate(hasCompletedOnboarding ? "/dashboard" : "/onboarding");
+}
+
 function LoginForm({ onSwitch }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -155,11 +163,12 @@ function LoginForm({ onSwitch }) {
       setErrors(e);
       return;
     }
+
     setErrors({});
     setGlobalError("");
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -172,8 +181,13 @@ function LoginForm({ onSwitch }) {
       return;
     }
 
-    // Don't setLoading(false) here — let the page navigate away
-    navigate("/dashboard");
+    if (!data?.user) {
+      setGlobalError("Could not sign you in.");
+      setLoading(false);
+      return;
+    }
+
+    await getProfileAndRoute(data.user.id, navigate);
   };
 
   const handleForgotPassword = async () => {
@@ -181,6 +195,7 @@ function LoginForm({ onSwitch }) {
       setErrors({ email: "Enter your email first" });
       return;
     }
+
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -293,7 +308,6 @@ function LoginForm({ onSwitch }) {
   );
 }
 
-// ── Signup Form ───────────────────────────────────────────────────────────────
 function SignupForm({ onSwitch }) {
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState("");
@@ -305,7 +319,7 @@ function SignupForm({ onSwitch }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [submitted] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
   const [globalError, setGlobalError] = useState("");
 
@@ -326,12 +340,15 @@ function SignupForm({ onSwitch }) {
     return e;
   };
 
+  const clearErr = (key) => setErrors((x) => ({ ...x, [key]: "" }));
+
   const handleSignup = async () => {
     const e = validate();
     if (Object.keys(e).length) {
       setErrors(e);
       return;
     }
+
     setErrors({});
     setGlobalError("");
     setLoading(true);
@@ -344,12 +361,10 @@ function SignupForm({ onSwitch }) {
           data: {
             first_name: firstName,
             last_name: lastName,
-            full_name: `${firstName} ${lastName}`,
+            full_name: `${firstName} ${lastName}`.trim(),
           },
         },
       });
-
-      console.log("Supabase signup:", data, error);
 
       if (error) {
         if (error.message?.includes("already registered")) {
@@ -371,7 +386,6 @@ function SignupForm({ onSwitch }) {
         return;
       }
 
-      // Fire welcome email — don't await, don't block
       fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-welcome`, {
         method: "POST",
         headers: {
@@ -381,26 +395,36 @@ function SignupForm({ onSwitch }) {
         body: JSON.stringify({ email, first_name: firstName }),
       }).catch(console.error);
 
-      // Create profile row manually since trigger was dropped
-      await supabase.from("profiles").upsert(
+      const { error: profileError } = await supabase.from("profiles").upsert(
         {
           id: data.user.id,
-          email: email,
-          full_name: `${firstName} ${lastName}`,
+          email,
+          full_name: `${firstName} ${lastName}`.trim(),
           first_name: firstName,
           last_name: lastName,
           currency: "NGN",
-          plan: "free",
+          plan: "basic",
           onboarding_completed: false,
           onboarding_complete: false,
+          trial_activated: false,
+          trial_ends_at: null,
         },
         { onConflict: "id" },
       );
 
-      setLoading(false);
-      navigate("/onboarding");
+      if (profileError) {
+        console.error("Profile creation error:", profileError);
+        setGlobalError(profileError.message || "Could not create profile.");
+        setLoading(false);
+        return;
+      }
+
+      setSubmitted(true);
+
+      setTimeout(() => {
+        navigate("/onboarding");
+      }, 900);
     } catch (err) {
-      console.error("Signup error:", err);
       setGlobalError(err.message || "Something went wrong. Please try again.");
       setLoading(false);
     }
@@ -419,14 +443,11 @@ function SignupForm({ onSwitch }) {
         <div className="success-icon">🎉</div>
         <div className="success-title">Account created!</div>
         <p className="success-sub">
-          Welcome to Truvllo, {firstName}! Your account is ready. Check your
-          email for a confirmation link, then log in to get started.
+          Welcome to Truvllo, {firstName}! Your account is ready.
         </p>
       </div>
     );
   }
-
-  const clearErr = (key) => setErrors((x) => ({ ...x, [key]: "" }));
 
   return (
     <>
@@ -567,6 +588,7 @@ function SignupForm({ onSwitch }) {
             <a
               href="/terms"
               target="_blank"
+              rel="noreferrer"
               style={{ color: "var(--green-mid)", fontWeight: 600 }}
             >
               Terms of Service
@@ -575,6 +597,7 @@ function SignupForm({ onSwitch }) {
             <a
               href="/privacy"
               target="_blank"
+              rel="noreferrer"
               style={{ color: "var(--green-mid)", fontWeight: 600 }}
             >
               Privacy Policy
@@ -604,9 +627,9 @@ function SignupForm({ onSwitch }) {
   );
 }
 
-// ── Left Panel ────────────────────────────────────────────────────────────────
 function LeftPanel({ mode }) {
   const navigate = useNavigate();
+
   return (
     <div className="auth-left">
       <div className="auth-left-bg left-blob-1" />
@@ -671,7 +694,6 @@ function LeftPanel({ mode }) {
   );
 }
 
-// ── Root ──────────────────────────────────────────────────────────────────────
 export default function AuthPages() {
   const navigate = useNavigate();
   const [mode, setMode] = useState("login");

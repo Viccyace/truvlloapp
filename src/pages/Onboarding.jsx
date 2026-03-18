@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../providers/AuthProvider";
 export default function Onboarding() {
   const navigate = useNavigate();
   const { completeOnboarding } = useAuth();
@@ -6,6 +9,7 @@ export default function Onboarding() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const [data, setData] = useState({
     currency: "NGN",
     budgetName: "",
@@ -14,7 +18,10 @@ export default function Onboarding() {
     categories: ["food", "transport"],
   });
 
-  const onChange = (key, val) => setData((d) => ({ ...d, [key]: val }));
+  const onChange = (key, val) => {
+    setData((d) => ({ ...d, [key]: val }));
+    if (errorMsg) setErrorMsg("");
+  };
 
   const blobColor =
     step === 1
@@ -24,8 +31,11 @@ export default function Onboarding() {
         : "rgba(27,67,50,0.2)";
 
   const handleFinish = async () => {
+    if (loading) return;
+
     try {
       setLoading(true);
+      setErrorMsg("");
 
       const { error } = await completeOnboarding({
         currency: data.currency,
@@ -35,27 +45,38 @@ export default function Onboarding() {
 
       if (error) {
         console.error("Onboarding completion failed:", error);
+        setErrorMsg(
+          error.message ||
+            "We could not complete onboarding. Please try again.",
+        );
         setLoading(false);
         return;
       }
 
-      setLoading(false);
       setDone(true);
       setShowConfetti(true);
+      setLoading(false);
+
       setTimeout(() => setShowConfetti(false), 1800);
     } catch (err) {
       console.error("Onboarding error:", err);
+      setErrorMsg(
+        err?.message || "Something went wrong while finishing onboarding.",
+      );
       setLoading(false);
     }
   };
 
   const handleGoToDashboard = () => {
-    navigate("/dashboard");
+    navigate("/dashboard", { replace: true });
   };
 
   const handleSkip = async () => {
+    if (loading) return;
+
     try {
       setLoading(true);
+      setErrorMsg("");
 
       const { error } = await completeOnboarding({
         currency: data.currency || "NGN",
@@ -65,14 +86,16 @@ export default function Onboarding() {
 
       if (error) {
         console.error("Skip onboarding failed:", error);
+        setErrorMsg(error.message || "We could not skip onboarding right now.");
         setLoading(false);
         return;
       }
 
       setLoading(false);
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       console.error("Skip onboarding error:", err);
+      setErrorMsg(err?.message || "Something went wrong while skipping.");
       setLoading(false);
     }
   };
@@ -128,7 +151,7 @@ export default function Onboarding() {
             Truvllo
           </div>
           <button className="ob-skip" onClick={handleSkip} disabled={loading}>
-            Skip for now
+            {loading ? "Please wait..." : "Skip for now"}
           </button>
         </div>
 
@@ -187,6 +210,23 @@ export default function Onboarding() {
 
         <div className="ob-card-wrap">
           <div className="ob-card" key={step}>
+            {errorMsg && (
+              <div
+                style={{
+                  marginBottom: 18,
+                  background: "rgba(192,57,43,0.08)",
+                  border: "1.5px solid rgba(192,57,43,0.2)",
+                  borderRadius: 12,
+                  padding: "12px 16px",
+                  fontSize: "0.875rem",
+                  color: "#C0392B",
+                  lineHeight: 1.5,
+                }}
+              >
+                {errorMsg}
+              </div>
+            )}
+
             {step === 1 && (
               <Step1
                 data={data}
@@ -194,6 +234,7 @@ export default function Onboarding() {
                 onNext={() => setStep(2)}
               />
             )}
+
             {step === 2 && (
               <Step2
                 data={data}
@@ -202,6 +243,7 @@ export default function Onboarding() {
                 onBack={() => setStep(1)}
               />
             )}
+
             {step === 3 && (
               <Step3
                 data={data}

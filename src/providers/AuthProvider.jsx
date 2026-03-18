@@ -35,19 +35,26 @@ function writeCachedProfile(profile) {
     } else {
       localStorage.removeItem(PROFILE_CACHE_KEY);
     }
-  } catch {
-    // ignore storage errors
-  }
+  } catch {}
 }
 
 function clearAllCache() {
   try {
     localStorage.removeItem(PROFILE_CACHE_KEY);
     localStorage.removeItem(SESSION_CACHE_KEY);
-  } catch {
-    // ignore storage errors
-  }
+  } catch {}
 }
+
+const isMissingProfileError = (error) => {
+  if (!error) return false;
+  const msg = error.message?.toLowerCase() || "";
+  return (
+    error.code === "PGRST116" ||
+    msg.includes("0 rows") ||
+    msg.includes("no rows") ||
+    msg.includes("json object requested")
+  );
+};
 
 export function AuthProvider({ children }) {
   const cachedProfile = readCachedProfile();
@@ -69,12 +76,11 @@ export function AuthProvider({ children }) {
       return null;
     }
 
+    const firstName = authUser.user_metadata?.first_name ?? "";
+    const lastName = authUser.user_metadata?.last_name ?? "";
     const fullName =
       authUser.user_metadata?.full_name ||
-      [authUser.user_metadata?.first_name, authUser.user_metadata?.last_name]
-        .filter(Boolean)
-        .join(" ")
-        .trim() ||
+      `${firstName} ${lastName}`.trim() ||
       authUser.email ||
       "";
 
@@ -82,10 +88,14 @@ export function AuthProvider({ children }) {
       id: userId,
       email: authUser.email,
       full_name: fullName,
+      first_name: firstName,
+      last_name: lastName,
       currency: "NGN",
       plan: "basic",
       onboarding_completed: false,
       onboarding_complete: false,
+      trial_activated: false,
+      trial_ends_at: null,
     };
 
     const { error: upsertError } = await supabase
@@ -124,9 +134,10 @@ export function AuthProvider({ children }) {
         return null;
       }
 
-      if (profileFetchedRef.current && !force) return profile;
-
-      profileFetchedRef.current = true;
+      if (profileFetchedRef.current && !force) {
+        setLoading(false);
+        return profile;
+      }
 
       const { data, error } = await supabase
         .from("profiles")
@@ -135,17 +146,13 @@ export function AuthProvider({ children }) {
         .single();
 
       if (error) {
-        const isMissingProfile =
-          error.code === "PGRST116" ||
-          error.message?.toLowerCase().includes("json") ||
-          error.message?.toLowerCase().includes("no rows");
-
-        if (isMissingProfile) {
+        if (isMissingProfileError(error)) {
           const newProfile = await createProfileIfMissing(userId);
 
           if (newProfile) {
             setProfile(newProfile);
             writeCachedProfile(newProfile);
+            profileFetchedRef.current = true;
             setLoading(false);
             return newProfile;
           }
@@ -158,6 +165,7 @@ export function AuthProvider({ children }) {
 
       setProfile(data);
       writeCachedProfile(data);
+      profileFetchedRef.current = true;
       setLoading(false);
       return data;
     },
@@ -178,6 +186,7 @@ export function AuthProvider({ children }) {
       if (!error && data) {
         setProfile(data);
         writeCachedProfile(data);
+        profileFetchedRef.current = true;
       }
 
       return { data, error };
@@ -299,34 +308,37 @@ export function AuthProvider({ children }) {
     async ({ currency }) => {
       if (!user) return { error: { message: "Not logged in" } };
 
-      const updates = {
-        currency,
-        onboarding_complete: true,
-        onboarding_completed: true,
-      };
-
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
-        .update(updates)
-        .eq("id", user.id);
+        .update({
+          currency,
+          onboarding_complete: true,
+          onboarding_completed: true,
+        })
+        .eq("id", user.id)
+        .select()
+        .single();
 
       if (error) return { error };
 
-      clearAllCache();
-      profileFetchedRef.current = false;
-      setProfile(null);
+      setProfile(data);
+      writeCachedProfile(data);
+      profileFetchedRef.current = true;
 
-      await fetchProfile(user.id, true);
-
-      return { error: null };
+      return { error: null, data };
     },
-    [user, fetchProfile],
+    [user],
   );
 
   const isLoggedIn = !!user;
   const isPremium = profile?.plan === "premium";
-  const isBasic = profile?.plan === "basic";
-  const isPremiumOrTrial = isPremium;
+  const isTrialing =
+    profile?.plan === "trial" &&
+    !!profile?.trial_ends_at &&
+    new Date(profile.trial_ends_at) > new Date();
+
+  const isBasic = !isPremium && !isTrialing;
+  const isPremiumOrTrial = isPremium || isTrialing;
 
   const displayName =
     profile?.full_name ||
@@ -345,6 +357,12 @@ export function AuthProvider({ children }) {
       .map((part) => part[0]?.toUpperCase())
       .join("") || "?";
 
+  const trialDaysLeft = (() => {
+    if (!profile?.trial_ends_at) return 0;
+    const diff = new Date(profile.trial_ends_at) - new Date();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  })();
+
   const value = {
     user,
     profile,
@@ -362,10 +380,12 @@ export function AuthProvider({ children }) {
 
     isLoggedIn,
     isPremium,
+    isTrialing,
     isBasic,
     isPremiumOrTrial,
     displayName,
     initials,
+    trialDaysLeft,
     currency: profile?.currency ?? "NGN",
   };
 

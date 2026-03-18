@@ -656,7 +656,8 @@ export default function ExpensesPage() {
   const [toast, setToast] = useState(null);
   const [showGate, setShowGate] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const isPremium = false;
+  const { isPremiumOrTrial } = useAuth();
+  const isPremium = isPremiumOrTrial;
 
   const filtered = useMemo(
     () =>

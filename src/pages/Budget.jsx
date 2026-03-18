@@ -190,97 +190,197 @@ const styles = `
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const CATS = [
-  { id:"food",      icon:"🍔", label:"Food",       bg:"#FFF3E0" },
-  { id:"transport", icon:"🚗", label:"Transport",  bg:"#E8F5E9" },
-  { id:"bills",     icon:"🏠", label:"Bills",      bg:"#FCE4EC" },
-  { id:"shopping",  icon:"🛍️", label:"Shopping",   bg:"#F3E5F5" },
-  { id:"health",    icon:"💊", label:"Health",     bg:"#E0F7FA" },
-  { id:"airtime",   icon:"📱", label:"Airtime",    bg:"#E3F2FD" },
-  { id:"entertain", icon:"🎬", label:"Entertain.", bg:"#F9FBE7" },
-  { id:"other",     icon:"💼", label:"Other",      bg:"#F5F5F5" },
+  { id: "food", icon: "🍔", label: "Food", bg: "#FFF3E0" },
+  { id: "transport", icon: "🚗", label: "Transport", bg: "#E8F5E9" },
+  { id: "bills", icon: "🏠", label: "Bills", bg: "#FCE4EC" },
+  { id: "shopping", icon: "🛍️", label: "Shopping", bg: "#F3E5F5" },
+  { id: "health", icon: "💊", label: "Health", bg: "#E0F7FA" },
+  { id: "airtime", icon: "📱", label: "Airtime", bg: "#E3F2FD" },
+  { id: "entertain", icon: "🎬", label: "Entertain.", bg: "#F9FBE7" },
+  { id: "other", icon: "💼", label: "Other", bg: "#F5F5F5" },
 ];
-const CAT_MAP = Object.fromEntries(CATS.map(c=>[c.id,c]));
+const CAT_MAP = Object.fromEntries(CATS.map((c) => [c.id, c]));
 
 const MOCK_ACTIVE = {
-  id:1, name:"March 2026", amount:180000, start:"2026-03-01", end:"2026-03-31",
-  period:"monthly", is_active:true,
+  id: 1,
+  name: "March 2026",
+  amount: 180000,
+  start: "2026-03-01",
+  end: "2026-03-31",
+  period: "monthly",
+  is_active: true,
 };
 const MOCK_BUDGETS = [
-  { id:1, name:"March 2026",   amount:180000, start:"2026-03-01", end:"2026-03-31", period:"monthly",  is_active:true,  spent:112400 },
-  { id:2, name:"February 2026",amount:165000, start:"2026-02-01", end:"2026-02-28", period:"monthly",  is_active:false, spent:165000 },
-  { id:3, name:"January 2026", amount:160000, start:"2026-01-01", end:"2026-01-31", period:"monthly",  is_active:false, spent:148200 },
+  {
+    id: 1,
+    name: "March 2026",
+    amount: 180000,
+    start: "2026-03-01",
+    end: "2026-03-31",
+    period: "monthly",
+    is_active: true,
+    spent: 112400,
+  },
+  {
+    id: 2,
+    name: "February 2026",
+    amount: 165000,
+    start: "2026-02-01",
+    end: "2026-02-28",
+    period: "monthly",
+    is_active: false,
+    spent: 165000,
+  },
+  {
+    id: 3,
+    name: "January 2026",
+    amount: 160000,
+    start: "2026-01-01",
+    end: "2026-01-31",
+    period: "monthly",
+    is_active: false,
+    spent: 148200,
+  },
 ];
 const MOCK_CAPS = [
-  { id:1, cat:"food",      limit:40000, spent:28700 },
-  { id:2, cat:"transport", limit:20000, spent:22100 },
-  { id:3, cat:"entertain", limit:15000, spent:14300 },
-  { id:4, cat:"bills",     limit:30000, spent:15000 },
+  { id: 1, cat: "food", limit: 40000, spent: 28700 },
+  { id: 2, cat: "transport", limit: 20000, spent: 22100 },
+  { id: 3, cat: "entertain", limit: 15000, spent: 14300 },
+  { id: 4, cat: "bills", limit: 30000, spent: 15000 },
 ];
 const MOCK_RECURRING = [
-  { id:1, cat:"entertain", name:"Netflix",       amount:4800,  freq:"Monthly", next:"Apr 1"  },
-  { id:2, cat:"entertain", name:"DSTV Compact",  amount:9500,  freq:"Monthly", next:"Apr 2"  },
-  { id:3, cat:"health",    name:"Gym membership",amount:15000, freq:"Monthly", next:"Apr 1"  },
-  { id:4, cat:"airtime",   name:"iCloud 50GB",   amount:900,   freq:"Monthly", next:"Apr 5"  },
+  {
+    id: 1,
+    cat: "entertain",
+    name: "Netflix",
+    amount: 4800,
+    freq: "Monthly",
+    next: "Apr 1",
+  },
+  {
+    id: 2,
+    cat: "entertain",
+    name: "DSTV Compact",
+    amount: 9500,
+    freq: "Monthly",
+    next: "Apr 2",
+  },
+  {
+    id: 3,
+    cat: "health",
+    name: "Gym membership",
+    amount: 15000,
+    freq: "Monthly",
+    next: "Apr 1",
+  },
+  {
+    id: 4,
+    cat: "airtime",
+    name: "iCloud 50GB",
+    amount: 900,
+    freq: "Monthly",
+    next: "Apr 5",
+  },
 ];
 
-const fmt = n => Number(n).toLocaleString("en-NG");
+const fmt = (n) => Number(n).toLocaleString("en-NG");
 
 // ── Budget Modal ──────────────────────────────────────────────────────────────
 function BudgetModal({ budget, onSave, onClose }) {
   const isEdit = !!budget?.id;
-  const [name,   setName]   = useState(budget?.name   ?? "");
-  const [amount, setAmount] = useState(budget?.amount ? String(budget.amount) : "");
+  const [name, setName] = useState(budget?.name ?? "");
+  const [amount, setAmount] = useState(
+    budget?.amount ? String(budget.amount) : "",
+  );
   const [period, setPeriod] = useState(budget?.period ?? "monthly");
-  const [start,  setStart]  = useState(budget?.start  ?? new Date().toISOString().split("T")[0]);
-  const [end,    setEnd]    = useState(budget?.end    ?? "");
+  const [start, setStart] = useState(
+    budget?.start ?? new Date().toISOString().split("T")[0],
+  );
+  const [end, setEnd] = useState(budget?.end ?? "");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   const validate = () => {
     const e = {};
-    if (!name.trim())             e.name   = "Budget name is required";
+    if (!name.trim()) e.name = "Budget name is required";
     if (!amount || Number(amount) < 1) e.amount = "Enter a valid amount";
     return e;
   };
 
   const submit = () => {
     const e = validate();
-    if (Object.keys(e).length) { setErrors(e); return; }
+    if (Object.keys(e).length) {
+      setErrors(e);
+      return;
+    }
     setLoading(true);
     setTimeout(() => {
-      onSave({ id: budget?.id ?? Date.now(), name, amount: Number(amount), period, start, end, is_active: !isEdit, spent: 0 });
+      onSave({
+        id: budget?.id ?? Date.now(),
+        name,
+        amount: Number(amount),
+        period,
+        start,
+        end,
+        is_active: !isEdit,
+        spent: 0,
+      });
       setLoading(false);
     }, 600);
   };
 
   const PERIODS = [
-    { id:"weekly",  icon:"📅", label:"Weekly",  desc:"Every 7 days" },
-    { id:"monthly", icon:"🗓️", label:"Monthly", desc:"Full month"   },
-    { id:"custom",  icon:"✏️", label:"Custom",  desc:"Pick dates"   },
+    { id: "weekly", icon: "📅", label: "Weekly", desc: "Every 7 days" },
+    { id: "monthly", icon: "🗓️", label: "Monthly", desc: "Full month" },
+    { id: "custom", icon: "✏️", label: "Custom", desc: "Pick dates" },
   ];
 
   return (
     <div className="modal-bg" onClick={onClose}>
-      <div className="modal" onClick={e=>e.stopPropagation()}>
-        <div className="modal-handle"/>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-handle" />
         <div className="modal-header">
-          <div className="modal-title">{isEdit ? "Edit budget" : "New budget"}</div>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <div className="modal-title">
+            {isEdit ? "Edit budget" : "New budget"}
+          </div>
+          <button className="modal-close" onClick={onClose}>
+            ✕
+          </button>
         </div>
 
         <div className="field-wrap">
           <label className="field-label">Budget name</label>
-          <input className={`field-input${errors.name?" error":""}`} type="text" placeholder="e.g. April 2026"
-            value={name} onChange={e=>{setName(e.target.value);setErrors(x=>({...x,name:""}));}}/>
+          <input
+            className={`field-input${errors.name ? " error" : ""}`}
+            type="text"
+            placeholder="e.g. April 2026"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              setErrors((x) => ({ ...x, name: "" }));
+            }}
+          />
           {errors.name && <div className="field-error">{errors.name}</div>}
         </div>
 
         <div className="field-wrap">
           <label className="field-label">Total budget amount</label>
-          <div className={`prefix-wrap${errors.amount?" error":""}`} style={errors.amount?{borderColor:"var(--red)"}:{}}>
+          <div
+            className={`prefix-wrap${errors.amount ? " error" : ""}`}
+            style={errors.amount ? { borderColor: "var(--red)" } : {}}
+          >
             <span className="prefix-sym">₦</span>
-            <input className="field-input" type="text" inputMode="numeric" placeholder="180,000"
-              value={amount} onChange={e=>{setAmount(e.target.value.replace(/[^0-9]/g,""));setErrors(x=>({...x,amount:""}));}}/>
+            <input
+              className="field-input"
+              type="text"
+              inputMode="numeric"
+              placeholder="180,000"
+              value={amount}
+              onChange={(e) => {
+                setAmount(e.target.value.replace(/[^0-9]/g, ""));
+                setErrors((x) => ({ ...x, amount: "" }));
+              }}
+            />
           </div>
           {errors.amount && <div className="field-error">{errors.amount}</div>}
         </div>
@@ -288,8 +388,12 @@ function BudgetModal({ budget, onSave, onClose }) {
         <div className="field-wrap">
           <label className="field-label">Budget period</label>
           <div className="period-grid">
-            {PERIODS.map(p=>(
-              <div key={p.id} className={`period-item${period===p.id?" active":""}`} onClick={()=>setPeriod(p.id)}>
+            {PERIODS.map((p) => (
+              <div
+                key={p.id}
+                className={`period-item${period === p.id ? " active" : ""}`}
+                onClick={() => setPeriod(p.id)}
+              >
                 <div className="period-item-icon">{p.icon}</div>
                 <div className="period-item-label">{p.label}</div>
                 <div className="period-item-desc">{p.desc}</div>
@@ -300,21 +404,39 @@ function BudgetModal({ budget, onSave, onClose }) {
 
         {period === "custom" && (
           <div className="field-row">
-            <div className="field-wrap" style={{marginBottom:0}}>
+            <div className="field-wrap" style={{ marginBottom: 0 }}>
               <label className="field-label">Start date</label>
-              <input className="field-input" type="date" value={start} onChange={e=>setStart(e.target.value)}/>
+              <input
+                className="field-input"
+                type="date"
+                value={start}
+                onChange={(e) => setStart(e.target.value)}
+              />
             </div>
-            <div className="field-wrap" style={{marginBottom:0}}>
+            <div className="field-wrap" style={{ marginBottom: 0 }}>
               <label className="field-label">End date</label>
-              <input className="field-input" type="date" value={end} onChange={e=>setEnd(e.target.value)}/>
+              <input
+                className="field-input"
+                type="date"
+                value={end}
+                onChange={(e) => setEnd(e.target.value)}
+              />
             </div>
           </div>
         )}
 
         <div className="modal-footer">
-          <button className="modal-cancel" onClick={onClose}>Cancel</button>
+          <button className="modal-cancel" onClick={onClose}>
+            Cancel
+          </button>
           <button className="modal-submit" onClick={submit} disabled={loading}>
-            {loading ? <div className="spinner"/> : (isEdit ? "Save changes" : "Create budget")}
+            {loading ? (
+              <div className="spinner" />
+            ) : isEdit ? (
+              "Save changes"
+            ) : (
+              "Create budget"
+            )}
           </button>
         </div>
       </div>
@@ -324,55 +446,94 @@ function BudgetModal({ budget, onSave, onClose }) {
 
 // ── Recurring Modal ───────────────────────────────────────────────────────────
 function RecurringModal({ onSave, onClose }) {
-  const [name,   setName]   = useState("");
+  const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
-  const [cat,    setCat]    = useState("bills");
-  const [freq,   setFreq]   = useState("Monthly");
+  const [cat, setCat] = useState("bills");
+  const [freq, setFreq] = useState("Monthly");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   const submit = () => {
     const e = {};
-    if (!name.trim())              e.name   = "Required";
-    if (!amount || Number(amount)<1) e.amount = "Required";
-    if (Object.keys(e).length) { setErrors(e); return; }
+    if (!name.trim()) e.name = "Required";
+    if (!amount || Number(amount) < 1) e.amount = "Required";
+    if (Object.keys(e).length) {
+      setErrors(e);
+      return;
+    }
     setLoading(true);
     setTimeout(() => {
       const _c = CAT_MAP[cat];
-      onSave({ id:Date.now(), cat, name, amount:Number(amount), freq, next:"Apr 1" });
+      onSave({
+        id: Date.now(),
+        cat,
+        name,
+        amount: Number(amount),
+        freq,
+        next: "Apr 1",
+      });
       setLoading(false);
     }, 600);
   };
 
   return (
     <div className="modal-bg" onClick={onClose}>
-      <div className="modal" onClick={e=>e.stopPropagation()}>
-        <div className="modal-handle"/>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-handle" />
         <div className="modal-header">
           <div className="modal-title">Add recurring expense</div>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button className="modal-close" onClick={onClose}>
+            ✕
+          </button>
         </div>
 
         <div className="field-wrap">
           <label className="field-label">Name</label>
-          <input className={`field-input${errors.name?" error":""}`} type="text" placeholder="e.g. Netflix, Gym membership"
-            value={name} onChange={e=>{setName(e.target.value);setErrors(x=>({...x,name:""}));}}/>
+          <input
+            className={`field-input${errors.name ? " error" : ""}`}
+            type="text"
+            placeholder="e.g. Netflix, Gym membership"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              setErrors((x) => ({ ...x, name: "" }));
+            }}
+          />
           {errors.name && <div className="field-error">{errors.name}</div>}
         </div>
 
         <div className="field-row">
-          <div className="field-wrap" style={{marginBottom:0}}>
+          <div className="field-wrap" style={{ marginBottom: 0 }}>
             <label className="field-label">Amount</label>
-            <div className="prefix-wrap" style={errors.amount?{borderColor:"var(--red)"}:{}}>
+            <div
+              className="prefix-wrap"
+              style={errors.amount ? { borderColor: "var(--red)" } : {}}
+            >
               <span className="prefix-sym">₦</span>
-              <input className="field-input" type="text" inputMode="numeric" placeholder="0"
-                value={amount} onChange={e=>{setAmount(e.target.value.replace(/[^0-9]/g,""));setErrors(x=>({...x,amount:""}));}}/>
+              <input
+                className="field-input"
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
+                value={amount}
+                onChange={(e) => {
+                  setAmount(e.target.value.replace(/[^0-9]/g, ""));
+                  setErrors((x) => ({ ...x, amount: "" }));
+                }}
+              />
             </div>
-            {errors.amount && <div className="field-error">{errors.amount}</div>}
+            {errors.amount && (
+              <div className="field-error">{errors.amount}</div>
+            )}
           </div>
-          <div className="field-wrap" style={{marginBottom:0}}>
+          <div className="field-wrap" style={{ marginBottom: 0 }}>
             <label className="field-label">Frequency</label>
-            <select className="field-input" value={freq} onChange={e=>setFreq(e.target.value)} style={{cursor:"pointer"}}>
+            <select
+              className="field-input"
+              value={freq}
+              onChange={(e) => setFreq(e.target.value)}
+              style={{ cursor: "pointer" }}
+            >
               <option>Daily</option>
               <option>Weekly</option>
               <option>Monthly</option>
@@ -380,23 +541,53 @@ function RecurringModal({ onSave, onClose }) {
           </div>
         </div>
 
-        <div className="field-wrap" style={{marginTop:14}}>
+        <div className="field-wrap" style={{ marginTop: 14 }}>
           <label className="field-label">Category</label>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:7}}>
-            {CATS.map(c=>(
-              <div key={c.id} onClick={()=>setCat(c.id)}
-                style={{padding:"8px 4px",borderRadius:10,border:`1.5px solid ${cat===c.id?"var(--green-light)":"var(--border)"}`,background:cat===c.id?"var(--green-pale)":"var(--white)",cursor:"pointer",textAlign:"center",transition:"all 0.18s"}}>
-                <div style={{fontSize:"1.05rem"}}>{c.icon}</div>
-                <div style={{fontSize:"0.6rem",fontWeight:700,color:cat===c.id?"var(--green-deep)":"var(--ink-muted)",marginTop:2}}>{c.label}</div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4,1fr)",
+              gap: 7,
+            }}
+          >
+            {CATS.map((c) => (
+              <div
+                key={c.id}
+                onClick={() => setCat(c.id)}
+                style={{
+                  padding: "8px 4px",
+                  borderRadius: 10,
+                  border: `1.5px solid ${cat === c.id ? "var(--green-light)" : "var(--border)"}`,
+                  background:
+                    cat === c.id ? "var(--green-pale)" : "var(--white)",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  transition: "all 0.18s",
+                }}
+              >
+                <div style={{ fontSize: "1.05rem" }}>{c.icon}</div>
+                <div
+                  style={{
+                    fontSize: "0.6rem",
+                    fontWeight: 700,
+                    color:
+                      cat === c.id ? "var(--green-deep)" : "var(--ink-muted)",
+                    marginTop: 2,
+                  }}
+                >
+                  {c.label}
+                </div>
               </div>
             ))}
           </div>
         </div>
 
         <div className="modal-footer">
-          <button className="modal-cancel" onClick={onClose}>Cancel</button>
+          <button className="modal-cancel" onClick={onClose}>
+            Cancel
+          </button>
           <button className="modal-submit" onClick={submit} disabled={loading}>
-            {loading ? <div className="spinner"/> : "Add recurring"}
+            {loading ? <div className="spinner" /> : "Add recurring"}
           </button>
         </div>
       </div>
@@ -409,49 +600,108 @@ function CapRow({ cap, onUpdate, onDelete }) {
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(String(cap.limit));
   const c = CAT_MAP[cap.cat] ?? CAT_MAP.other;
-  const pct = cap.limit > 0 ? Math.min(100, Math.round((cap.spent / cap.limit) * 100)) : 0;
+  const pct =
+    cap.limit > 0
+      ? Math.min(100, Math.round((cap.spent / cap.limit) * 100))
+      : 0;
   const status = pct >= 100 ? "over" : pct >= 80 ? "warn" : "safe";
-  const barColor = pct >= 100 ? "var(--red)" : pct >= 80 ? "var(--amber)" : "var(--green-light)";
+  const barColor =
+    pct >= 100
+      ? "var(--red)"
+      : pct >= 80
+        ? "var(--amber)"
+        : "var(--green-light)";
   const remaining = Math.max(0, cap.limit - cap.spent);
 
   const save = () => {
-    if (Number(val) > 0) { onUpdate(cap.id, Number(val)); setEditing(false); }
+    if (Number(val) > 0) {
+      onUpdate(cap.id, Number(val));
+      setEditing(false);
+    }
   };
 
   return (
     <div className="cap-item">
       <div className="cap-item-header">
         <div className="cap-left">
-          <div className="cap-icon" style={{background:c.bg}}>{c.icon}</div>
+          <div className="cap-icon" style={{ background: c.bg }}>
+            {c.icon}
+          </div>
           <div>
             <div className="cap-name">{c.label}</div>
-            <div className="cap-spent-of">₦{fmt(cap.spent)} of ₦{fmt(cap.limit)}</div>
+            <div className="cap-spent-of">
+              ₦{fmt(cap.spent)} of ₦{fmt(cap.limit)}
+            </div>
           </div>
         </div>
         <div className="cap-right">
           <div className={`cap-pct ${status}`}>{pct}%</div>
           <div className="cap-remaining">
-            {pct >= 100 ? <span style={{color:"var(--red)"}}>₦{fmt(cap.spent-cap.limit)} over</span> : `₦${fmt(remaining)} left`}
+            {pct >= 100 ? (
+              <span style={{ color: "var(--red)" }}>
+                ₦{fmt(cap.spent - cap.limit)} over
+              </span>
+            ) : (
+              `₦${fmt(remaining)} left`
+            )}
           </div>
         </div>
       </div>
       <div className="bar-track">
-        <div className="bar-fill" style={{width:`${pct}%`,background:barColor}}/>
+        <div
+          className="bar-fill"
+          style={{ width: `${pct}%`, background: barColor }}
+        />
       </div>
       {editing ? (
         <div className="cap-edit-row">
           <div className="cap-input-wrap">
             <span className="cap-prefix">₦</span>
-            <input className="cap-input" type="text" inputMode="numeric" value={val}
-              onChange={e=>setVal(e.target.value.replace(/[^0-9]/g,""))}
-              onKeyDown={e=>e.key==="Enter"&&save()} autoFocus/>
+            <input
+              className="cap-input"
+              type="text"
+              inputMode="numeric"
+              value={val}
+              onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, ""))}
+              onKeyDown={(e) => e.key === "Enter" && save()}
+              autoFocus
+            />
           </div>
-          <button className="cap-save-btn" onClick={save}>Save</button>
-          <button className="btn-sm outline" onClick={()=>{setEditing(false);setVal(String(cap.limit));}}>Cancel</button>
-          <button className="btn-sm" style={{color:"var(--red)",background:"var(--red-pale)",border:"none",borderRadius:9,padding:"8px 10px",cursor:"pointer"}} onClick={()=>onDelete(cap.id)}>🗑</button>
+          <button className="cap-save-btn" onClick={save}>
+            Save
+          </button>
+          <button
+            className="btn-sm outline"
+            onClick={() => {
+              setEditing(false);
+              setVal(String(cap.limit));
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            className="btn-sm"
+            style={{
+              color: "var(--red)",
+              background: "var(--red-pale)",
+              border: "none",
+              borderRadius: 9,
+              padding: "8px 10px",
+              cursor: "pointer",
+            }}
+            onClick={() => onDelete(cap.id)}
+          >
+            🗑
+          </button>
         </div>
       ) : (
-        <button className="btn-sm outline" style={{marginTop:8,fontSize:"0.75rem"}} onClick={()=>setEditing(true)}>Edit cap</button>
+        <button
+          className="btn-sm outline"
+          style={{ marginTop: 8, fontSize: "0.75rem" }}
+          onClick={() => setEditing(true)}
+        >
+          Edit cap
+        </button>
       )}
     </div>
   );
@@ -459,104 +709,148 @@ function CapRow({ cap, onUpdate, onDelete }) {
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function Toast({ msg, onDone }) {
-  useState(()=>{ const t=setTimeout(onDone,2600); return ()=>clearTimeout(t); });
+  useState(() => {
+    const t = setTimeout(onDone, 2600);
+    return () => clearTimeout(t);
+  });
   return <div className="toast">✓ {msg}</div>;
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function BudgetPage() {
-  const isPremium = false; // swap with useAuth().isPremiumOrTrial
+  const { isPremiumOrTrial } = useAuth();
+  const isPremium = isPremiumOrTrial; // swap with useAuth().isPremiumOrTrial
 
   const [activeBudget, setActiveBudget] = useState(MOCK_ACTIVE);
-  const [budgets,      setBudgets]      = useState(MOCK_BUDGETS);
-  const [caps,         setCaps]         = useState(MOCK_CAPS);
-  const [recurring,    setRecurring]    = useState(MOCK_RECURRING);
-  const [modal,        setModal]        = useState(null); // null|"new_budget"|"edit_budget"|"new_recurring"
-  const [toast,        setToast]        = useState(null);
+  const [budgets, setBudgets] = useState(MOCK_BUDGETS);
+  const [caps, setCaps] = useState(MOCK_CAPS);
+  const [recurring, setRecurring] = useState(MOCK_RECURRING);
+  const [modal, setModal] = useState(null); // null|"new_budget"|"edit_budget"|"new_recurring"
+  const [toast, setToast] = useState(null);
 
-  const spentPct = Math.min(100, Math.round((112400 / activeBudget.amount) * 100));
+  const spentPct = Math.min(
+    100,
+    Math.round((112400 / activeBudget.amount) * 100),
+  );
 
   // Budget CRUD
   const saveBudget = (data) => {
-    const exists = budgets.find(b=>b.id===data.id);
+    const exists = budgets.find((b) => b.id === data.id);
     if (exists) {
-      setBudgets(prev=>prev.map(b=>b.id===data.id?{...b,...data}:b));
-      if (activeBudget.id===data.id) setActiveBudget(prev=>({...prev,...data}));
+      setBudgets((prev) =>
+        prev.map((b) => (b.id === data.id ? { ...b, ...data } : b)),
+      );
+      if (activeBudget.id === data.id)
+        setActiveBudget((prev) => ({ ...prev, ...data }));
       setToast("Budget updated");
     } else {
-      setBudgets(prev=>[{...data,is_active:false},...prev]);
+      setBudgets((prev) => [{ ...data, is_active: false }, ...prev]);
       setToast("Budget created");
     }
     setModal(null);
   };
 
   const switchBudget = (id) => {
-    setBudgets(prev=>prev.map(b=>({...b,is_active:b.id===id})));
-    const b = budgets.find(b=>b.id===id);
-    if (b) { setActiveBudget(b); setToast(`Switched to "${b.name}"`); }
+    setBudgets((prev) => prev.map((b) => ({ ...b, is_active: b.id === id })));
+    const b = budgets.find((b) => b.id === id);
+    if (b) {
+      setActiveBudget(b);
+      setToast(`Switched to "${b.name}"`);
+    }
   };
 
   // Caps CRUD
   const updateCap = (id, newLimit) => {
-    setCaps(prev=>prev.map(c=>c.id===id?{...c,limit:newLimit}:c));
+    setCaps((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, limit: newLimit } : c)),
+    );
     setToast("Cap updated");
   };
   const deleteCap = (id) => {
-    setCaps(prev=>prev.filter(c=>c.id!==id));
+    setCaps((prev) => prev.filter((c) => c.id !== id));
     setToast("Cap removed");
   };
   const addCap = () => {
-    const usedCats = caps.map(c=>c.cat);
-    const available = CATS.filter(c=>!usedCats.includes(c.id));
+    const usedCats = caps.map((c) => c.cat);
+    const available = CATS.filter((c) => !usedCats.includes(c.id));
     if (!available.length) return;
     const first = available[0];
-    setCaps(prev=>[...prev,{id:Date.now(),cat:first.id,limit:20000,spent:0}]);
+    setCaps((prev) => [
+      ...prev,
+      { id: Date.now(), cat: first.id, limit: 20000, spent: 0 },
+    ]);
     setToast(`${first.label} cap added`);
   };
 
   // Recurring CRUD
   const addRecurring = (data) => {
-    setRecurring(prev=>[...prev,data]);
+    setRecurring((prev) => [...prev, data]);
     setModal(null);
     setToast(`${data.name} added as recurring`);
   };
   const deleteRecurring = (id) => {
-    setRecurring(prev=>prev.filter(r=>r.id!==id));
+    setRecurring((prev) => prev.filter((r) => r.id !== id));
     setToast("Recurring expense removed");
   };
 
-  const totalRecurring = recurring.reduce((s,r)=>s+r.amount,0);
+  const totalRecurring = recurring.reduce((s, r) => s + r.amount, 0);
 
   return (
     <>
-      <style>{FONTS+styles}</style>
-      {toast && <Toast msg={toast} onDone={()=>setToast(null)}/>}
-      {modal==="new_budget"  && <BudgetModal onSave={saveBudget} onClose={()=>setModal(null)}/>}
-      {modal==="edit_budget" && <BudgetModal budget={activeBudget} onSave={saveBudget} onClose={()=>setModal(null)}/>}
-      {modal==="new_recurring" && <RecurringModal onSave={addRecurring} onClose={()=>setModal(null)}/>}
+      <style>{FONTS + styles}</style>
+      {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+      {modal === "new_budget" && (
+        <BudgetModal onSave={saveBudget} onClose={() => setModal(null)} />
+      )}
+      {modal === "edit_budget" && (
+        <BudgetModal
+          budget={activeBudget}
+          onSave={saveBudget}
+          onClose={() => setModal(null)}
+        />
+      )}
+      {modal === "new_recurring" && (
+        <RecurringModal onSave={addRecurring} onClose={() => setModal(null)} />
+      )}
 
       <div className="page">
-
         {/* Header */}
         <div className="page-header">
           <div>
             <div className="page-title">Budget</div>
-            <div className="page-sub">Manage your active budget, caps, and fixed expenses</div>
+            <div className="page-sub">
+              Manage your active budget, caps, and fixed expenses
+            </div>
           </div>
-          <button className="btn-primary" onClick={()=>setModal("new_budget")}>+ New Budget</button>
+          <button
+            className="btn-primary"
+            onClick={() => setModal("new_budget")}
+          >
+            + New Budget
+          </button>
         </div>
 
         {/* Active budget hero */}
         <div className="active-hero">
-          <div className="hero-blob hero-blob-1"/>
-          <div className="hero-blob hero-blob-2"/>
+          <div className="hero-blob hero-blob-1" />
+          <div className="hero-blob hero-blob-2" />
           <div className="hero-top">
             <div>
-              <div className="hero-badge"><span className="hero-badge-dot"/>Active Budget</div>
-              <div className="hero-name" style={{marginTop:10}}>{activeBudget.name}</div>
+              <div className="hero-badge">
+                <span className="hero-badge-dot" />
+                Active Budget
+              </div>
+              <div className="hero-name" style={{ marginTop: 10 }}>
+                {activeBudget.name}
+              </div>
               <div className="hero-period">Mar 1 – Mar 31, 2026 · Monthly</div>
             </div>
-            <button className="hero-edit-btn" onClick={()=>setModal("edit_budget")}>✎ Edit</button>
+            <button
+              className="hero-edit-btn"
+              onClick={() => setModal("edit_budget")}
+            >
+              ✎ Edit
+            </button>
           </div>
 
           <div className="hero-stats">
@@ -584,44 +878,61 @@ export default function BudgetPage() {
             <span>₦{fmt(activeBudget.amount)}</span>
           </div>
           <div className="hero-bar-track">
-            <div className="hero-bar-fill" style={{width:`${spentPct}%`,background:"rgba(255,255,255,0.75)"}}/>
+            <div
+              className="hero-bar-fill"
+              style={{
+                width: `${spentPct}%`,
+                background: "rgba(255,255,255,0.75)",
+              }}
+            />
           </div>
         </div>
 
         {/* Two-col: caps + budgets */}
         <div className="two-col">
-
           {/* Category caps */}
-          <div style={{display:"flex",flexDirection:"column",gap:20}}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <div className="section-card">
               <div className="section-card-header">
                 <div>
                   <div className="section-title">Category Spending Caps</div>
-                  <div className="section-sub">Set limits per category and track usage</div>
+                  <div className="section-sub">
+                    Set limits per category and track usage
+                  </div>
                 </div>
                 <span className="pro-tag">✦ Premium</span>
               </div>
               <div className="section-card-body">
                 {isPremium ? (
                   <div className="cap-list">
-                    {caps.map((cap,i)=>(
+                    {caps.map((cap, i) => (
                       <div key={cap.id}>
-                        {i>0 && <div className="cap-divider"/>}
-                        <CapRow cap={cap} onUpdate={updateCap} onDelete={deleteCap}/>
+                        {i > 0 && <div className="cap-divider" />}
+                        <CapRow
+                          cap={cap}
+                          onUpdate={updateCap}
+                          onDelete={deleteCap}
+                        />
                       </div>
                     ))}
                     {caps.length < CATS.length && (
-                      <button className="cap-add-btn" onClick={addCap}>+ Add category cap</button>
+                      <button className="cap-add-btn" onClick={addCap}>
+                        + Add category cap
+                      </button>
                     )}
                   </div>
                 ) : (
                   <div className="gate-wrap">
                     <div className="gate-blur">
                       <div className="cap-list">
-                        {caps.slice(0,3).map((cap,i)=>(
+                        {caps.slice(0, 3).map((cap, i) => (
                           <div key={cap.id}>
-                            {i>0 && <div className="cap-divider"/>}
-                            <CapRow cap={cap} onUpdate={()=>{}} onDelete={()=>{}}/>
+                            {i > 0 && <div className="cap-divider" />}
+                            <CapRow
+                              cap={cap}
+                              onUpdate={() => {}}
+                              onDelete={() => {}}
+                            />
                           </div>
                         ))}
                       </div>
@@ -630,8 +941,13 @@ export default function BudgetPage() {
                       <div className="gate-card">
                         <div className="gate-icon">⭐</div>
                         <div className="gate-title">Premium Feature</div>
-                        <div className="gate-sub">Set per-category spending caps and get warned before you overshoot.</div>
-                        <button className="gate-upgrade-btn">Upgrade — ₦6,500/mo</button>
+                        <div className="gate-sub">
+                          Set per-category spending caps and get warned before
+                          you overshoot.
+                        </div>
+                        <button className="gate-upgrade-btn">
+                          Upgrade — ₦6,500/mo
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -644,7 +960,9 @@ export default function BudgetPage() {
               <div className="section-card-header">
                 <div>
                   <div className="section-title">Recurring Expenses</div>
-                  <div className="section-sub">₦{fmt(totalRecurring)}/mo in fixed costs</div>
+                  <div className="section-sub">
+                    ₦{fmt(totalRecurring)}/mo in fixed costs
+                  </div>
                 </div>
                 <span className="pro-tag">✦ Premium</span>
               </div>
@@ -652,11 +970,16 @@ export default function BudgetPage() {
                 {isPremium ? (
                   <>
                     <div className="rec-list">
-                      {recurring.map(r=>{
-                        const c=CAT_MAP[r.cat]??CAT_MAP.other;
+                      {recurring.map((r) => {
+                        const c = CAT_MAP[r.cat] ?? CAT_MAP.other;
                         return (
                           <div key={r.id} className="rec-item">
-                            <div className="rec-icon" style={{background:c.bg}}>{c.icon}</div>
+                            <div
+                              className="rec-icon"
+                              style={{ background: c.bg }}
+                            >
+                              {c.icon}
+                            </div>
                             <div className="rec-body">
                               <div className="rec-name">{r.name}</div>
                               <div className="rec-meta">Next: {r.next}</div>
@@ -665,24 +988,45 @@ export default function BudgetPage() {
                               <div className="rec-amount">₦{fmt(r.amount)}</div>
                               <div className="rec-freq-pill">{r.freq}</div>
                             </div>
-                            <button className="rec-del-btn" onClick={()=>deleteRecurring(r.id)}>✕</button>
+                            <button
+                              className="rec-del-btn"
+                              onClick={() => deleteRecurring(r.id)}
+                            >
+                              ✕
+                            </button>
                           </div>
                         );
                       })}
                     </div>
-                    <button className="rec-add-btn" onClick={()=>setModal("new_recurring")}>+ Add recurring expense</button>
+                    <button
+                      className="rec-add-btn"
+                      onClick={() => setModal("new_recurring")}
+                    >
+                      + Add recurring expense
+                    </button>
                   </>
                 ) : (
                   <div className="gate-wrap">
                     <div className="gate-blur">
                       <div className="rec-list">
-                        {recurring.slice(0,3).map(r=>{
-                          const c=CAT_MAP[r.cat]??CAT_MAP.other;
+                        {recurring.slice(0, 3).map((r) => {
+                          const c = CAT_MAP[r.cat] ?? CAT_MAP.other;
                           return (
                             <div key={r.id} className="rec-item">
-                              <div className="rec-icon" style={{background:c.bg}}>{c.icon}</div>
-                              <div className="rec-body"><div className="rec-name">{r.name}</div></div>
-                              <div className="rec-right"><div className="rec-amount">₦{fmt(r.amount)}</div></div>
+                              <div
+                                className="rec-icon"
+                                style={{ background: c.bg }}
+                              >
+                                {c.icon}
+                              </div>
+                              <div className="rec-body">
+                                <div className="rec-name">{r.name}</div>
+                              </div>
+                              <div className="rec-right">
+                                <div className="rec-amount">
+                                  ₦{fmt(r.amount)}
+                                </div>
+                              </div>
                             </div>
                           );
                         })}
@@ -692,8 +1036,13 @@ export default function BudgetPage() {
                       <div className="gate-card">
                         <div className="gate-icon">🔁</div>
                         <div className="gate-title">Recurring Expenses</div>
-                        <div className="gate-sub">Set fixed costs once and Truvllo accounts for them automatically every month.</div>
-                        <button className="gate-upgrade-btn">Upgrade — ₦6,500/mo</button>
+                        <div className="gate-sub">
+                          Set fixed costs once and Truvllo accounts for them
+                          automatically every month.
+                        </div>
+                        <button className="gate-upgrade-btn">
+                          Upgrade — ₦6,500/mo
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -708,41 +1057,89 @@ export default function BudgetPage() {
               <div className="section-card-header">
                 <div>
                   <div className="section-title">All Budgets</div>
-                  <div className="section-sub">{budgets.length} budgets created</div>
+                  <div className="section-sub">
+                    {budgets.length} budgets created
+                  </div>
                 </div>
               </div>
               <div className="section-card-body">
                 <div className="budget-list">
-                  {budgets.map(b=>{
-                    const usedPct = b.amount>0?Math.min(100,Math.round((b.spent/b.amount)*100)):0;
+                  {budgets.map((b) => {
+                    const usedPct =
+                      b.amount > 0
+                        ? Math.min(100, Math.round((b.spent / b.amount) * 100))
+                        : 0;
                     const isActive = b.is_active;
                     return (
-                      <div key={b.id} className={`budget-item${isActive?" active-budget":""}`}
-                        onClick={()=>!isActive&&switchBudget(b.id)}>
-                        <div className="budget-item-icon">{isActive?"🟢":"📋"}</div>
+                      <div
+                        key={b.id}
+                        className={`budget-item${isActive ? " active-budget" : ""}`}
+                        onClick={() => !isActive && switchBudget(b.id)}
+                      >
+                        <div className="budget-item-icon">
+                          {isActive ? "🟢" : "📋"}
+                        </div>
                         <div className="budget-item-body">
                           <div className="budget-item-name">{b.name}</div>
                           <div className="budget-item-meta">
-                            {b.period.charAt(0).toUpperCase()+b.period.slice(1)} · {usedPct}% used
+                            {b.period.charAt(0).toUpperCase() +
+                              b.period.slice(1)}{" "}
+                            · {usedPct}% used
                           </div>
-                          <div className="bar-track" style={{marginTop:7,height:4}}>
-                            <div className="bar-fill" style={{width:`${usedPct}%`,background:isActive?"var(--green-light)":"var(--ink-subtle)"}}/>
+                          <div
+                            className="bar-track"
+                            style={{ marginTop: 7, height: 4 }}
+                          >
+                            <div
+                              className="bar-fill"
+                              style={{
+                                width: `${usedPct}%`,
+                                background: isActive
+                                  ? "var(--green-light)"
+                                  : "var(--ink-subtle)",
+                              }}
+                            />
                           </div>
                         </div>
                         <div className="budget-item-right">
-                          <div className="budget-item-amount">₦{fmt(b.amount)}</div>
-                          <div className="budget-item-pct" style={{color:usedPct>=100?"var(--red)":usedPct>=80?"var(--amber)":"var(--ink-subtle)"}}>
+                          <div className="budget-item-amount">
+                            ₦{fmt(b.amount)}
+                          </div>
+                          <div
+                            className="budget-item-pct"
+                            style={{
+                              color:
+                                usedPct >= 100
+                                  ? "var(--red)"
+                                  : usedPct >= 80
+                                    ? "var(--amber)"
+                                    : "var(--ink-subtle)",
+                            }}
+                          >
                             ₦{fmt(b.spent)} spent
                           </div>
                         </div>
-                        {isActive
-                          ? <div className="active-check">✓</div>
-                          : <span style={{fontSize:"0.7rem",color:"var(--ink-subtle)",fontWeight:600,flexShrink:0}}>Switch →</span>
-                        }
+                        {isActive ? (
+                          <div className="active-check">✓</div>
+                        ) : (
+                          <span
+                            style={{
+                              fontSize: "0.7rem",
+                              color: "var(--ink-subtle)",
+                              fontWeight: 600,
+                              flexShrink: 0,
+                            }}
+                          >
+                            Switch →
+                          </span>
+                        )}
                       </div>
                     );
                   })}
-                  <div className="budget-add-card" onClick={()=>setModal("new_budget")}>
+                  <div
+                    className="budget-add-card"
+                    onClick={() => setModal("new_budget")}
+                  >
                     + Create new budget
                   </div>
                 </div>

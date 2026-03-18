@@ -681,7 +681,8 @@ function MoMChart({ data }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function InsightsPage() {
-  const isPremium = true; // swap with useAuth().isPremiumOrTrial — set true to preview all charts
+  const { isPremiumOrTrial } = useAuth();
+  const isPremium = isPremiumOrTrial; // swap with useAuth().isPremiumOrTrial — set true to preview all charts
   const [period, setPeriod] = useState("This Month");
   const total = SPENDING.reduce((s, d) => s + d.amount, 0);
   const avgDaily = Math.round(

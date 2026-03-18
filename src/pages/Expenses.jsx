@@ -1,4 +1,5 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useAuth } from "../providers/AuthProvider";
 import {
   Plus,
   Download,
@@ -633,10 +634,11 @@ function ExpenseModal({ expense, onSave, onDelete, onClose }) {
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function Toast({ msg, onDone }) {
-  useState(() => {
+  useEffect(() => {
     const t = setTimeout(onDone, 2600);
     return () => clearTimeout(t);
-  });
+  }, [onDone]);
+
   return (
     <div className="toast">
       <span style={{ color: "#52B788" }}>✓</span> {msg}

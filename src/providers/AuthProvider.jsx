@@ -9,7 +9,6 @@ import {
 import { supabase } from "../lib/supabase";
 
 const PROFILE_CACHE_KEY = "truvllo_profile";
-const SESSION_CACHE_KEY = "truvllo_session";
 
 const AuthContext = createContext(null);
 
@@ -35,17 +34,20 @@ function writeCachedProfile(profile) {
     } else {
       localStorage.removeItem(PROFILE_CACHE_KEY);
     }
-  } catch {}
+  } catch {
+    // ignore storage errors
+  }
 }
 
-function clearAllCache() {
+function clearCachedProfile() {
   try {
     localStorage.removeItem(PROFILE_CACHE_KEY);
-    localStorage.removeItem(SESSION_CACHE_KEY);
-  } catch {}
+  } catch {
+    // ignore storage errors
+  }
 }
 
-const isMissingProfileError = (error) => {
+function isMissingProfileError(error) {
   if (!error) return false;
   const msg = error.message?.toLowerCase() || "";
   return (
@@ -54,200 +56,188 @@ const isMissingProfileError = (error) => {
     msg.includes("no rows") ||
     msg.includes("json object requested")
   );
-};
+}
+
+function buildBaseProfile(
+  authUser,
+  currency = "NGN",
+  onboardingComplete = false,
+) {
+  const firstName = authUser?.user_metadata?.first_name ?? "";
+  const lastName = authUser?.user_metadata?.last_name ?? "";
+  const fullName =
+    authUser?.user_metadata?.full_name ||
+    `${firstName} ${lastName}`.trim() ||
+    authUser?.email ||
+    "";
+
+  return {
+    id: authUser?.id,
+    email: authUser?.email ?? "",
+    full_name: fullName,
+    first_name: firstName,
+    last_name: lastName,
+    currency,
+    plan: "basic",
+    onboarding_complete: onboardingComplete,
+    onboarding_completed: onboardingComplete,
+    trial_activated: false,
+    trial_ends_at: null,
+    subscription_cancelled: false,
+  };
+}
 
 export function AuthProvider({ children }) {
   const cachedProfile = readCachedProfile();
 
-  const [profile, setProfile] = useState(cachedProfile);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(() => cachedProfile === null);
+  const [profile, setProfile] = useState(cachedProfile);
+  const [loading, setLoading] = useState(true);
 
-  const profileFetchedRef = useRef(false);
+  const mountedRef = useRef(true);
 
-  const createProfileIfMissing = useCallback(async (userId) => {
-    const {
-      data: { user: authUser },
-      error: getUserError,
-    } = await supabase.auth.getUser();
-
-    if (getUserError || !authUser) {
-      console.error("[AuthProvider] getUser error:", getUserError?.message);
-      return null;
-    }
-
-    const firstName = authUser.user_metadata?.first_name ?? "";
-    const lastName = authUser.user_metadata?.last_name ?? "";
-    const fullName =
-      authUser.user_metadata?.full_name ||
-      `${firstName} ${lastName}`.trim() ||
-      authUser.email ||
-      "";
-
-    const payload = {
-      id: userId,
-      email: authUser.email,
-      full_name: fullName,
-      first_name: firstName,
-      last_name: lastName,
-      currency: "NGN",
-      plan: "basic",
-      onboarding_completed: false,
-      onboarding_complete: false,
-      trial_activated: false,
-      trial_ends_at: null,
-    };
-
-    const { error: upsertError } = await supabase
-      .from("profiles")
-      .upsert(payload, { onConflict: "id" });
-
-    if (upsertError) {
-      console.error(
-        "[AuthProvider] createProfileIfMissing error:",
-        upsertError.message,
-      );
-      return null;
-    }
-
-    const { data: retryData, error: retryError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
-
-    if (retryError) {
-      console.error(
-        "[AuthProvider] retry fetchProfile error:",
-        retryError.message,
-      );
-      return null;
-    }
-
-    return retryData;
+  const setProfileState = useCallback((nextProfile) => {
+    if (!mountedRef.current) return;
+    setProfile(nextProfile);
+    writeCachedProfile(nextProfile);
   }, []);
 
   const fetchProfile = useCallback(
-    async (userId, force = false) => {
-      if (!userId) {
-        setLoading(false);
-        return null;
-      }
-
-      if (profileFetchedRef.current && !force) {
-        setLoading(false);
-        return profile;
-      }
+    async (userId) => {
+      if (!userId) return { data: null, error: { message: "Missing user id" } };
 
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        if (isMissingProfileError(error)) {
-          const newProfile = await createProfileIfMissing(userId);
-
-          if (newProfile) {
-            setProfile(newProfile);
-            writeCachedProfile(newProfile);
-            profileFetchedRef.current = true;
-            setLoading(false);
-            return newProfile;
-          }
-        }
-
-        console.error("[AuthProvider] fetchProfile error:", error.message);
-        setLoading(false);
-        return null;
+        console.error("[AuthProvider] fetchProfile error:", error);
+        return { data: null, error };
       }
 
-      setProfile(data);
-      writeCachedProfile(data);
-      profileFetchedRef.current = true;
-      setLoading(false);
-      return data;
+      if (data) {
+        setProfileState(data);
+        return { data, error: null };
+      }
+
+      return { data: null, error: null };
     },
-    [createProfileIfMissing, profile],
+    [setProfileState],
   );
 
-  const updateProfile = useCallback(
-    async (updates) => {
-      if (!user) return { error: { message: "Not logged in" } };
+  const createOrRepairProfile = useCallback(
+    async (authUser, onboardingComplete = false) => {
+      if (!authUser) {
+        return { data: null, error: { message: "Missing auth user" } };
+      }
+
+      const payload = buildBaseProfile(
+        authUser,
+        profile?.currency || "NGN",
+        onboardingComplete,
+      );
 
       const { data, error } = await supabase
         .from("profiles")
-        .update(updates)
-        .eq("id", user.id)
+        .upsert(payload, { onConflict: "id" })
         .select()
         .single();
 
-      if (!error && data) {
-        setProfile(data);
-        writeCachedProfile(data);
-        profileFetchedRef.current = true;
+      if (error) {
+        console.error("[AuthProvider] createOrRepairProfile error:", error);
+        return { data: null, error };
       }
 
-      return { data, error };
+      setProfileState(data);
+      return { data, error: null };
     },
-    [user],
+    [profile?.currency, setProfileState],
+  );
+
+  const ensureProfile = useCallback(
+    async (authUser) => {
+      if (!authUser) {
+        if (mountedRef.current) {
+          setProfile(null);
+          setLoading(false);
+        }
+        return { data: null, error: { message: "Missing auth user" } };
+      }
+
+      const fetched = await fetchProfile(authUser.id);
+
+      if (fetched.data) {
+        if (mountedRef.current) setLoading(false);
+        return fetched;
+      }
+
+      if (fetched.error && !isMissingProfileError(fetched.error)) {
+        if (mountedRef.current) setLoading(false);
+        return fetched;
+      }
+
+      const repaired = await createOrRepairProfile(authUser, false);
+
+      if (mountedRef.current) setLoading(false);
+      return repaired;
+    },
+    [fetchProfile, createOrRepairProfile],
   );
 
   useEffect(() => {
-    let isMounted = true;
+    mountedRef.current = true;
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!isMounted) return;
+    const bootstrap = async () => {
+      setLoading(true);
 
-      if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id, true);
-      } else {
-        setUser(null);
-        setProfile(null);
-        setLoading(false);
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error("[AuthProvider] getSession error:", error);
       }
-    });
+
+      const authUser = session?.user ?? null;
+      setUser(authUser);
+
+      if (!authUser) {
+        setProfile(null);
+        clearCachedProfile();
+        setLoading(false);
+        return;
+      }
+
+      await ensureProfile(authUser);
+    };
+
+    bootstrap();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        setUser(session.user);
-        profileFetchedRef.current = false;
-        await fetchProfile(session.user.id, true);
-        return;
-      }
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const authUser = session?.user ?? null;
+      setUser(authUser);
 
-      if (event === "INITIAL_SESSION" && session?.user) {
-        setUser(session.user);
-        profileFetchedRef.current = false;
-        await fetchProfile(session.user.id, true);
-        return;
-      }
-
-      if (event === "USER_UPDATED" && session?.user) {
-        setUser(session.user);
-        profileFetchedRef.current = false;
-        await fetchProfile(session.user.id, true);
-        return;
-      }
-
-      if (event === "SIGNED_OUT") {
-        setUser(null);
+      if (!authUser) {
         setProfile(null);
-        profileFetchedRef.current = false;
-        clearAllCache();
+        clearCachedProfile();
         setLoading(false);
+        return;
       }
+
+      setLoading(true);
+      await ensureProfile(authUser);
     });
 
     return () => {
-      isMounted = false;
+      mountedRef.current = false;
       subscription.unsubscribe();
     };
-  }, [fetchProfile]);
+  }, [ensureProfile]);
 
   const signUp = useCallback(
     async ({ email, password, firstName, lastName }) => {
@@ -273,6 +263,7 @@ export function AuthProvider({ children }) {
       email,
       password,
     });
+
     return { data, error };
   }, []);
 
@@ -289,6 +280,14 @@ export function AuthProvider({ children }) {
 
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
+
+    if (!error) {
+      setUser(null);
+      setProfile(null);
+      clearCachedProfile();
+      setLoading(false);
+    }
+
     return { error };
   }, []);
 
@@ -304,47 +303,58 @@ export function AuthProvider({ children }) {
     return { error };
   }, []);
 
-  const completeOnboarding = useCallback(
-    async ({ currency }) => {
+  const updateProfile = useCallback(
+    async (updates) => {
       if (!user) return { error: { message: "Not logged in" } };
-
-      const baseProfile = {
-        id: user.id,
-        email: user.email,
-        full_name:
-          user.user_metadata?.full_name ||
-          `${user.user_metadata?.first_name ?? ""} ${user.user_metadata?.last_name ?? ""}`.trim() ||
-          user.email ||
-          "",
-        first_name: user.user_metadata?.first_name ?? "",
-        last_name: user.user_metadata?.last_name ?? "",
-        currency: currency || "NGN",
-        plan: "basic",
-        onboarding_complete: true,
-        onboarding_completed: true,
-        trial_activated: false,
-        trial_ends_at: null,
-        subscription_cancelled: false,
-      };
 
       const { data, error } = await supabase
         .from("profiles")
-        .upsert(baseProfile, { onConflict: "id" })
+        .update(updates)
+        .eq("id", user.id)
         .select()
         .single();
 
       if (error) {
-        console.error("completeOnboarding error:", error);
-        return { error };
+        console.error("[AuthProvider] updateProfile error:", error);
+        return { data: null, error };
       }
 
-      setProfile(data);
-      writeCachedProfile(data);
-      profileFetchedRef.current = true;
-
-      return { error: null, data };
+      setProfileState(data);
+      return { data, error: null };
     },
-    [user],
+    [user, setProfileState],
+  );
+
+  const completeOnboarding = useCallback(
+    async ({ currency }) => {
+      if (!user) return { error: { message: "Not logged in" } };
+
+      const payload = {
+        ...buildBaseProfile(user, currency || "NGN", true),
+        plan: profile?.plan || "basic",
+        trial_activated: profile?.trial_activated ?? false,
+        trial_ends_at: profile?.trial_ends_at ?? null,
+        avatar_url: profile?.avatar_url ?? null,
+        subscription_ends_at: profile?.subscription_ends_at ?? null,
+        subscription_cancelled: profile?.subscription_cancelled ?? false,
+      };
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .upsert(payload, { onConflict: "id" })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("[AuthProvider] completeOnboarding error:", error);
+        return { data: null, error };
+      }
+
+      setProfileState(data);
+      setLoading(false);
+      return { data, error: null };
+    },
+    [user, profile, setProfileState],
   );
 
   const isLoggedIn = !!user;
@@ -394,6 +404,7 @@ export function AuthProvider({ children }) {
 
     updateProfile,
     completeOnboarding,
+    ensureProfile,
 
     isLoggedIn,
     isPremium,

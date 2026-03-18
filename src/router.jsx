@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
-import AppLayout from "./components/layout/AppLayout";
+import AppLayout from "./layouts/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";

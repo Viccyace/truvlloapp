@@ -23,10 +23,8 @@ function Root() {
       <Preloader onDone={() => setPreloaderDone(true)} />
       <div style={{ visibility: preloaderDone ? "visible" : "hidden" }}>
         <AuthProvider>
-          <BudgetProvider>
-            <RouterProvider router={router} />
-            <InstallPrompt />
-          </BudgetProvider>
+          <RouterProvider router={router} />
+          <InstallPrompt />
         </AuthProvider>
       </div>
     </>

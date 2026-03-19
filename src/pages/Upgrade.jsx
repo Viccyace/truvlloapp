@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../providers/AuthProvider";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
@@ -17,10 +19,8 @@ const styles = `
   @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
   @keyframes scaleIn { from{opacity:0;transform:scale(0.94)} to{opacity:1;transform:scale(1)} }
   @keyframes spin    { to{transform:rotate(360deg)} }
-  @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-  @keyframes float   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
   @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:0.5} }
-  @keyframes slideDown { from{opacity:0;max-height:0;transform:translateY(-8px)} to{opacity:1;max-height:600px;transform:translateY(0)} }
+  @keyframes float   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
 
   .page { display:flex; flex-direction:column; gap:0; animation:fadeIn 0.3s ease; }
 
@@ -53,19 +53,29 @@ const styles = `
   .hero-price-annual { font-size:0.75rem; color:rgba(255,255,255,0.45); margin-top:4px; }
   .hero-price-annual strong { color:var(--amber-light); }
   .hero-cta-btn { width:100%; margin-top:18px; padding:14px; background:var(--white); color:var(--green-deep); border:none; border-radius:12px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; font-weight:800; cursor:pointer; transition:all 0.22s; box-shadow:0 4px 20px rgba(0,0,0,0.15); }
-  .hero-cta-btn:hover { background:var(--cream); transform:translateY(-1px); box-shadow:0 8px 28px rgba(0,0,0,0.2); }
+  .hero-cta-btn:hover:not(:disabled) { background:var(--cream); transform:translateY(-1px); box-shadow:0 8px 28px rgba(0,0,0,0.2); }
+  .hero-cta-btn:disabled { opacity:0.7; cursor:not-allowed; }
   .hero-cta-note { font-size:0.68rem; color:rgba(255,255,255,0.4); margin-top:8px; text-align:center; }
 
   .hero-cta-main { display:flex; flex-direction:column; gap:10px; }
   .hero-btn-primary { display:inline-flex; align-items:center; gap:10px; padding:15px 32px; background:var(--white); color:var(--green-deep); border:none; border-radius:14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:1rem; font-weight:800; cursor:pointer; transition:all 0.22s; box-shadow:0 6px 24px rgba(0,0,0,0.18); width:fit-content; }
-  .hero-btn-primary:hover { transform:translateY(-2px); box-shadow:0 12px 36px rgba(0,0,0,0.25); }
+  .hero-btn-primary:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 36px rgba(0,0,0,0.25); }
   .hero-btn-primary:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
-  .hero-btn-ghost { display:inline-flex; align-items:center; gap:8px; padding:13px 28px; background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.8); border:1px solid rgba(255,255,255,0.2); border-radius:14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; width:fit-content; }
-  .hero-btn-ghost:hover { background:rgba(255,255,255,0.16); color:var(--white); }
   .hero-notes { display:flex; gap:16px; flex-wrap:wrap; }
   .hero-note { display:flex; align-items:center; gap:6px; font-size:0.78rem; color:rgba(255,255,255,0.55); }
   .hero-note-check { color:rgba(255,255,255,0.8); font-weight:800; }
+
   .spinner { width:18px; height:18px; border:2.5px solid rgba(27,67,50,0.2); border-top-color:var(--green-deep); border-radius:50%; animation:spin 0.7s linear infinite; }
+
+  /* ── INFO BANNER ───────────────────────────── */
+  .info-banner {
+    background:var(--white); border:1.5px solid var(--border); border-radius:16px;
+    padding:14px 18px; margin-bottom:26px; display:flex; align-items:flex-start; gap:10px;
+    animation:fadeUp 0.35s ease 0.03s both;
+  }
+  .info-banner-icon { font-size:1rem; line-height:1; }
+  .info-banner-text { font-size:0.82rem; color:var(--ink-subtle); line-height:1.6; }
+  .info-banner-text strong { color:var(--ink); }
 
   /* ── BILLING TOGGLE ──────────────────────── */
   .billing-toggle-wrap { display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:40px; animation:fadeUp 0.35s ease 0.05s both; }
@@ -129,165 +139,349 @@ const styles = `
   .bottom-cta-title { font-family:'Playfair Display',serif; font-size:clamp(1.6rem,3vw,2.4rem); font-weight:900; color:var(--white); margin-bottom:12px; letter-spacing:-0.015em; position:relative; z-index:1; }
   .bottom-cta-sub { font-size:0.95rem; color:rgba(255,255,255,0.55); max-width:460px; margin:0 auto 32px; line-height:1.7; position:relative; z-index:1; }
   .bottom-cta-btn { display:inline-flex; align-items:center; gap:10px; padding:16px 40px; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); border:none; border-radius:14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:1.05rem; font-weight:800; cursor:pointer; transition:all 0.22s; box-shadow:0 8px 32px rgba(27,67,50,0.5); position:relative; z-index:1; }
-  .bottom-cta-btn:hover { transform:translateY(-2px); box-shadow:0 14px 44px rgba(27,67,50,0.6); }
+  .bottom-cta-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 14px 44px rgba(27,67,50,0.6); }
+  .bottom-cta-btn:disabled { opacity:0.7; cursor:not-allowed; }
   .bottom-cta-notes { display:flex; justify-content:center; gap:20px; margin-top:16px; flex-wrap:wrap; position:relative; z-index:1; }
   .bottom-cta-note { font-size:0.75rem; color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px; }
   .bottom-cta-note::before { content:"✓"; color:rgba(255,255,255,0.5); font-weight:800; }
 
   /* ── PAYSTACK TRUST ──────────────────────── */
-  .paystack-trust { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:20px; }
+  .paystack-trust { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:20px; flex-wrap:wrap; }
   .paystack-logo { background:var(--white); border-radius:8px; padding:4px 12px; font-size:0.72rem; font-weight:800; color:#00C3F7; letter-spacing:0.02em; }
   .paystack-text { font-size:0.72rem; color:rgba(255,255,255,0.3); }
 `;
 
 const FEATURES = [
-  { icon:"🤖", bg:"#D8F3DC", title:"AI Spending Analyst",     desc:"Plain-English breakdown of your spending patterns — every week, automatically." },
-  { icon:"💬", bg:"#FFF3E0", title:"Natural Language Entry",   desc:"Type \"spent 4500 on lunch\" and Truvllo logs it instantly. No forms, no friction." },
-  { icon:"🎯", bg:"#E3F2FD", title:"AI Savings Coach",         desc:"One specific, actionable tip each week based on your actual spending data." },
-  { icon:"🏷️", bg:"#F3E5F5", title:"Smart Categorisation",     desc:"Type a merchant and Truvllo suggests the right category — learns your habits." },
-  { icon:"📐", bg:"#FCE4EC", title:"AI Budget Advisor",         desc:"Tell us your income and goal. Get a realistic monthly budget breakdown instantly." },
-  { icon:"⚠️", bg:"#FFF8E1", title:"Overspend Explainer",       desc:"When you're over pace, AI tells you exactly why — with specific cuts to get back." },
-  { icon:"🎯", bg:"#E8F5E9", title:"Category Spending Caps",   desc:"Set per-category limits. Get warned before you overshoot food, transport, and more." },
-  { icon:"🔁", bg:"#E0F7FA", title:"Recurring Expenses",       desc:"Set rent, subscriptions, and bills once — automatically deducted each cycle." },
-  { icon:"📊", bg:"#F9FBE7", title:"Advanced Charts",          desc:"Pie charts, bar charts, trend lines, and month-over-month comparisons." },
-  { icon:"📤", bg:"#E8EAF6", title:"CSV Export",               desc:"Download your full expense history any time — perfect for tax season." },
-  { icon:"🏆", bg:"#FFF3E0", title:"Habit Streaks",            desc:"Daily logging streaks that build a real money habit over time." },
-  { icon:"⚡", bg:"#F1F8E9", title:"Priority Support",         desc:"Email support with a response within 24 hours — guaranteed." },
+  {
+    icon: "🤖",
+    bg: "#D8F3DC",
+    title: "AI Spending Analyst",
+    desc: "Plain-English breakdown of your spending patterns — every week, automatically.",
+  },
+  {
+    icon: "💬",
+    bg: "#FFF3E0",
+    title: "Natural Language Entry",
+    desc: 'Type "spent 4500 on lunch" and Truvllo logs it instantly. No forms, no friction.',
+  },
+  {
+    icon: "🎯",
+    bg: "#E3F2FD",
+    title: "AI Savings Coach",
+    desc: "One specific, actionable tip each week based on your actual spending data.",
+  },
+  {
+    icon: "🏷️",
+    bg: "#F3E5F5",
+    title: "Smart Categorisation",
+    desc: "Type a merchant and Truvllo suggests the right category — learns your habits.",
+  },
+  {
+    icon: "📐",
+    bg: "#FCE4EC",
+    title: "AI Budget Advisor",
+    desc: "Tell us your income and goal. Get a realistic monthly budget breakdown instantly.",
+  },
+  {
+    icon: "⚠️",
+    bg: "#FFF8E1",
+    title: "Overspend Explainer",
+    desc: "When you're over pace, AI tells you exactly why — with specific cuts to get back.",
+  },
+  {
+    icon: "🎯",
+    bg: "#E8F5E9",
+    title: "Category Spending Caps",
+    desc: "Set per-category limits. Get warned before you overshoot food, transport, and more.",
+  },
+  {
+    icon: "🔁",
+    bg: "#E0F7FA",
+    title: "Recurring Expenses",
+    desc: "Set rent, subscriptions, and bills once — automatically deducted each cycle.",
+  },
+  {
+    icon: "📊",
+    bg: "#F9FBE7",
+    title: "Advanced Charts",
+    desc: "Pie charts, bar charts, trend lines, and month-over-month comparisons.",
+  },
+  {
+    icon: "📤",
+    bg: "#E8EAF6",
+    title: "CSV Export",
+    desc: "Download your full expense history any time — perfect for tax season.",
+  },
+  {
+    icon: "🏆",
+    bg: "#FFF3E0",
+    title: "Habit Streaks",
+    desc: "Daily logging streaks that build a real money habit over time.",
+  },
+  {
+    icon: "⚡",
+    bg: "#F1F8E9",
+    title: "Priority Support",
+    desc: "Email support with a response within 24 hours — guaranteed.",
+  },
 ];
 
 const COMPARE = [
-  { cat:"Core", rows:[
-    { f:"Unlimited budgets",           free:true,  premium:true  },
-    { f:"Expense logging",             free:true,  premium:true  },
-    { f:"Budget pace indicator",       free:true,  premium:true  },
-    { f:"Safe-to-spend daily limit",   free:true,  premium:true  },
-    { f:"6 supported currencies",      free:true,  premium:true  },
-    { f:"Mobile PWA",                  free:true,  premium:true  },
-  ]},
-  { cat:"AI Features", rows:[
-    { f:"AI Spending Analyst",         free:false, premium:true  },
-    { f:"Natural Language Entry",      free:false, premium:true  },
-    { f:"AI Savings Coach",            free:false, premium:true  },
-    { f:"Smart Categorisation",        free:false, premium:true  },
-    { f:"AI Budget Advisor",           free:false, premium:true  },
-    { f:"Overspend Explainer",         free:false, premium:true  },
-  ]},
-  { cat:"Advanced Tools", rows:[
-    { f:"Category Spending Caps",      free:false, premium:true  },
-    { f:"Recurring Expenses",          free:false, premium:true  },
-    { f:"Advanced Charts & Insights",  free:false, premium:true  },
-    { f:"CSV Export",                  free:false, premium:true  },
-    { f:"Habit Streaks",               free:false, premium:true  },
-    { f:"Priority Support",            free:false, premium:true  },
-  ]},
+  {
+    cat: "Core",
+    rows: [
+      { f: "Unlimited budgets", free: true, premium: true },
+      { f: "Expense logging", free: true, premium: true },
+      { f: "Budget pace indicator", free: true, premium: true },
+      { f: "Safe-to-spend daily limit", free: true, premium: true },
+      { f: "6 supported currencies", free: true, premium: true },
+      { f: "Mobile PWA", free: true, premium: true },
+    ],
+  },
+  {
+    cat: "AI Features",
+    rows: [
+      { f: "AI Spending Analyst", free: false, premium: true },
+      { f: "Natural Language Entry", free: false, premium: true },
+      { f: "AI Savings Coach", free: false, premium: true },
+      { f: "Smart Categorisation", free: false, premium: true },
+      { f: "AI Budget Advisor", free: false, premium: true },
+      { f: "Overspend Explainer", free: false, premium: true },
+    ],
+  },
+  {
+    cat: "Advanced Tools",
+    rows: [
+      { f: "Category Spending Caps", free: false, premium: true },
+      { f: "Recurring Expenses", free: false, premium: true },
+      { f: "Advanced Charts & Insights", free: false, premium: true },
+      { f: "CSV Export", free: false, premium: true },
+      { f: "Habit Streaks", free: false, premium: true },
+      { f: "Priority Support", free: false, premium: true },
+    ],
+  },
 ];
 
 const FAQS = [
-  { q:"Do I need a credit card to start?",
-    a:"No. You can sign up and use Truvllo's free plan forever without a card. Your 7-day Premium trial also activates automatically when you log your first expense — no card required for the trial either." },
-  { q:"How does the 7-day free trial work?",
-    a:"The moment you log your very first expense, Truvllo automatically activates a full 7-day Premium trial on your account. No buttons to click, no card to enter. You just start using the app and Premium unlocks instantly." },
-  { q:"What happens when my trial ends?",
-    a:"You'll automatically revert to the Free plan. All your data — budgets, expenses, history — stays safe. You just lose access to AI features and premium tools until you upgrade. You'll get a reminder 2 days before." },
-  { q:"How does payment work?",
-    a:"Payments are processed securely by <strong>Paystack</strong>, Nigeria's most trusted payment infrastructure. You can pay with your Nigerian debit card, credit card, or bank transfer. All transactions are encrypted." },
-  { q:"Can I cancel any time?",
-    a:"Yes, completely. Cancel from your Settings page at any time — no questions asked, no penalty. You'll keep Premium access until the end of your billing period." },
-  { q:"Is my financial data safe?",
-    a:"Yes. Truvllo never stores your bank credentials. All expense data is encrypted at rest and in transit. We use Supabase with row-level security so only you can ever access your data. We never sell or share your information." },
-  { q:"Does Truvllo connect to my bank account?",
-    a:"No — and that's by design. Truvllo is a manual tracker. You log what you spend. This means no bank connections, no Open Banking permissions, and no risk of your financial accounts being accessed." },
-  { q:"Is there a Business plan?",
-    a:"A Business plan is coming soon with team expense management, approval workflows, and shared budget dashboards. Join the waitlist from the pricing page and we'll notify you when it launches." },
+  {
+    q: "Do I need a credit card to start?",
+    a: "No. You can sign up and use Truvllo's free plan forever without a card. Your 7-day Premium trial also activates automatically when you log your first expense — no card required for the trial either.",
+  },
+  {
+    q: "How does the 7-day free trial work?",
+    a: "The moment you log your very first expense, Truvllo automatically activates a full 7-day Premium trial on your account. No buttons to click, no card to enter. You just start using the app and Premium unlocks instantly.",
+  },
+  {
+    q: "What happens when my trial ends?",
+    a: "You'll automatically revert to the Free plan. All your data — budgets, expenses, history — stays safe. You just lose access to AI features and premium tools until you upgrade. You'll get a reminder 2 days before.",
+  },
+  {
+    q: "How does payment work?",
+    a: "Payments are processed securely by <strong>Paystack</strong>, Nigeria's most trusted payment infrastructure. You can pay with your Nigerian debit card, credit card, or bank transfer. All transactions are encrypted.",
+  },
+  {
+    q: "Can I cancel any time?",
+    a: "Yes, completely. Cancel from your Settings page at any time — no questions asked, no penalty. You'll keep Premium access until the end of your billing period.",
+  },
+  {
+    q: "Is my financial data safe?",
+    a: "Yes. Truvllo never stores your bank credentials. All expense data is encrypted at rest and in transit. We use Supabase with row-level security so only you can ever access your data. We never sell or share your information.",
+  },
+  {
+    q: "Does Truvllo connect to my bank account?",
+    a: "No — and that's by design. Truvllo is a manual tracker. You log what you spend. This means no bank connections, no Open Banking permissions, and no risk of your financial accounts being accessed.",
+  },
+  {
+    q: "Is there a Business plan?",
+    a: "A Business plan is coming soon with team expense management, approval workflows, and shared budget dashboards. Join the waitlist from the pricing page and we'll notify you when it launches.",
+  },
 ];
 
 export default function UpgradePage() {
-  const [billing,     setBilling]     = useState("monthly");
-  const [faqOpen,     setFaqOpen]     = useState(null);
-  const [loading,     setLoading]     = useState(false);
+  const navigate = useNavigate();
+  const { user, isLoggedIn, isPremium, isTrialing, profile } = useAuth();
 
-  const price        = billing === "monthly" ? "6,500" : "4,875";
-  const annualTotal  = billing === "annual"  ? "58,500" : null;
+  const [billing, setBilling] = useState("monthly");
+  const [faqOpen, setFaqOpen] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handlePaystack = (_plan) => {
-    const setter = setLoading;
-    setter(true);
-    // In real app: call Supabase Edge Function → get Paystack URL → redirect
-    // const res = await fetch("/functions/v1/paystack-init", { method:"POST", body: JSON.stringify({ plan }) });
-    // const { payment_url } = await res.json();
-    // window.location.href = payment_url;
-    setTimeout(() => setter(false), 1500); // mock
+  const price = billing === "monthly" ? "6,500" : "4,875";
+  const annualTotal = billing === "annual" ? "58,500" : null;
+
+  const startUpgrade = async () => {
+    if (loading) return;
+
+    if (!isLoggedIn) {
+      navigate("/auth");
+      return;
+    }
+
+    if (isPremium) {
+      navigate("/settings");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Temporary safe route fix only.
+      // Real Paystack init will replace this next.
+      navigate("/settings");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const ctaText = isPremium
+    ? "Manage subscription"
+    : isTrialing
+      ? "Upgrade to keep Premium"
+      : "Start 7-day free trial";
+
+  const priceButtonText = isPremium ? "Manage plan" : `Upgrade — ₦${price}/mo`;
 
   return (
     <>
       <style>{FONTS + styles}</style>
       <div className="page">
-
-        {/* ── HERO ──────────────────────────────────────────────────────── */}
         <div className="hero">
           <div className="hero-blob hero-blob-1" />
           <div className="hero-blob hero-blob-2" />
           <div className="hero-blob hero-blob-3" />
+
           <div className="hero-inner">
             <div>
-              <div className="hero-badge"><span className="hero-badge-dot" />Premium Plan</div>
+              <div className="hero-badge">
+                <span className="hero-badge-dot" />
+                Premium Plan
+              </div>
+
               <h1 className="hero-headline">
-                Your money deserves<br /><em>better than guessing</em>
+                Your money deserves
+                <br />
+                <em>better than guessing</em>
               </h1>
+
               <p className="hero-sub">
-                Unlock six AI-powered tools, advanced charts, category caps, and habit streaks. Everything you need to actually stick to a budget.
+                Unlock six AI-powered tools, advanced charts, category caps, and
+                habit streaks. Everything you need to actually stick to a
+                budget.
               </p>
+
               <div className="hero-cta-main">
-                <button className="hero-btn-primary" onClick={() => handlePaystack("monthly")} disabled={loading}>
-                  {loading ? <><div className="spinner" />Processing…</> : <>Start 7-day free trial →</>}
+                <button
+                  className="hero-btn-primary"
+                  onClick={startUpgrade}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <div className="spinner" />
+                      Processing…
+                    </>
+                  ) : (
+                    <>{ctaText} →</>
+                  )}
                 </button>
+
                 <div className="hero-notes">
-                  {["No card required", "Cancel any time", "Instant activation"].map(n => (
-                    <div key={n} className="hero-note"><span className="hero-note-check">✓</span>{n}</div>
+                  {[
+                    "No card required",
+                    "Cancel any time",
+                    "Instant activation",
+                  ].map((n) => (
+                    <div key={n} className="hero-note">
+                      <span className="hero-note-check">✓</span>
+                      {n}
+                    </div>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* Price card */}
             <div className="hero-price-card">
               <div className="hero-price-label">Premium Plan</div>
               <div className="hero-price">
-                <sup>₦</sup>{price}<sub>{billing === "monthly" ? "/mo" : "/mo"}</sub>
+                <sup>₦</sup>
+                {price}
+                <sub>/mo</sub>
               </div>
-              {billing === "annual"
-                ? <div className="hero-price-annual">₦{annualTotal}/yr · <strong>Save 25%</strong></div>
-                : <div className="hero-price-annual">or <strong style={{color:"var(--amber-light)"}}>₦4,875/mo</strong> billed annually</div>
-              }
-              <button className="hero-cta-btn" onClick={() => handlePaystack("monthly")} disabled={loading}>
-                {loading ? "Processing…" : "Upgrade now"}
+
+              {billing === "annual" ? (
+                <div className="hero-price-annual">
+                  ₦{annualTotal}/yr · <strong>Save 25%</strong>
+                </div>
+              ) : (
+                <div className="hero-price-annual">
+                  or{" "}
+                  <strong style={{ color: "var(--amber-light)" }}>
+                    ₦4,875/mo
+                  </strong>{" "}
+                  billed annually
+                </div>
+              )}
+
+              <button
+                className="hero-cta-btn"
+                onClick={startUpgrade}
+                disabled={loading}
+              >
+                {loading ? "Processing…" : priceButtonText}
               </button>
-              <div className="hero-cta-note">Secured by Paystack · SSL encrypted</div>
+
+              <div className="hero-cta-note">
+                {isLoggedIn
+                  ? `Signed in as ${user?.email || profile?.email || "user"}`
+                  : "Sign in required before payment"}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* ── BILLING TOGGLE ────────────────────────────────────────────── */}
+        <div className="info-banner">
+          <div className="info-banner-icon">ℹ️</div>
+          <div className="info-banner-text">
+            <strong>Current step:</strong> this page is now properly wired to
+            your auth state and routing. The actual Paystack checkout will be
+            connected next, replacing the temporary redirect to Settings.
+          </div>
+        </div>
+
         <div className="billing-toggle-wrap">
-          <span className={`billing-label${billing === "monthly" ? " active" : ""}`}>Monthly</span>
-          <button className={`billing-switch ${billing}`}
-            onClick={() => setBilling(b => b === "monthly" ? "annual" : "monthly")}>
+          <span
+            className={`billing-label${billing === "monthly" ? " active" : ""}`}
+          >
+            Monthly
+          </span>
+          <button
+            className={`billing-switch ${billing}`}
+            onClick={() =>
+              setBilling((b) => (b === "monthly" ? "annual" : "monthly"))
+            }
+          >
             <div className="billing-knob" />
           </button>
-          <span className={`billing-label${billing === "annual" ? " active" : ""}`}>Annual</span>
+          <span
+            className={`billing-label${billing === "annual" ? " active" : ""}`}
+          >
+            Annual
+          </span>
           <span className="billing-save-pill">Save 25%</span>
         </div>
 
-        {/* ── FEATURES GRID ─────────────────────────────────────────────── */}
         <div className="features-section">
           <div className="section-label">What you unlock</div>
           <div className="section-headline">12 features. One price.</div>
-          <div className="section-sub">Everything in the Free plan, plus all of this.</div>
+          <div className="section-sub">
+            Everything in the Free plan, plus all of this.
+          </div>
+
           <div className="features-grid">
             {FEATURES.map((f, i) => (
               <div key={i} className="feature-card">
-                <div className="feature-icon" style={{ background: f.bg }}>{f.icon}</div>
+                <div className="feature-icon" style={{ background: f.bg }}>
+                  {f.icon}
+                </div>
                 <div className="feature-title">{f.title}</div>
                 <p className="feature-desc">{f.desc}</p>
               </div>
@@ -295,46 +489,108 @@ export default function UpgradePage() {
           </div>
         </div>
 
-        {/* ── COMPARISON TABLE ──────────────────────────────────────────── */}
         <div className="compare-section">
           <div className="section-label">Compare plans</div>
           <div className="section-headline">Free vs Premium</div>
-          <div className="section-sub" style={{ marginBottom: 24 }}>See exactly what each plan includes.</div>
+          <div className="section-sub" style={{ marginBottom: 24 }}>
+            See exactly what each plan includes.
+          </div>
+
           <div style={{ overflowX: "auto" }}>
             <table className="compare-table">
               <thead>
                 <tr>
                   <th style={{ width: "55%" }}>Feature</th>
-                  <th className="plan-col" style={{ width: "20%" }}>Free</th>
-                  <th className="plan-col premium-col" style={{ width: "25%" }}>✦ Premium</th>
+                  <th className="plan-col" style={{ width: "20%" }}>
+                    Free
+                  </th>
+                  <th className="plan-col premium-col" style={{ width: "25%" }}>
+                    ✦ Premium
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {COMPARE.map(cat => (
-                  <>
-                    <tr key={cat.cat} className="compare-cat-row">
+                {COMPARE.map((cat) => (
+                  <Fragment key={cat.cat}>
+                    <tr className="compare-cat-row">
                       <td colSpan={3}>{cat.cat}</td>
                     </tr>
+
                     {cat.rows.map((row, i) => (
-                      <tr key={i}>
+                      <tr key={`${cat.cat}-${i}`}>
                         <td className="feature-name">{row.f}</td>
-                        <td className="plan-col">{row.free  ? <span className="check-yes">✓</span> : <span className="check-no">—</span>}</td>
-                        <td className="plan-col premium-highlight">{row.premium ? <span className="check-yes">✓</span> : <span className="check-no">—</span>}</td>
+                        <td className="plan-col">
+                          {row.free ? (
+                            <span className="check-yes">✓</span>
+                          ) : (
+                            <span className="check-no">—</span>
+                          )}
+                        </td>
+                        <td className="plan-col premium-highlight">
+                          {row.premium ? (
+                            <span className="check-yes">✓</span>
+                          ) : (
+                            <span className="check-no">—</span>
+                          )}
+                        </td>
                       </tr>
                     ))}
-                  </>
+                  </Fragment>
                 ))}
+
                 <tr>
                   <td></td>
-                  <td className="plan-col" style={{ paddingTop: 20, paddingBottom: 20 }}>
-                    <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--ink-subtle)" }}>Free forever</div>
+                  <td
+                    className="plan-col"
+                    style={{ paddingTop: 20, paddingBottom: 20 }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "0.82rem",
+                        fontWeight: 700,
+                        color: "var(--ink-subtle)",
+                      }}
+                    >
+                      Free forever
+                    </div>
                   </td>
-                  <td className="plan-col premium-highlight" style={{ paddingTop: 20, paddingBottom: 20 }}>
+                  <td
+                    className="plan-col premium-highlight"
+                    style={{ paddingTop: 20, paddingBottom: 20 }}
+                  >
                     <button
-                      onClick={() => handlePaystack("monthly")}
+                      onClick={startUpgrade}
                       disabled={loading}
-                      style={{ background: "linear-gradient(135deg,var(--green-deep),var(--green-light))", color: "var(--white)", border: "none", borderRadius: 10, padding: "10px 20px", fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: "0.85rem", fontWeight: 800, cursor: "pointer", transition: "all 0.2s", boxShadow: "0 4px 14px rgba(27,67,50,0.3)", display: "flex", alignItems: "center", gap: 7, margin: "0 auto" }}>
-                      {loading ? <div className="spinner" style={{ borderTopColor: "var(--white)", borderColor: "rgba(255,255,255,0.25)" }} /> : <>Upgrade — ₦{price}/mo</>}
+                      style={{
+                        background:
+                          "linear-gradient(135deg,var(--green-deep),var(--green-light))",
+                        color: "var(--white)",
+                        border: "none",
+                        borderRadius: 10,
+                        padding: "10px 20px",
+                        fontFamily: "'Plus Jakarta Sans',sans-serif",
+                        fontSize: "0.85rem",
+                        fontWeight: 800,
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        boxShadow: "0 4px 14px rgba(27,67,50,0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 7,
+                        margin: "0 auto",
+                      }}
+                    >
+                      {loading ? (
+                        <div
+                          className="spinner"
+                          style={{
+                            borderTopColor: "var(--white)",
+                            borderColor: "rgba(255,255,255,0.25)",
+                          }}
+                        />
+                      ) : (
+                        <>{priceButtonText}</>
+                      )}
                     </button>
                   </td>
                 </tr>
@@ -343,50 +599,94 @@ export default function UpgradePage() {
           </div>
         </div>
 
-        {/* ── FAQ ───────────────────────────────────────────────────────── */}
         <div className="faq-section">
           <div className="section-label">FAQs</div>
           <div className="section-headline">Common questions</div>
-          <div className="section-sub" style={{ marginBottom: 24 }}>Everything you need to know before upgrading.</div>
+          <div className="section-sub" style={{ marginBottom: 24 }}>
+            Everything you need to know before upgrading.
+          </div>
+
           <div className="faq-list">
             {FAQS.map((faq, i) => (
-              <div key={i} className={`faq-item${faqOpen === i ? " open" : ""}`}>
-                <div className="faq-q" onClick={() => setFaqOpen(faqOpen === i ? null : i)}>
+              <div
+                key={i}
+                className={`faq-item${faqOpen === i ? " open" : ""}`}
+              >
+                <div
+                  className="faq-q"
+                  onClick={() => setFaqOpen(faqOpen === i ? null : i)}
+                >
                   <div className="faq-q-text">{faq.q}</div>
                   <div className="faq-chevron">▾</div>
                 </div>
                 {faqOpen === i && (
-                  <div className="faq-a" dangerouslySetInnerHTML={{ __html: faq.a }} />
+                  <div
+                    className="faq-a"
+                    dangerouslySetInnerHTML={{ __html: faq.a }}
+                  />
                 )}
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── BOTTOM CTA ────────────────────────────────────────────────── */}
         <div className="bottom-cta">
           <div className="bottom-cta-blob bottom-cta-blob-1" />
           <div className="bottom-cta-blob bottom-cta-blob-2" />
+
           <span className="bottom-cta-icon">🚀</span>
           <h2 className="bottom-cta-title">Ready to take control?</h2>
           <p className="bottom-cta-sub">
-            Join thousands of Nigerians who finally understand their money. Start your free trial today — no card, no commitment.
+            Join thousands of Nigerians who finally understand their money.
+            Start your free trial today — no card, no commitment.
           </p>
-          <button className="bottom-cta-btn" onClick={() => handlePaystack("monthly")} disabled={loading}>
-            {loading ? <><div className="spinner" style={{ borderTopColor: "var(--white)", borderColor: "rgba(255,255,255,0.25)" }} />Processing…</> : <>Start free trial — ₦{price}/mo after</>}
+
+          <button
+            className="bottom-cta-btn"
+            onClick={startUpgrade}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <div
+                  className="spinner"
+                  style={{
+                    borderTopColor: "var(--white)",
+                    borderColor: "rgba(255,255,255,0.25)",
+                  }}
+                />
+                Processing…
+              </>
+            ) : (
+              <>
+                {isPremium
+                  ? "Manage subscription"
+                  : `Start free trial — ₦${price}/mo after`}
+              </>
+            )}
           </button>
+
           <div className="bottom-cta-notes">
-            {["7-day free trial", "No credit card needed", "Cancel any time", "Instant activation"].map(n => (
-              <div key={n} className="bottom-cta-note">{n}</div>
+            {[
+              "7-day free trial",
+              "No credit card needed",
+              "Cancel any time",
+              "Instant activation",
+            ].map((n) => (
+              <div key={n} className="bottom-cta-note">
+                {n}
+              </div>
             ))}
           </div>
+
           <div className="paystack-trust">
             <span className="paystack-text">Payments secured by</span>
             <span className="paystack-logo">Paystack</span>
-            <span className="paystack-text">· SSL encrypted · PCI DSS compliant</span>
+            <span className="paystack-text">
+              · SSL encrypted · PCI DSS compliant
+            </span>
           </div>
         </div>
-
       </div>
     </>
   );

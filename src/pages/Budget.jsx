@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../providers/AuthProvider";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
@@ -25,14 +25,12 @@ const styles = `
 
   .page { display:flex; flex-direction:column; gap:28px; animation:fadeIn 0.3s ease; }
 
-  /* ── PAGE HEADER ──────────────────────────────── */
   .page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:14px; animation:fadeUp 0.35s ease; }
   .page-title { font-family:'Playfair Display',serif; font-size:1.75rem; font-weight:800; color:var(--ink); letter-spacing:-0.015em; }
   .page-sub { font-size:0.875rem; color:var(--ink-subtle); margin-top:4px; }
   .btn-primary { display:flex; align-items:center; gap:7px; padding:11px 20px; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); border:none; border-radius:12px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.875rem; font-weight:700; cursor:pointer; transition:all 0.22s; box-shadow:0 4px 16px rgba(27,67,50,0.25); }
   .btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(27,67,50,0.35); }
 
-  /* ── ACTIVE BUDGET HERO ───────────────────────── */
   .active-hero {
     background:linear-gradient(140deg,var(--green-deep) 0%,var(--green-mid) 60%,var(--green-light) 100%);
     border-radius:24px; padding:32px; position:relative; overflow:hidden;
@@ -50,7 +48,6 @@ const styles = `
   .hero-period { font-size:0.82rem; color:rgba(255,255,255,0.55); }
   .hero-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
   @media(max-width:700px){ .hero-stats{ grid-template-columns:repeat(2,1fr); } }
-  .hero-stat { }
   .hero-stat-label { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:rgba(255,255,255,0.45); margin-bottom:5px; }
   .hero-stat-val { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:900; color:var(--white); line-height:1; }
   .hero-stat-val.amber { color:var(--amber-light); }
@@ -59,11 +56,9 @@ const styles = `
   .hero-bar-track { background:rgba(255,255,255,0.12); border-radius:100px; height:8px; overflow:hidden; }
   .hero-bar-fill { height:100%; border-radius:100px; transition:width 1.2s cubic-bezier(0.4,0,0.2,1); animation:barGrow 1.2s ease; }
 
-  /* ── TWO COL ──────────────────────────────────── */
   .two-col { display:grid; grid-template-columns:1fr 340px; gap:20px; }
   @media(max-width:1050px){ .two-col{ grid-template-columns:1fr; } }
 
-  /* ── SECTION CARD ─────────────────────────────── */
   .section-card { background:var(--white); border-radius:20px; border:1.5px solid var(--border); overflow:hidden; }
   .section-card-header { padding:22px 24px 0; display:flex; justify-content:space-between; align-items:flex-start; }
   .section-card-body { padding:20px 24px 24px; }
@@ -73,12 +68,8 @@ const styles = `
   .btn-sm { padding:8px 14px; border-radius:9px; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.18s; font-family:'Plus Jakarta Sans',sans-serif; border:none; }
   .btn-sm.outline { background:transparent; border:1.5px solid var(--border); color:var(--ink-muted); }
   .btn-sm.outline:hover { border-color:rgba(10,10,10,0.2); color:var(--ink); }
-  .btn-sm.green { background:var(--green-pale); color:var(--green-deep); }
-  .btn-sm.green:hover { background:#c0eaca; }
 
-  /* ── CATEGORY CAPS ────────────────────────────── */
   .cap-list { display:flex; flex-direction:column; gap:16px; }
-  .cap-item { }
   .cap-item-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
   .cap-left { display:flex; align-items:center; gap:10px; }
   .cap-icon { width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:0.9rem; }
@@ -103,7 +94,6 @@ const styles = `
   .cap-add-btn:hover { border-color:var(--green-light); color:var(--green-mid); background:var(--green-pale); }
   .cap-divider { height:1px; background:var(--border); margin:4px 0; }
 
-  /* ── ALL BUDGETS ──────────────────────────────── */
   .budget-list { display:flex; flex-direction:column; gap:10px; }
   .budget-item { display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:14px; border:1.5px solid var(--border); background:var(--white); transition:all 0.2s; cursor:pointer; }
   .budget-item:hover { border-color:rgba(64,145,108,0.3); box-shadow:var(--shadow-sm); }
@@ -120,7 +110,6 @@ const styles = `
   .budget-add-card { display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; border:1.5px dashed var(--border); border-radius:14px; cursor:pointer; transition:all 0.2s; color:var(--ink-subtle); font-size:0.875rem; font-weight:600; background:transparent; }
   .budget-add-card:hover { border-color:var(--green-light); color:var(--green-mid); background:var(--green-pale); }
 
-  /* ── RECURRING ────────────────────────────────── */
   .rec-list { display:flex; flex-direction:column; gap:10px; }
   .rec-item { display:flex; align-items:center; gap:12px; padding:14px; border-radius:14px; border:1.5px solid var(--border); transition:all 0.2s; }
   .rec-item:hover { border-color:rgba(10,10,10,0.13); box-shadow:var(--shadow-sm); }
@@ -136,7 +125,6 @@ const styles = `
   .rec-add-btn { width:100%; padding:11px; border:1.5px dashed var(--border); border-radius:12px; background:transparent; color:var(--ink-subtle); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.82rem; font-weight:600; cursor:pointer; transition:all 0.2s; margin-top:4px; }
   .rec-add-btn:hover { border-color:var(--green-light); color:var(--green-mid); background:var(--green-pale); }
 
-  /* ── PREMIUM BLUR GATE ────────────────────────── */
   .gate-wrap { position:relative; }
   .gate-blur { filter:blur(3px); opacity:0.5; pointer-events:none; user-select:none; }
   .gate-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:5; }
@@ -147,7 +135,6 @@ const styles = `
   .gate-upgrade-btn { background:var(--amber); color:var(--ink); border:none; border-radius:9px; padding:9px 20px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.82rem; font-weight:800; cursor:pointer; transition:all 0.2s; }
   .gate-upgrade-btn:hover { background:var(--amber-light); }
 
-  /* ── MODAL ────────────────────────────────────── */
   .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:100; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.2s ease; }
   @media(max-width:600px){ .modal-bg{ align-items:flex-end; padding:0; } }
   .modal { background:var(--white); border-radius:24px; padding:36px; width:100%; max-width:460px; box-shadow:0 24px 64px rgba(0,0,0,0.18); animation:scaleIn 0.3s cubic-bezier(0.34,1.3,0.64,1); }
@@ -185,11 +172,9 @@ const styles = `
   .modal-submit:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
   .spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,0.35); border-top-color:var(--white); border-radius:50%; animation:spin 0.7s linear infinite; }
 
-  /* ── TOAST ────────────────────────────────────── */
   .toast { position:fixed; bottom:24px; right:24px; z-index:200; background:var(--ink); color:var(--white); padding:13px 20px; border-radius:12px; font-size:0.875rem; font-weight:600; display:flex; align-items:center; gap:9px; box-shadow:0 8px 32px rgba(0,0,0,0.22); animation:scaleIn 0.3s ease; }
 `;
 
-// ── Data ──────────────────────────────────────────────────────────────────────
 const CATS = [
   { id: "food", icon: "🍔", label: "Food", bg: "#FFF3E0" },
   { id: "transport", icon: "🚗", label: "Transport", bg: "#E8F5E9" },
@@ -286,7 +271,6 @@ const MOCK_RECURRING = [
 
 const fmt = (n) => Number(n).toLocaleString("en-NG");
 
-// ── Budget Modal ──────────────────────────────────────────────────────────────
 function BudgetModal({ budget, onSave, onClose }) {
   const isEdit = !!budget?.id;
   const [name, setName] = useState(budget?.name ?? "");
@@ -445,7 +429,6 @@ function BudgetModal({ budget, onSave, onClose }) {
   );
 }
 
-// ── Recurring Modal ───────────────────────────────────────────────────────────
 function RecurringModal({ onSave, onClose }) {
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
@@ -464,7 +447,6 @@ function RecurringModal({ onSave, onClose }) {
     }
     setLoading(true);
     setTimeout(() => {
-      const _c = CAT_MAP[cat];
       onSave({
         id: Date.now(),
         cat,
@@ -596,7 +578,6 @@ function RecurringModal({ onSave, onClose }) {
   );
 }
 
-// ── Cap row ───────────────────────────────────────────────────────────────────
 function CapRow({ cap, onUpdate, onDelete }) {
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(String(cap.limit));
@@ -708,25 +689,24 @@ function CapRow({ cap, onUpdate, onDelete }) {
   );
 }
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
 function Toast({ msg, onDone }) {
-  useState(() => {
+  useEffect(() => {
     const t = setTimeout(onDone, 2600);
     return () => clearTimeout(t);
-  });
+  }, [onDone]);
+
   return <div className="toast">✓ {msg}</div>;
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
 export default function BudgetPage() {
   const { isPremiumOrTrial } = useAuth();
-  const isPremium = isPremiumOrTrial; // swap with useAuth().isPremiumOrTrial
+  const isPremium = isPremiumOrTrial;
 
   const [activeBudget, setActiveBudget] = useState(MOCK_ACTIVE);
   const [budgets, setBudgets] = useState(MOCK_BUDGETS);
   const [caps, setCaps] = useState(MOCK_CAPS);
   const [recurring, setRecurring] = useState(MOCK_RECURRING);
-  const [modal, setModal] = useState(null); // null|"new_budget"|"edit_budget"|"new_recurring"
+  const [modal, setModal] = useState(null);
   const [toast, setToast] = useState(null);
 
   const spentPct = Math.min(
@@ -734,15 +714,15 @@ export default function BudgetPage() {
     Math.round((112400 / activeBudget.amount) * 100),
   );
 
-  // Budget CRUD
   const saveBudget = (data) => {
     const exists = budgets.find((b) => b.id === data.id);
     if (exists) {
       setBudgets((prev) =>
         prev.map((b) => (b.id === data.id ? { ...b, ...data } : b)),
       );
-      if (activeBudget.id === data.id)
+      if (activeBudget.id === data.id) {
         setActiveBudget((prev) => ({ ...prev, ...data }));
+      }
       setToast("Budget updated");
     } else {
       setBudgets((prev) => [{ ...data, is_active: false }, ...prev]);
@@ -753,24 +733,25 @@ export default function BudgetPage() {
 
   const switchBudget = (id) => {
     setBudgets((prev) => prev.map((b) => ({ ...b, is_active: b.id === id })));
-    const b = budgets.find((b) => b.id === id);
+    const b = budgets.find((item) => item.id === id);
     if (b) {
       setActiveBudget(b);
       setToast(`Switched to "${b.name}"`);
     }
   };
 
-  // Caps CRUD
   const updateCap = (id, newLimit) => {
     setCaps((prev) =>
       prev.map((c) => (c.id === id ? { ...c, limit: newLimit } : c)),
     );
     setToast("Cap updated");
   };
+
   const deleteCap = (id) => {
     setCaps((prev) => prev.filter((c) => c.id !== id));
     setToast("Cap removed");
   };
+
   const addCap = () => {
     const usedCats = caps.map((c) => c.cat);
     const available = CATS.filter((c) => !usedCats.includes(c.id));
@@ -783,12 +764,12 @@ export default function BudgetPage() {
     setToast(`${first.label} cap added`);
   };
 
-  // Recurring CRUD
   const addRecurring = (data) => {
     setRecurring((prev) => [...prev, data]);
     setModal(null);
     setToast(`${data.name} added as recurring`);
   };
+
   const deleteRecurring = (id) => {
     setRecurring((prev) => prev.filter((r) => r.id !== id));
     setToast("Recurring expense removed");
@@ -800,6 +781,7 @@ export default function BudgetPage() {
     <>
       <style>{FONTS + styles}</style>
       {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+
       {modal === "new_budget" && (
         <BudgetModal onSave={saveBudget} onClose={() => setModal(null)} />
       )}
@@ -815,7 +797,6 @@ export default function BudgetPage() {
       )}
 
       <div className="page">
-        {/* Header */}
         <div className="page-header">
           <div>
             <div className="page-title">Budget</div>
@@ -831,7 +812,6 @@ export default function BudgetPage() {
           </button>
         </div>
 
-        {/* Active budget hero */}
         <div className="active-hero">
           <div className="hero-blob hero-blob-1" />
           <div className="hero-blob hero-blob-2" />
@@ -889,9 +869,7 @@ export default function BudgetPage() {
           </div>
         </div>
 
-        {/* Two-col: caps + budgets */}
         <div className="two-col">
-          {/* Category caps */}
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <div className="section-card">
               <div className="section-card-header">
@@ -956,7 +934,6 @@ export default function BudgetPage() {
               </div>
             </div>
 
-            {/* Recurring expenses */}
             <div className="section-card">
               <div className="section-card-header">
                 <div>
@@ -1052,7 +1029,6 @@ export default function BudgetPage() {
             </div>
           </div>
 
-          {/* All budgets */}
           <div>
             <div className="section-card">
               <div className="section-card-header">

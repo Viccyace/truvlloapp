@@ -17,16 +17,12 @@ const styles = `
   @keyframes fadeUp    { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
   @keyframes fadeIn    { from{opacity:0} to{opacity:1} }
   @keyframes scaleIn   { from{opacity:0;transform:scale(0.94)} to{opacity:1;transform:scale(1)} }
-  @keyframes drawLine  { from{stroke-dashoffset:var(--len)} to{stroke-dashoffset:0} }
-  @keyframes barRise   { from{transform:scaleY(0);transform-origin:bottom} to{transform:scaleY(1);transform-origin:bottom} }
-  @keyframes arcSpin   { from{stroke-dashoffset:var(--full)} to{stroke-dashoffset:var(--offset)} }
   @keyframes spin      { to{transform:rotate(360deg)} }
   @keyframes pulse     { 0%,100%{opacity:1} 50%{opacity:0.4} }
   @keyframes float     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
 
   .page { display:flex; flex-direction:column; gap:28px; animation:fadeIn 0.3s ease; }
 
-  /* ── HEADER ──────────────────────────── */
   .page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:14px; animation:fadeUp 0.35s ease; }
   .page-title  { font-family:'Playfair Display',serif; font-size:1.75rem; font-weight:800; color:var(--ink); letter-spacing:-0.015em; }
   .page-sub    { font-size:0.875rem; color:var(--ink-subtle); margin-top:4px; }
@@ -34,7 +30,6 @@ const styles = `
   .period-tab  { padding:8px 16px; border-radius:9px; border:none; background:transparent; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.82rem; font-weight:600; color:var(--ink-subtle); cursor:pointer; transition:all 0.2s; }
   .period-tab.active { background:var(--white); color:var(--ink); box-shadow:0 2px 8px rgba(0,0,0,0.08); }
 
-  /* ── STAT STRIP ──────────────────────── */
   .stat-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; animation:fadeUp 0.35s ease 0.04s both; }
   @media(max-width:800px){ .stat-strip{ grid-template-columns:repeat(2,1fr); } }
   .stat-card { background:var(--white); border-radius:18px; padding:20px; border:1.5px solid var(--border); transition:all 0.2s; }
@@ -50,7 +45,6 @@ const styles = `
   .stat-change.down { color:var(--red); }
   .stat-change.flat { color:var(--ink-subtle); }
 
-  /* ── CHART CARD ──────────────────────── */
   .chart-card { background:var(--white); border-radius:20px; border:1.5px solid var(--border); overflow:hidden; }
   .chart-header { padding:22px 24px 0; display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
   .chart-title { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:700; color:var(--ink); }
@@ -58,13 +52,9 @@ const styles = `
   .chart-body  { padding:0 24px 24px; }
   .pro-tag { display:inline-flex; align-items:center; gap:4px; background:var(--amber-pale); color:var(--amber); font-size:0.65rem; font-weight:800; padding:3px 9px; border-radius:100px; border:1px solid rgba(212,160,23,0.2); text-transform:uppercase; letter-spacing:0.06em; }
 
-  /* ── TWO-COL ─────────────────────────── */
   .two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; animation:fadeUp 0.35s ease 0.08s both; }
   @media(max-width:900px){ .two-col{ grid-template-columns:1fr; } }
-  .three-col { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; animation:fadeUp 0.35s ease 0.12s both; }
-  @media(max-width:900px){ .three-col{ grid-template-columns:1fr; } }
 
-  /* ── PIE CHART ───────────────────────── */
   .pie-wrap  { display:flex; gap:28px; align-items:center; flex-wrap:wrap; }
   .pie-svg-wrap { position:relative; flex-shrink:0; }
   .pie-center-text { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
@@ -79,7 +69,6 @@ const styles = `
   .legend-val   { font-size:0.82rem; font-weight:800; color:var(--ink); font-family:'Playfair Display',serif; }
   .legend-pct   { font-size:0.68rem; color:var(--ink-subtle); }
 
-  /* ── BAR CHART ───────────────────────── */
   .bar-chart-wrap { position:relative; }
   .bar-chart-svg  { overflow:visible; }
   .bar-hover-tip  {
@@ -91,7 +80,6 @@ const styles = `
   }
   .bar-hover-tip::after { content:""; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:var(--ink); }
 
-  /* ── LINE CHART ──────────────────────── */
   .line-chart-wrap { position:relative; overflow:visible; }
   .line-dot-tip {
     position:absolute; background:var(--ink); color:var(--white);
@@ -101,9 +89,7 @@ const styles = `
     transform:translate(-50%,-100%); margin-top:-10px;
   }
 
-  /* ── BUDGET BREAKDOWN ────────────────── */
   .breakdown-list { display:flex; flex-direction:column; gap:14px; }
-  .breakdown-row  { }
   .breakdown-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
   .breakdown-name  { display:flex; align-items:center; gap:9px; font-size:0.875rem; font-weight:700; color:var(--ink); }
   .breakdown-icon  { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:0.85rem; }
@@ -113,7 +99,6 @@ const styles = `
   .breakdown-bar-track { background:var(--cream-dark); border-radius:100px; height:7px; overflow:hidden; }
   .breakdown-bar-fill  { height:100%; border-radius:100px; transition:width 1s cubic-bezier(0.4,0,0.2,1); }
 
-  /* ── MOM COMPARISON ──────────────────── */
   .mom-list { display:flex; flex-direction:column; gap:8px; }
   .mom-row  { display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:12px; background:var(--bg); }
   .mom-month { font-size:0.8rem; font-weight:700; color:var(--ink); min-width:90px; }
@@ -122,7 +107,6 @@ const styles = `
   .mom-amount { font-family:'Playfair Display',serif; font-size:0.88rem; font-weight:800; color:var(--ink); min-width:80px; text-align:right; }
   .mom-change { font-size:0.7rem; font-weight:700; min-width:48px; text-align:right; }
 
-  /* ── INSIGHT CARDS ───────────────────── */
   .insight-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; animation:fadeUp 0.35s ease 0.16s both; }
   @media(max-width:900px){ .insight-strip{ grid-template-columns:1fr; } }
   .insight-card  { background:var(--ink); border-radius:18px; padding:22px; border:1px solid rgba(255,255,255,0.07); position:relative; overflow:hidden; }
@@ -134,7 +118,6 @@ const styles = `
   .insight-desc  { font-size:0.78rem; color:rgba(255,255,255,0.5); line-height:1.55; }
   .insight-desc strong { color:rgba(255,255,255,0.85); }
 
-  /* ── PREMIUM GATE ────────────────────── */
   .gate-wrap    { position:relative; }
   .gate-blur    { filter:blur(4px); opacity:0.45; pointer-events:none; user-select:none; }
   .gate-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:5; }
@@ -151,7 +134,6 @@ const styles = `
   .gate-note   { font-size:0.72rem; color:rgba(255,255,255,0.3); margin-top:10px; }
 `;
 
-// ── Palette ───────────────────────────────────────────────────────────────────
 const CAT_COLORS = {
   food: { fill: "#40916C", light: "#D8F3DC", icon: "🍔" },
   transport: { fill: "#2D6A4F", light: "#B7E4C7", icon: "🚗" },
@@ -201,22 +183,19 @@ const MOM = [
 
 const fmt = (n) => Number(n).toLocaleString("en-NG");
 
-// ── Donut chart (pure SVG) ────────────────────────────────────────────────────
 function DonutChart({ data, size = 180, thickness = 32 }) {
   const [hovered, setHovered] = useState(null);
   const [animated, setAnimated] = useState(false);
   const total = data.reduce((s, d) => s + d.amount, 0);
   const r = size / 2 - thickness / 2;
-  const _circ = 2 * Math.PI * r;
-  const cx = size / 2,
-    cy = size / 2;
+  const cx = size / 2;
+  const cy = size / 2;
 
   useEffect(() => {
     const t = setTimeout(() => setAnimated(true), 100);
     return () => clearTimeout(t);
   }, []);
 
-  // Calculate slices outside render cycle using reduce (avoids reassignment lint error)
   const slices = data.reduce((acc, d) => {
     const prev = acc.length > 0 ? acc[acc.length - 1] : null;
     const pct = d.amount / total;
@@ -237,8 +216,6 @@ function DonutChart({ data, size = 180, thickness = 32 }) {
           const startAngle = s.start;
           const endAngle = s.start + s.pct;
           const large = s.pct > 0.5 ? 1 : 0;
-          const [_x1, _y1] = toXY(startAngle, r);
-          const [_x2, _y2] = toXY(endAngle, r);
           const isHov = hovered === i;
           const rr = isHov ? r + 4 : r;
           const [hx1, hy1] = toXY(startAngle, rr);
@@ -285,13 +262,12 @@ function DonutChart({ data, size = 180, thickness = 32 }) {
   );
 }
 
-// ── Bar chart (pure SVG) ──────────────────────────────────────────────────────
 function BarChart({ data }) {
   const [tip, setTip] = useState(null);
   const [animated, setAnimated] = useState(false);
-  const W = 560,
-    H = 200,
-    PAD = { t: 10, r: 10, b: 36, l: 44 };
+  const W = 560;
+  const H = 200;
+  const PAD = { t: 10, r: 10, b: 36, l: 44 };
   const chartW = W - PAD.l - PAD.r;
   const chartH = H - PAD.t - PAD.b;
   const maxVal = Math.max(...data.map((d) => d.v));
@@ -320,7 +296,6 @@ function BarChart({ data }) {
         className="bar-chart-svg"
         style={{ overflow: "visible" }}
       >
-        {/* Grid */}
         {gridLines.map((g, i) => (
           <g key={i}>
             <line
@@ -346,7 +321,6 @@ function BarChart({ data }) {
           </g>
         ))}
 
-        {/* Bars */}
         {data.map((d, i) => {
           const x =
             PAD.l +
@@ -395,7 +369,6 @@ function BarChart({ data }) {
           );
         })}
 
-        {/* X axis */}
         <line
           x1={PAD.l}
           x2={W - PAD.r}
@@ -409,13 +382,12 @@ function BarChart({ data }) {
   );
 }
 
-// ── Line / area chart (pure SVG) ──────────────────────────────────────────────
 function LineChart({ data }) {
   const [tip, setTip] = useState(null);
   const [animated, setAnimated] = useState(false);
-  const W = 560,
-    H = 180,
-    PAD = { t: 16, r: 16, b: 32, l: 48 };
+  const W = 560;
+  const H = 180;
+  const PAD = { t: 16, r: 16, b: 32, l: 48 };
   const chartW = W - PAD.l - PAD.r;
   const chartH = H - PAD.t - PAD.b;
   const maxVal = Math.max(...data.map((d) => d.v)) * 1.15;
@@ -436,7 +408,7 @@ function LineChart({ data }) {
     .join(" ");
   const areaPath = `${linePath} L ${pts[pts.length - 1].x} ${PAD.t + chartH} L ${pts[0].x} ${PAD.t + chartH} Z`;
 
-  const pathLen = 1200; // approximate
+  const pathLen = 1200;
 
   const gridLines = [0, 0.25, 0.5, 0.75, 1].map((f) => ({
     y: PAD.t + chartH * (1 - f),
@@ -498,7 +470,6 @@ function LineChart({ data }) {
           </g>
         ))}
 
-        {/* Area */}
         <path
           d={areaPath}
           fill="url(#areaGrad)"
@@ -508,7 +479,6 @@ function LineChart({ data }) {
           }}
         />
 
-        {/* Line */}
         <path
           d={linePath}
           fill="none"
@@ -523,7 +493,6 @@ function LineChart({ data }) {
           strokeLinejoin="round"
         />
 
-        {/* Dots */}
         {pts.map((p, i) => (
           <g
             key={i}
@@ -547,7 +516,6 @@ function LineChart({ data }) {
           </g>
         ))}
 
-        {/* X labels */}
         {pts
           .filter((_, i) => i % 4 === 0)
           .map((p, i) => (
@@ -568,10 +536,10 @@ function LineChart({ data }) {
   );
 }
 
-// ── Budget breakdown ──────────────────────────────────────────────────────────
 function BudgetBreakdown({ data }) {
   const total = data.reduce((s, d) => s + d.amount, 0);
   const [animated, setAnimated] = useState(false);
+
   useEffect(() => {
     const t = setTimeout(() => setAnimated(true), 150);
     return () => clearTimeout(t);
@@ -613,10 +581,10 @@ function BudgetBreakdown({ data }) {
   );
 }
 
-// ── Month-over-month ──────────────────────────────────────────────────────────
 function MoMChart({ data }) {
   const maxVal = Math.max(...data.map((d) => d.budget));
   const [animated, setAnimated] = useState(false);
+
   useEffect(() => {
     const t = setTimeout(() => setAnimated(true), 200);
     return () => clearTimeout(t);
@@ -680,11 +648,11 @@ function MoMChart({ data }) {
   );
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
 export default function InsightsPage() {
   const { isPremiumOrTrial } = useAuth();
-  const isPremium = isPremiumOrTrial; // swap with useAuth().isPremiumOrTrial — set true to preview all charts
+  const isPremium = isPremiumOrTrial;
   const [period, setPeriod] = useState("This Month");
+
   const total = SPENDING.reduce((s, d) => s + d.amount, 0);
   const avgDaily = Math.round(
     DAILY_SPEND.reduce((s, d) => s + d.v, 0) /
@@ -697,7 +665,6 @@ export default function InsightsPage() {
     <>
       <style>{FONTS + styles}</style>
       <div className="page">
-        {/* Header */}
         <div className="page-header">
           <div>
             <div className="page-title">Insights</div>
@@ -718,7 +685,6 @@ export default function InsightsPage() {
           </div>
         </div>
 
-        {/* Stat strip */}
         <div className="stat-strip">
           <div className="stat-card">
             <div className="stat-icon" style={{ background: "#D8F3DC" }}>
@@ -756,9 +722,7 @@ export default function InsightsPage() {
           </div>
         </div>
 
-        {/* Pie + Bar row */}
         <div className="two-col">
-          {/* Pie */}
           <div className="chart-card">
             <div className="chart-header">
               <div>
@@ -817,7 +781,6 @@ export default function InsightsPage() {
             </div>
           </div>
 
-          {/* Bar */}
           <div className="chart-card">
             <div className="chart-header">
               <div>
@@ -852,7 +815,6 @@ export default function InsightsPage() {
           </div>
         </div>
 
-        {/* Line trend */}
         <div
           className="chart-card"
           style={{ animation: "fadeUp 0.35s ease 0.1s both" }}
@@ -891,7 +853,6 @@ export default function InsightsPage() {
           </div>
         </div>
 
-        {/* Budget breakdown + MoM */}
         <div
           className="two-col"
           style={{ animation: "fadeUp 0.35s ease 0.14s both" }}
@@ -940,7 +901,6 @@ export default function InsightsPage() {
           </div>
         </div>
 
-        {/* Insight cards */}
         <div className="insight-strip">
           <div className="insight-card">
             <div

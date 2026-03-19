@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import { useAuth } from "../providers/AuthProvider";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
@@ -67,9 +67,6 @@ const styles = `
   .password-wrap { position: relative; }
   .password-toggle { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--ink-subtle); font-size: 0.8rem; font-weight: 600; padding: 4px; }
   .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
-  .checkbox-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-  .checkbox-wrap input { width: 16px; height: 16px; accent-color: var(--green-light); cursor: pointer; }
-  .checkbox-label { font-size: 0.85rem; color: var(--ink-muted); }
   .forgot-link { font-size: 0.85rem; color: var(--green-mid); font-weight: 600; text-decoration: none; cursor: pointer; }
   .forgot-link:hover { color: var(--green-deep); }
   .submit-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--green-deep), var(--green-light)); color: var(--white); border: none; border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.25s; margin-bottom: 20px; box-shadow: 0 6px 24px rgba(27,67,50,0.25); display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -120,30 +117,9 @@ const GoogleIcon = () => (
   </svg>
 );
 
-async function getProfileAndRoute(userId, navigate) {
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("id, onboarding_complete, onboarding_completed")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (error) {
-    console.error("Profile fetch error after login:", error);
-    navigate("/onboarding", { replace: true });
-    return;
-  }
-
-  const hasCompletedOnboarding =
-    profile?.onboarding_complete === true ||
-    profile?.onboarding_completed === true;
-
-  navigate(hasCompletedOnboarding ? "/dashboard" : "/onboarding", {
-    replace: true,
-  });
-}
-
 function LoginForm({ onSwitch }) {
-  const navigate = useNavigate();
+  const { signIn, signInWithGoogle, sendPasswordReset } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -151,14 +127,14 @@ function LoginForm({ onSwitch }) {
   const [errors, setErrors] = useState({});
   const [globalError, setGlobalError] = useState("");
   const [resetSent, setResetSent] = useState(false);
-  const [resetMode] = useState(false);
 
   const validate = () => {
     const e = {};
     if (!email) e.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(email))
+    else if (!/\S+@\S+\.\S+/.test(email)) {
       e.email = "Enter a valid email address";
-    if (!resetMode && !password) e.password = "Password is required";
+    }
+    if (!password) e.password = "Password is required";
     return e;
   };
 
@@ -174,24 +150,13 @@ function LoginForm({ onSwitch }) {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { error } = await signIn({ email, password });
 
       if (error) {
         setGlobalError(
           error.message || "Invalid email or password. Please try again.",
         );
-        return;
       }
-
-      if (!data?.user) {
-        setGlobalError("Could not sign you in.");
-        return;
-      }
-
-      await getProfileAndRoute(data.user.id, navigate);
     } catch (err) {
       console.error("Login error:", err);
       setGlobalError(err?.message || "Could not sign you in.");
@@ -207,24 +172,33 @@ function LoginForm({ onSwitch }) {
     }
 
     setLoading(true);
+    setGlobalError("");
+
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
-      });
+      const { error } = await sendPasswordReset(email);
       if (error) throw error;
       setResetSent(true);
     } catch (err) {
-      setGlobalError(err.message);
+      setGlobalError(err?.message || "Could not send reset email.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/dashboard` },
-    });
+    setGlobalError("");
+    setLoading(true);
+
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        setGlobalError(error.message || "Google sign-in failed.");
+      }
+    } catch (err) {
+      setGlobalError(err?.message || "Google sign-in failed.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (resetSent) {
@@ -307,7 +281,7 @@ function LoginForm({ onSwitch }) {
       </button>
 
       <div className="divider">or continue with</div>
-      <button className="social-btn" onClick={handleGoogle}>
+      <button className="social-btn" onClick={handleGoogle} disabled={loading}>
         <GoogleIcon /> Continue with Google
       </button>
 
@@ -319,7 +293,8 @@ function LoginForm({ onSwitch }) {
 }
 
 function SignupForm({ onSwitch }) {
-  const navigate = useNavigate();
+  const { signUp } = useAuth();
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -338,14 +313,17 @@ function SignupForm({ onSwitch }) {
     if (!firstName.trim()) e.firstName = "First name is required";
     if (!lastName.trim()) e.lastName = "Last name is required";
     if (!email) e.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(email))
+    else if (!/\S+@\S+\.\S+/.test(email)) {
       e.email = "Enter a valid email address";
+    }
     if (!password) e.password = "Password is required";
-    else if (password.length < 8)
+    else if (password.length < 8) {
       e.password = "Password must be at least 8 characters";
+    }
     if (!confirmPassword) e.confirmPassword = "Please confirm your password";
-    else if (password !== confirmPassword)
+    else if (password !== confirmPassword) {
       e.confirmPassword = "Passwords don't match";
+    }
     if (!agreeTerms) e.terms = "You must agree to the terms to continue";
     return e;
   };
@@ -364,16 +342,11 @@ function SignupForm({ onSwitch }) {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await signUp({
         email,
         password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            full_name: `${firstName} ${lastName}`.trim(),
-          },
-        },
+        firstName,
+        lastName,
       });
 
       if (error) {
@@ -389,51 +362,28 @@ function SignupForm({ onSwitch }) {
         return;
       }
 
-      if (!data?.user) {
-        setGlobalError("Signup failed. Please try again.");
-        return;
-      }
-
-      const { error: profileError } = await supabase.from("profiles").upsert(
-        {
-          id: data.user.id,
-          email,
-          full_name: `${firstName} ${lastName}`.trim(),
-          first_name: firstName,
-          last_name: lastName,
-          currency: "NGN",
-          plan: "basic",
-          onboarding_completed: false,
-          onboarding_complete: false,
-          trial_activated: false,
-          trial_ends_at: null,
-        },
-        { onConflict: "id" },
-      );
-
-      if (profileError) {
-        console.error("Profile creation error:", profileError);
-        setGlobalError(profileError.message || "Could not create profile.");
-        return;
-      }
-
       setSubmitted(true);
-
-      setTimeout(() => {
-        navigate("/onboarding");
-      }, 900);
     } catch (err) {
-      setGlobalError(err.message || "Something went wrong. Please try again.");
+      setGlobalError(err?.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/dashboard` },
-    });
+    setGlobalError("");
+    setLoading(true);
+
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        setGlobalError(error.message || "Google sign-in failed.");
+      }
+    } catch (err) {
+      setGlobalError(err?.message || "Google sign-in failed.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -442,7 +392,8 @@ function SignupForm({ onSwitch }) {
         <div className="success-icon">🎉</div>
         <div className="success-title">Account created!</div>
         <p className="success-sub">
-          Welcome to Truvllo, {firstName}! Your account is ready.
+          Welcome to Truvllo, {firstName}! Your account is ready. Continue to
+          sign in.
         </p>
       </div>
     );
@@ -612,11 +563,6 @@ function SignupForm({ onSwitch }) {
 
       <button className="submit-btn" onClick={handleSignup} disabled={loading}>
         {loading ? <div className="spinner" /> : "Create my free account"}
-      </button>
-
-      <div className="divider">or sign up with</div>
-      <button className="social-btn" onClick={handleGoogle}>
-        <GoogleIcon /> Continue with Google
       </button>
 
       <div className="switch-text">

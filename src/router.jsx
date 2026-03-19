@@ -15,71 +15,28 @@ function LoadingScreen() {
   return <div style={{ padding: 24 }}>Loading...</div>;
 }
 
-function hasCompletedOnboarding(profile) {
-  return (
-    profile?.onboarding_complete === true ||
-    profile?.onboarding_completed === true
-  );
-}
-
 function ProtectedRoute() {
-  const { user, loading, profile, profileLoading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/auth" replace />;
-
-  // Wait until profile hydration settles before redirecting
-  if (profileLoading && !profile) return <LoadingScreen />;
-
-  if (profile && !hasCompletedOnboarding(profile)) {
-    return <Navigate to="/onboarding" replace />;
-  }
 
   return <Outlet />;
 }
 
 function PublicRoute() {
-  const { user, loading, profile, profileLoading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) return <LoadingScreen />;
-  if (!user) return <Outlet />;
+  if (user) return <Navigate to="/dashboard" replace />;
 
-  if (profileLoading && !profile) return <LoadingScreen />;
-
-  if (profile && hasCompletedOnboarding(profile)) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  if (profile && !hasCompletedOnboarding(profile)) {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  return <LoadingScreen />;
-}
-
-function OnboardingRoute() {
-  const { user, loading, profile, profileLoading } = useAuth();
-
-  if (loading) return <LoadingScreen />;
-  if (!user) return <Navigate to="/auth" replace />;
-
-  if (profileLoading && !profile) return <LoadingScreen />;
-
-  if (profile && hasCompletedOnboarding(profile)) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  return <Onboarding />;
+  return <Outlet />;
 }
 
 export const router = createBrowserRouter([
   {
     element: <PublicRoute />,
     children: [{ path: "/auth", element: <Auth /> }],
-  },
-  {
-    path: "/onboarding",
-    element: <OnboardingRoute />,
   },
   {
     element: <ProtectedRoute />,
@@ -89,6 +46,7 @@ export const router = createBrowserRouter([
         children: [
           { path: "/", element: <Navigate to="/dashboard" replace /> },
           { path: "/dashboard", element: <Dashboard /> },
+          { path: "/onboarding", element: <Onboarding /> },
           { path: "/budget", element: <Budget /> },
           { path: "/expenses", element: <Expenses /> },
           { path: "/insights", element: <Insights /> },

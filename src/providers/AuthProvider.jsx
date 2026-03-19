@@ -160,34 +160,30 @@ export function AuthProvider({ children }) {
   const ensureProfile = useCallback(
     async (authUser) => {
       if (!authUser) {
-        if (mountedRef.current) {
-          setProfile(null);
-          setLoading(false);
-        }
         return { data: null, error: { message: "Missing auth user" } };
       }
 
       if (ensureProfilePromiseRef.current) {
-        return ensureProfilePromiseRef.current;
+        return await ensureProfilePromiseRef.current;
       }
 
       ensureProfilePromiseRef.current = (async () => {
-        const fetched = await fetchProfile(authUser.id);
+        try {
+          const fetched = await fetchProfile(authUser.id);
 
-        if (fetched.data) {
-          if (mountedRef.current) setLoading(false);
-          return fetched;
+          if (fetched.data) {
+            return fetched;
+          }
+
+          if (fetched.error && !isMissingProfileError(fetched.error)) {
+            return fetched;
+          }
+
+          return await createOrRepairProfile(authUser, false);
+        } catch (err) {
+          console.error("[AuthProvider] ensureProfile error:", err);
+          return { data: null, error: err };
         }
-
-        if (fetched.error && !isMissingProfileError(fetched.error)) {
-          if (mountedRef.current) setLoading(false);
-          return fetched;
-        }
-
-        const repaired = await createOrRepairProfile(authUser, false);
-
-        if (mountedRef.current) setLoading(false);
-        return repaired;
       })();
 
       try {
@@ -203,28 +199,42 @@ export function AuthProvider({ children }) {
     mountedRef.current = true;
 
     const bootstrap = async () => {
-      setLoading(true);
+      try {
+        setLoading(true);
 
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
 
-      if (error) {
-        console.error("[AuthProvider] getSession error:", error);
+        if (error) {
+          console.error("[AuthProvider] getSession error:", error);
+        }
+
+        const authUser = session?.user ?? null;
+        if (!mountedRef.current) return;
+
+        setUser(authUser);
+
+        if (!authUser) {
+          setProfile(null);
+          clearCachedProfile();
+          return;
+        }
+
+        await ensureProfile(authUser);
+      } catch (err) {
+        console.error("[AuthProvider] bootstrap error:", err);
+        if (mountedRef.current) {
+          setUser(null);
+          setProfile(null);
+          clearCachedProfile();
+        }
+      } finally {
+        if (mountedRef.current) {
+          setLoading(false);
+        }
       }
-
-      const authUser = session?.user ?? null;
-      setUser(authUser);
-
-      if (!authUser) {
-        setProfile(null);
-        clearCachedProfile();
-        setLoading(false);
-        return;
-      }
-
-      await ensureProfile(authUser);
     };
 
     bootstrap();
@@ -234,18 +244,27 @@ export function AuthProvider({ children }) {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "INITIAL_SESSION") return;
 
-      const authUser = session?.user ?? null;
-      setUser(authUser);
+      try {
+        const authUser = session?.user ?? null;
+        if (!mountedRef.current) return;
 
-      if (!authUser) {
-        setProfile(null);
-        clearCachedProfile();
-        setLoading(false);
-        return;
+        setUser(authUser);
+
+        if (!authUser) {
+          setProfile(null);
+          clearCachedProfile();
+          return;
+        }
+
+        setLoading(true);
+        await ensureProfile(authUser);
+      } catch (err) {
+        console.error("[AuthProvider] onAuthStateChange error:", err);
+      } finally {
+        if (mountedRef.current) {
+          setLoading(false);
+        }
       }
-
-      setLoading(true);
-      await ensureProfile(authUser);
     });
 
     return () => {

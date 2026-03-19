@@ -293,7 +293,7 @@ function LoginForm({ onSwitch }) {
 }
 
 function SignupForm({ onSwitch }) {
-  const { signUp } = useAuth();
+  const { signUp, signInWithGoogle } = useAuth();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");

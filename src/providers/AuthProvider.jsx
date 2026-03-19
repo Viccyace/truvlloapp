@@ -95,6 +95,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const mountedRef = useRef(true);
+  const ensureProfilePromiseRef = useRef(null);
 
   const setProfileState = useCallback((nextProfile) => {
     if (!mountedRef.current) return;
@@ -166,22 +167,34 @@ export function AuthProvider({ children }) {
         return { data: null, error: { message: "Missing auth user" } };
       }
 
-      const fetched = await fetchProfile(authUser.id);
-
-      if (fetched.data) {
-        if (mountedRef.current) setLoading(false);
-        return fetched;
+      if (ensureProfilePromiseRef.current) {
+        return ensureProfilePromiseRef.current;
       }
 
-      if (fetched.error && !isMissingProfileError(fetched.error)) {
+      ensureProfilePromiseRef.current = (async () => {
+        const fetched = await fetchProfile(authUser.id);
+
+        if (fetched.data) {
+          if (mountedRef.current) setLoading(false);
+          return fetched;
+        }
+
+        if (fetched.error && !isMissingProfileError(fetched.error)) {
+          if (mountedRef.current) setLoading(false);
+          return fetched;
+        }
+
+        const repaired = await createOrRepairProfile(authUser, false);
+
         if (mountedRef.current) setLoading(false);
-        return fetched;
+        return repaired;
+      })();
+
+      try {
+        return await ensureProfilePromiseRef.current;
+      } finally {
+        ensureProfilePromiseRef.current = null;
       }
-
-      const repaired = await createOrRepairProfile(authUser, false);
-
-      if (mountedRef.current) setLoading(false);
-      return repaired;
     },
     [fetchProfile, createOrRepairProfile],
   );
@@ -218,7 +231,9 @@ export function AuthProvider({ children }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "INITIAL_SESSION") return;
+
       const authUser = session?.user ?? null;
       setUser(authUser);
 

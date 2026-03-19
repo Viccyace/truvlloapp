@@ -81,11 +81,7 @@ export function AuthProvider({ children }) {
 
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(cachedProfile);
-
-  // authLoading controls routing boot only
   const [authLoading, setAuthLoading] = useState(true);
-
-  // profileLoading is background hydration/repair state
   const [profileLoading, setProfileLoading] = useState(false);
 
   const mountedRef = useRef(true);
@@ -224,8 +220,6 @@ export function AuthProvider({ children }) {
         if (!mountedRef.current) return;
 
         setUser(authUser);
-
-        // App boot should stop blocking once session is known
         setAuthLoading(false);
 
         if (!authUser) {
@@ -233,7 +227,6 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        // Hydrate profile in background
         ensureProfile(authUser).catch((err) => {
           console.error("[AuthProvider] bootstrap ensureProfile error:", err);
         });
@@ -253,7 +246,8 @@ export function AuthProvider({ children }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // bootstrap already handles first load
+      console.log("[AUTH EVENT]", event, session?.user?.id || null);
+
       if (event === "INITIAL_SESSION") return;
 
       try {
@@ -268,7 +262,6 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        // Do not block whole app during profile hydration
         setAuthLoading(false);
 
         ensureProfile(authUser).catch((err) => {
@@ -290,6 +283,18 @@ export function AuthProvider({ children }) {
       subscription.unsubscribe();
     };
   }, [ensureProfile, clearProfileState]);
+
+  useEffect(() => {
+    console.log("[AUTH STATE]", {
+      userId: user?.id || null,
+      authLoading,
+      profileLoading,
+      profileId: profile?.id || null,
+      onboarding_complete: profile?.onboarding_complete,
+      onboarding_completed: profile?.onboarding_completed,
+      path: window.location.pathname,
+    });
+  }, [user, authLoading, profileLoading, profile]);
 
   const signUp = useCallback(
     async ({ email, password, firstName, lastName }) => {

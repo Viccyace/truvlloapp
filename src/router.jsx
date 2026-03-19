@@ -18,7 +18,7 @@ function ProtectedRoute() {
   if (!user) return <Navigate to="/auth" replace />;
 
   if (!profile) {
-    return <Navigate to="/onboarding" replace />;
+    return <Outlet />;
   }
 
   const hasCompletedOnboarding =

@@ -219,19 +219,23 @@ export function AuthProvider({ children }) {
         if (!authUser) {
           setProfile(null);
           clearCachedProfile();
+          setLoading(false);
           return;
         }
 
-        await ensureProfile(authUser);
+        // Stop blocking the whole app here
+        setLoading(false);
+
+        // Refresh profile in background
+        ensureProfile(authUser).catch((err) => {
+          console.error("[AuthProvider] background ensureProfile error:", err);
+        });
       } catch (err) {
         console.error("[AuthProvider] bootstrap error:", err);
         if (mountedRef.current) {
           setUser(null);
           setProfile(null);
           clearCachedProfile();
-        }
-      } finally {
-        if (mountedRef.current) {
           setLoading(false);
         }
       }
@@ -253,14 +257,20 @@ export function AuthProvider({ children }) {
         if (!authUser) {
           setProfile(null);
           clearCachedProfile();
+          setLoading(false);
           return;
         }
 
-        setLoading(true);
-        await ensureProfile(authUser);
+        setLoading(false);
+
+        ensureProfile(authUser).catch((err) => {
+          console.error(
+            "[AuthProvider] onAuthStateChange ensureProfile error:",
+            err,
+          );
+        });
       } catch (err) {
         console.error("[AuthProvider] onAuthStateChange error:", err);
-      } finally {
         if (mountedRef.current) {
           setLoading(false);
         }

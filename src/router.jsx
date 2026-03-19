@@ -11,21 +11,27 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { useAuth } from "./providers/AuthProvider";
 
-function ProtectedRoute() {
-  const { user, profile, loading } = useAuth();
+function LoadingScreen() {
+  return <div style={{ padding: 24 }}>Loading...</div>;
+}
 
-  if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
+function hasCompletedOnboarding(profile) {
+  return (
+    profile?.onboarding_complete === true ||
+    profile?.onboarding_completed === true
+  );
+}
+
+function ProtectedRoute() {
+  const { user, loading, profile, profileLoading } = useAuth();
+
+  if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/auth" replace />;
 
-  if (!profile) {
-    return <Outlet />;
-  }
+  // Wait until profile hydration settles before redirecting
+  if (profileLoading && !profile) return <LoadingScreen />;
 
-  const hasCompletedOnboarding =
-    profile.onboarding_complete === true ||
-    profile.onboarding_completed === true;
-
-  if (!hasCompletedOnboarding) {
+  if (profile && !hasCompletedOnboarding(profile)) {
     return <Navigate to="/onboarding" replace />;
   }
 
@@ -33,40 +39,33 @@ function ProtectedRoute() {
 }
 
 function PublicRoute() {
-  const { user, profile, loading } = useAuth();
+  const { user, loading, profile, profileLoading } = useAuth();
 
-  if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
+  if (loading) return <LoadingScreen />;
+  if (!user) return <Outlet />;
 
-  const hasCompletedOnboarding =
-    profile?.onboarding_complete === true ||
-    profile?.onboarding_completed === true;
+  if (profileLoading && !profile) return <LoadingScreen />;
 
-  if (user && hasCompletedOnboarding) {
+  if (profile && hasCompletedOnboarding(profile)) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (user && !hasCompletedOnboarding) {
+  if (profile && !hasCompletedOnboarding(profile)) {
     return <Navigate to="/onboarding" replace />;
   }
 
-  return <Outlet />;
+  return <LoadingScreen />;
 }
 
 function OnboardingRoute() {
-  const { user, profile, loading } = useAuth();
+  const { user, loading, profile, profileLoading } = useAuth();
 
-  if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
+  if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/auth" replace />;
 
-  if (!profile) {
-    return <Onboarding />;
-  }
+  if (profileLoading && !profile) return <LoadingScreen />;
 
-  const hasCompletedOnboarding =
-    profile.onboarding_complete === true ||
-    profile.onboarding_completed === true;
-
-  if (hasCompletedOnboarding) {
+  if (profile && hasCompletedOnboarding(profile)) {
     return <Navigate to="/dashboard" replace />;
   }
 

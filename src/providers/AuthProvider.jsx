@@ -161,7 +161,7 @@ export function AuthProvider({ children }) {
       if (!authUser) {
         if (mountedRef.current) {
           clearProfileState();
-          setLoading(false);
+          setProfileLoading(false);
         }
         return { data: null, error: { message: "Missing auth user" } };
       }
@@ -186,10 +186,12 @@ export function AuthProvider({ children }) {
           }
 
           return await createOrRepairProfile(authUser, false);
+        } catch (error) {
+          console.error("[AuthProvider] ensureProfile error:", error);
+          return { data: null, error };
         } finally {
           if (mountedRef.current) {
             setProfileLoading(false);
-            setLoading(false);
           }
           ensureProfilePromiseRef.current = null;
         }
@@ -222,16 +224,22 @@ export function AuthProvider({ children }) {
 
         setUser(authUser);
 
+        // IMPORTANT: auth loading ends here
+        setLoading(false);
+
         if (!authUser) {
           clearProfileState();
-          setLoading(false);
           return;
         }
 
-        await ensureProfile(authUser);
+        ensureProfile(authUser).catch((err) => {
+          console.error("[AuthProvider] bootstrap ensureProfile error:", err);
+        });
       } catch (err) {
         console.error("[AuthProvider] bootstrap error:", err);
+
         if (!mountedRef.current) return;
+
         setUser(null);
         clearProfileState();
         setLoading(false);
@@ -257,7 +265,15 @@ export function AuthProvider({ children }) {
         return;
       }
 
-      await ensureProfile(authUser);
+      // IMPORTANT: auth already known, don't block app here
+      setLoading(false);
+
+      ensureProfile(authUser).catch((err) => {
+        console.error(
+          "[AuthProvider] onAuthStateChange ensureProfile error:",
+          err,
+        );
+      });
     });
 
     return () => {

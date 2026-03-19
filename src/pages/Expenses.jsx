@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useAuth } from "../providers/AuthProvider";
 import {
   Plus,
@@ -46,7 +46,6 @@ const styles = `
 
   .page { display:flex; flex-direction:column; gap:24px; animation:fadeIn 0.3s ease; }
 
-  /* ── PAGE HEADER ─────────────────────── */
   .page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px; animation:fadeUp 0.35s ease; }
   .page-title  { font-family:'Playfair Display',serif; font-size:1.75rem; font-weight:800; color:var(--ink); letter-spacing:-0.015em; }
   .page-sub    { font-size:0.875rem; color:var(--ink-subtle); margin-top:4px; }
@@ -79,7 +78,6 @@ const styles = `
 
   .premium-badge { position:absolute; top:-7px; right:-7px; background:var(--amber); color:var(--ink); font-size:0.55rem; font-weight:800; padding:2px 6px; border-radius:100px; text-transform:uppercase; letter-spacing:0.06em; }
 
-  /* ── STATS ───────────────────────────── */
   .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; animation:fadeUp 0.35s ease 0.05s both; }
   @media(max-width:800px){ .stats-row{ grid-template-columns:repeat(2,1fr); } }
   @media(max-width:480px){ .stats-row{ grid-template-columns:repeat(2,1fr); gap:10px; } }
@@ -91,7 +89,6 @@ const styles = `
   .stat-val.amber { color:var(--amber); }
   .stat-sub  { font-size:0.72rem; color:var(--ink-subtle); margin-top:4px; }
 
-  /* ── TOOLBAR ─────────────────────────── */
   .toolbar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; animation:fadeUp 0.35s ease 0.08s both; }
   .search-wrap {
     flex:1; min-width:220px; display:flex; align-items:center; gap:8px;
@@ -117,7 +114,6 @@ const styles = `
   .view-btn { width:34px; height:34px; border:none; border-radius:8px; background:transparent; cursor:pointer; transition:all 0.18s; color:var(--ink-subtle); display:flex; align-items:center; justify-content:center; }
   .view-btn.active { background:var(--white); color:var(--ink); box-shadow:var(--shadow-sm); }
 
-  /* ── CARD VIEW ───────────────────────── */
   .expense-cards { display:flex; flex-direction:column; gap:8px; }
   .expense-card {
     background:var(--white); border-radius:16px; padding:16px 18px;
@@ -140,7 +136,6 @@ const styles = `
   .exp-act-btn:hover { background:rgba(10,10,10,0.08); color:var(--ink); }
   .exp-act-btn.del:hover { background:var(--red-pale); color:var(--red); }
 
-  /* ── TABLE VIEW ──────────────────────── */
   .table-wrap { background:var(--white); border-radius:18px; border:1.5px solid var(--border); overflow:hidden; }
   table { width:100%; border-collapse:collapse; }
   thead { background:var(--bg); }
@@ -155,13 +150,11 @@ const styles = `
   .td-actions { display:flex; gap:6px; justify-content:flex-end; opacity:0; transition:opacity 0.18s; }
   tr:hover .td-actions { opacity:1; }
 
-  /* ── EMPTY ───────────────────────────── */
   .empty { text-align:center; padding:60px 20px; }
   .empty-icon  { margin-bottom:14px; color:var(--ink-subtle); display:flex; justify-content:center; }
   .empty-title { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; margin-bottom:6px; }
   .empty-sub   { font-size:0.875rem; color:var(--ink-subtle); line-height:1.6; max-width:280px; margin:0 auto; }
 
-  /* ── PAGINATION ──────────────────────── */
   .pagination { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-top:1.5px solid var(--border); flex-wrap:wrap; gap:10px; }
   .page-info  { font-size:0.8rem; color:var(--ink-subtle); font-weight:500; }
   .page-btns  { display:flex; gap:6px; }
@@ -170,7 +163,6 @@ const styles = `
   .page-btn.active   { background:var(--green-light); border-color:var(--green-light); color:var(--white); }
   .page-btn:disabled { opacity:0.4; cursor:not-allowed; }
 
-  /* ── MODAL ───────────────────────────── */
   .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:100; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.2s ease; }
   @media(max-width:600px){ .modal-bg{ align-items:flex-end; padding:0; } }
   .modal {
@@ -213,7 +205,6 @@ const styles = `
   .modal-delete:hover { background:rgba(229,57,53,0.15); }
   .spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,0.35); border-top-color:var(--white); border-radius:50%; animation:spin 0.7s linear infinite; }
 
-  /* ── RECURRING ───────────────────────── */
   .recurring-section { animation:fadeUp 0.35s ease 0.1s both; }
   .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
   .section-title  { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; }
@@ -235,7 +226,6 @@ const styles = `
   .rec-add-card { background:var(--cream-dark); border-radius:16px; padding:18px; border:1.5px dashed var(--border); display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; transition:all 0.2s; color:var(--ink-subtle); font-size:0.875rem; font-weight:600; min-height:100px; }
   .rec-add-card:hover { border-color:var(--green-light); color:var(--green-mid); background:var(--green-pale); }
 
-  /* ── PREMIUM GATE ────────────────────── */
   .premium-gate { position:absolute; bottom:16px; right:16px; background:var(--ink); border-radius:14px; padding:14px 16px; display:flex; gap:10px; align-items:flex-start; box-shadow:0 8px 32px rgba(0,0,0,0.2); max-width:280px; z-index:10; animation:scaleIn 0.3s ease; }
   .gate-text    { font-size:0.78rem; color:rgba(255,255,255,0.7); line-height:1.55; }
   .gate-text strong { color:var(--white); font-weight:700; display:block; margin-bottom:2px; }
@@ -244,11 +234,9 @@ const styles = `
   .gate-close   { position:absolute; top:8px; right:8px; background:rgba(255,255,255,0.1); border:none; border-radius:6px; width:20px; height:20px; color:rgba(255,255,255,0.5); cursor:pointer; font-size:0.7rem; display:flex; align-items:center; justify-content:center; transition:all 0.18s; }
   .gate-close:hover { background:rgba(255,255,255,0.18); color:var(--white); }
 
-  /* ── TOAST ───────────────────────────── */
   .toast { position:fixed; bottom:24px; right:24px; z-index:200; background:var(--ink); color:var(--white); padding:13px 20px; border-radius:12px; font-size:0.875rem; font-weight:600; display:flex; align-items:center; gap:9px; box-shadow:0 8px 32px rgba(0,0,0,0.22); animation:scaleIn 0.3s ease; }
 `;
 
-// ── Category config ───────────────────────────────────────────────────────────
 const CATEGORIES = [
   {
     id: "food",
@@ -478,7 +466,6 @@ function fmtDate(d) {
   });
 }
 
-// ── ExpenseModal ──────────────────────────────────────────────────────────────
 function ExpenseModal({ expense, onSave, onDelete, onClose }) {
   const isEdit = !!expense?.id;
   const [desc, setDesc] = useState(expense?.desc ?? "");
@@ -632,7 +619,6 @@ function ExpenseModal({ expense, onSave, onDelete, onClose }) {
   );
 }
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
 function Toast({ msg, onDone }) {
   useEffect(() => {
     const t = setTimeout(onDone, 2600);
@@ -646,7 +632,6 @@ function Toast({ msg, onDone }) {
   );
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState(MOCK_EXPENSES);
   const [recurring, setRecurring] = useState(MOCK_RECURRING);
@@ -658,8 +643,32 @@ export default function ExpensesPage() {
   const [toast, setToast] = useState(null);
   const [showGate, setShowGate] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const { isPremiumOrTrial } = useAuth();
+
+  const { isPremiumOrTrial, profile, updateProfile } = useAuth();
   const isPremium = isPremiumOrTrial;
+
+  const activateTrialIfEligible = useCallback(async () => {
+    if (!profile) return;
+    if (profile.plan === "premium" || profile.plan === "trial") return;
+    if (profile.trial_activated) return;
+
+    const now = new Date();
+    const endsAt = new Date(now);
+    endsAt.setDate(endsAt.getDate() + 7);
+
+    const { error } = await updateProfile({
+      plan: "trial",
+      trial_activated: true,
+      trial_started_at: now.toISOString(),
+      trial_ends_at: endsAt.toISOString(),
+    });
+
+    if (!error) {
+      setToast("🎉 7-day Premium trial activated");
+    } else {
+      console.error("Trial activation failed:", error);
+    }
+  }, [profile, updateProfile]);
 
   const filtered = useMemo(
     () =>
@@ -688,15 +697,18 @@ export default function ExpensesPage() {
     ? Math.round(totalSpent / expenses.length)
     : 0;
 
-  const saveExpense = (data) => {
+  const saveExpense = async (data) => {
     const exists = expenses.find((e) => e.id === data.id);
+
     if (exists) {
       setExpenses((prev) => prev.map((e) => (e.id === data.id ? data : e)));
       setToast("Expense updated");
     } else {
       setExpenses((prev) => [data, ...prev]);
       setToast("Expense added");
+      await activateTrialIfEligible();
     }
+
     setModal(null);
   };
 
@@ -705,6 +717,7 @@ export default function ExpensesPage() {
     setModal(null);
     setToast("Expense deleted");
   };
+
   const deleteRecurring = (id) => {
     setRecurring((prev) => prev.filter((r) => r.id !== id));
     setToast("Recurring removed");
@@ -735,7 +748,6 @@ export default function ExpensesPage() {
     URL.revokeObjectURL(url);
   };
 
-  // Handle imported transactions from BankImport
   const handleImport = async (transactions) => {
     const newExpenses = transactions.map((t) => ({
       id: Date.now() + Math.random(),
@@ -748,8 +760,13 @@ export default function ExpensesPage() {
       date: t.date,
       note: "Imported from bank",
     }));
+
     setExpenses((prev) => [...newExpenses, ...prev]);
     setToast(`${newExpenses.length} transactions imported`);
+
+    if (newExpenses.length > 0) {
+      await activateTrialIfEligible();
+    }
   };
 
   const searchRef = useRef();
@@ -778,7 +795,6 @@ export default function ExpensesPage() {
       )}
 
       <div className="page">
-        {/* Header */}
         <div className="page-header">
           <div>
             <div className="page-title">Expenses</div>
@@ -800,7 +816,6 @@ export default function ExpensesPage() {
           </div>
         </div>
 
-        {/* Stats */}
         <div className="stats-row">
           <div className="stat-card">
             <div className="stat-label">Total Spent</div>
@@ -827,7 +842,6 @@ export default function ExpensesPage() {
           </div>
         </div>
 
-        {/* Toolbar */}
         <div className="toolbar">
           <div
             className="search-wrap"
@@ -894,7 +908,6 @@ export default function ExpensesPage() {
           </div>
         </div>
 
-        {/* List */}
         {paginated.length === 0 ? (
           <div className="empty">
             <div className="empty-icon">
@@ -1075,7 +1088,6 @@ export default function ExpensesPage() {
           </div>
         )}
 
-        {/* Card view pagination */}
         {view === "card" && totalPages > 1 && (
           <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
             <button
@@ -1104,7 +1116,6 @@ export default function ExpensesPage() {
           </div>
         )}
 
-        {/* Recurring expenses */}
         <div className="recurring-section" style={{ position: "relative" }}>
           <div className="section-header">
             <div>

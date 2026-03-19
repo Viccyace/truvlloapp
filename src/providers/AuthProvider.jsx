@@ -47,17 +47,6 @@ function clearCachedProfile() {
   }
 }
 
-function isMissingProfileError(error) {
-  if (!error) return false;
-  const msg = error.message?.toLowerCase() || "";
-  return (
-    error.code === "PGRST116" ||
-    msg.includes("0 rows") ||
-    msg.includes("no rows") ||
-    msg.includes("json object requested")
-  );
-}
-
 function buildBaseProfile(
   authUser,
   currency = "NGN",
@@ -92,7 +81,12 @@ export function AuthProvider({ children }) {
 
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(cachedProfile);
-  const [loading, setLoading] = useState(true);
+
+  // authLoading controls routing boot only
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // profileLoading is background hydration/repair state
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const mountedRef = useRef(true);
   const ensureProfilePromiseRef = useRef(null);
@@ -103,9 +97,17 @@ export function AuthProvider({ children }) {
     writeCachedProfile(nextProfile);
   }, []);
 
+  const clearProfileState = useCallback(() => {
+    if (!mountedRef.current) return;
+    setProfile(null);
+    clearCachedProfile();
+  }, []);
+
   const fetchProfile = useCallback(
     async (userId) => {
-      if (!userId) return { data: null, error: { message: "Missing user id" } };
+      if (!userId) {
+        return { data: null, error: { message: "Missing user id" } };
+      }
 
       const { data, error } = await supabase
         .from("profiles")
@@ -120,10 +122,9 @@ export function AuthProvider({ children }) {
 
       if (data) {
         setProfileState(data);
-        return { data, error: null };
       }
 
-      return { data: null, error: null };
+      return { data: data ?? null, error: null };
     },
     [setProfileState],
   );
@@ -134,11 +135,19 @@ export function AuthProvider({ children }) {
         return { data: null, error: { message: "Missing auth user" } };
       }
 
-      const payload = buildBaseProfile(
-        authUser,
-        profile?.currency || "NGN",
-        onboardingComplete,
-      );
+      const payload = {
+        ...buildBaseProfile(
+          authUser,
+          profile?.currency || "NGN",
+          onboardingComplete,
+        ),
+        plan: profile?.plan || "basic",
+        trial_activated: profile?.trial_activated ?? false,
+        trial_ends_at: profile?.trial_ends_at ?? null,
+        avatar_url: profile?.avatar_url ?? null,
+        subscription_ends_at: profile?.subscription_ends_at ?? null,
+        subscription_cancelled: profile?.subscription_cancelled ?? false,
+      };
 
       const { data, error } = await supabase
         .from("profiles")
@@ -154,11 +163,11 @@ export function AuthProvider({ children }) {
       setProfileState(data);
       return { data, error: null };
     },
-    [profile?.currency, setProfileState],
+    [profile, setProfileState],
   );
 
   const ensureProfile = useCallback(
-    async (authUser) => {
+    async (authUser, onboardingComplete = false) => {
       if (!authUser) {
         return { data: null, error: { message: "Missing auth user" } };
       }
@@ -168,6 +177,8 @@ export function AuthProvider({ children }) {
       }
 
       ensureProfilePromiseRef.current = (async () => {
+        if (mountedRef.current) setProfileLoading(true);
+
         try {
           const fetched = await fetchProfile(authUser.id);
 
@@ -175,14 +186,12 @@ export function AuthProvider({ children }) {
             return fetched;
           }
 
-          if (fetched.error && !isMissingProfileError(fetched.error)) {
-            return fetched;
-          }
-
-          return await createOrRepairProfile(authUser, false);
-        } catch (err) {
-          console.error("[AuthProvider] ensureProfile error:", err);
-          return { data: null, error: err };
+          return await createOrRepairProfile(authUser, onboardingComplete);
+        } catch (error) {
+          console.error("[AuthProvider] ensureProfile error:", error);
+          return { data: null, error };
+        } finally {
+          if (mountedRef.current) setProfileLoading(false);
         }
       })();
 
@@ -200,7 +209,7 @@ export function AuthProvider({ children }) {
 
     const bootstrap = async () => {
       try {
-        setLoading(true);
+        setAuthLoading(true);
 
         const {
           data: { session },
@@ -216,28 +225,26 @@ export function AuthProvider({ children }) {
 
         setUser(authUser);
 
+        // App boot should stop blocking once session is known
+        setAuthLoading(false);
+
         if (!authUser) {
-          setProfile(null);
-          clearCachedProfile();
-          setLoading(false);
+          clearProfileState();
           return;
         }
 
-        // Stop blocking the whole app here
-        setLoading(false);
-
-        // Refresh profile in background
+        // Hydrate profile in background
         ensureProfile(authUser).catch((err) => {
-          console.error("[AuthProvider] background ensureProfile error:", err);
+          console.error("[AuthProvider] bootstrap ensureProfile error:", err);
         });
       } catch (err) {
         console.error("[AuthProvider] bootstrap error:", err);
-        if (mountedRef.current) {
-          setUser(null);
-          setProfile(null);
-          clearCachedProfile();
-          setLoading(false);
-        }
+
+        if (!mountedRef.current) return;
+
+        setUser(null);
+        clearProfileState();
+        setAuthLoading(false);
       }
     };
 
@@ -246,6 +253,7 @@ export function AuthProvider({ children }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // bootstrap already handles first load
       if (event === "INITIAL_SESSION") return;
 
       try {
@@ -255,13 +263,13 @@ export function AuthProvider({ children }) {
         setUser(authUser);
 
         if (!authUser) {
-          setProfile(null);
-          clearCachedProfile();
-          setLoading(false);
+          clearProfileState();
+          setAuthLoading(false);
           return;
         }
 
-        setLoading(false);
+        // Do not block whole app during profile hydration
+        setAuthLoading(false);
 
         ensureProfile(authUser).catch((err) => {
           console.error(
@@ -272,7 +280,7 @@ export function AuthProvider({ children }) {
       } catch (err) {
         console.error("[AuthProvider] onAuthStateChange error:", err);
         if (mountedRef.current) {
-          setLoading(false);
+          setAuthLoading(false);
         }
       }
     });
@@ -281,7 +289,7 @@ export function AuthProvider({ children }) {
       mountedRef.current = false;
       subscription.unsubscribe();
     };
-  }, [ensureProfile]);
+  }, [ensureProfile, clearProfileState]);
 
   const signUp = useCallback(
     async ({ email, password, firstName, lastName }) => {
@@ -325,15 +333,15 @@ export function AuthProvider({ children }) {
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
 
-    if (!error) {
+    if (!error && mountedRef.current) {
       setUser(null);
-      setProfile(null);
-      clearCachedProfile();
-      setLoading(false);
+      clearProfileState();
+      setAuthLoading(false);
+      setProfileLoading(false);
     }
 
     return { error };
-  }, []);
+  }, [clearProfileState]);
 
   const sendPasswordReset = useCallback(async (email) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -349,7 +357,7 @@ export function AuthProvider({ children }) {
 
   const updateProfile = useCallback(
     async (updates) => {
-      if (!user) return { error: { message: "Not logged in" } };
+      if (!user) return { data: null, error: { message: "Not logged in" } };
 
       const { data, error } = await supabase
         .from("profiles")
@@ -371,32 +379,39 @@ export function AuthProvider({ children }) {
 
   const completeOnboarding = useCallback(
     async ({ currency }) => {
-      if (!user) return { error: { message: "Not logged in" } };
-
-      const payload = {
-        ...buildBaseProfile(user, currency || "NGN", true),
-        plan: profile?.plan || "basic",
-        trial_activated: profile?.trial_activated ?? false,
-        trial_ends_at: profile?.trial_ends_at ?? null,
-        avatar_url: profile?.avatar_url ?? null,
-        subscription_ends_at: profile?.subscription_ends_at ?? null,
-        subscription_cancelled: profile?.subscription_cancelled ?? false,
-      };
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .upsert(payload, { onConflict: "id" })
-        .select()
-        .single();
-
-      if (error) {
-        console.error("[AuthProvider] completeOnboarding error:", error);
-        return { data: null, error };
+      if (!user) {
+        return { data: null, error: { message: "Not logged in" } };
       }
 
-      setProfileState(data);
-      setLoading(false);
-      return { data, error: null };
+      if (mountedRef.current) setProfileLoading(true);
+
+      try {
+        const payload = {
+          ...buildBaseProfile(user, currency || "NGN", true),
+          plan: profile?.plan || "basic",
+          trial_activated: profile?.trial_activated ?? false,
+          trial_ends_at: profile?.trial_ends_at ?? null,
+          avatar_url: profile?.avatar_url ?? null,
+          subscription_ends_at: profile?.subscription_ends_at ?? null,
+          subscription_cancelled: profile?.subscription_cancelled ?? false,
+        };
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .upsert(payload, { onConflict: "id" })
+          .select()
+          .single();
+
+        if (error) {
+          console.error("[AuthProvider] completeOnboarding error:", error);
+          return { data: null, error };
+        }
+
+        setProfileState(data);
+        return { data, error: null };
+      } finally {
+        if (mountedRef.current) setProfileLoading(false);
+      }
     },
     [user, profile, setProfileState],
   );
@@ -437,7 +452,9 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     profile,
-    loading,
+    loading: authLoading,
+    authLoading,
+    profileLoading,
 
     signUp,
     signIn,

@@ -1,5 +1,5 @@
-import { Fragment, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Fragment, useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
@@ -24,7 +24,6 @@ const styles = `
 
   .page { display:flex; flex-direction:column; gap:0; animation:fadeIn 0.3s ease; }
 
-  /* ── HERO ─────────────────────────────────── */
   .hero {
     background:linear-gradient(145deg,var(--green-deep) 0%,var(--green-mid) 55%,#52B788 100%);
     border-radius:24px; padding:60px 48px; position:relative; overflow:hidden;
@@ -67,7 +66,6 @@ const styles = `
 
   .spinner { width:18px; height:18px; border:2.5px solid rgba(27,67,50,0.2); border-top-color:var(--green-deep); border-radius:50%; animation:spin 0.7s linear infinite; }
 
-  /* ── INFO BANNER ───────────────────────────── */
   .info-banner {
     background:var(--white); border:1.5px solid var(--border); border-radius:16px;
     padding:14px 18px; margin-bottom:26px; display:flex; align-items:flex-start; gap:10px;
@@ -77,7 +75,6 @@ const styles = `
   .info-banner-text { font-size:0.82rem; color:var(--ink-subtle); line-height:1.6; }
   .info-banner-text strong { color:var(--ink); }
 
-  /* ── BILLING TOGGLE ──────────────────────── */
   .billing-toggle-wrap { display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:40px; animation:fadeUp 0.35s ease 0.05s both; }
   .billing-label { font-size:0.875rem; font-weight:600; color:var(--ink-subtle); }
   .billing-label.active { color:var(--ink); }
@@ -87,7 +84,6 @@ const styles = `
   .billing-switch.annual  .billing-knob { left:25px; }
   .billing-save-pill { background:var(--amber-pale); color:var(--amber); border:1px solid rgba(212,160,23,0.25); padding:3px 10px; border-radius:100px; font-size:0.7rem; font-weight:800; }
 
-  /* ── FEATURES GRID ───────────────────────── */
   .features-section { margin-bottom:48px; animation:fadeUp 0.35s ease 0.08s both; }
   .section-label { font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.12em; color:var(--green-mid); margin-bottom:12px; }
   .section-headline { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:800; color:var(--ink); letter-spacing:-0.015em; margin-bottom:6px; }
@@ -101,7 +97,6 @@ const styles = `
   .feature-title { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--ink); margin-bottom:7px; }
   .feature-desc { font-size:0.82rem; color:var(--ink-subtle); line-height:1.65; }
 
-  /* ── COMPARISON TABLE ────────────────────── */
   .compare-section { margin-bottom:48px; animation:fadeUp 0.35s ease 0.1s both; }
   .compare-table { width:100%; border-collapse:collapse; background:var(--white); border-radius:20px; overflow:hidden; border:1.5px solid var(--border); }
   .compare-table th { padding:16px 20px; text-align:left; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-subtle); background:var(--bg); border-bottom:1.5px solid var(--border); }
@@ -117,7 +112,6 @@ const styles = `
   .compare-cat-row td { background:var(--bg); font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.09em; color:var(--ink-subtle); padding:10px 20px; }
   .premium-highlight { background:rgba(27,67,50,0.04) !important; }
 
-  /* ── FAQ ─────────────────────────────────── */
   .faq-section { margin-bottom:48px; animation:fadeUp 0.35s ease 0.14s both; }
   .faq-list { display:flex; flex-direction:column; gap:10px; }
   .faq-item { background:var(--white); border-radius:16px; border:1.5px solid var(--border); overflow:hidden; transition:border-color 0.2s; }
@@ -129,7 +123,6 @@ const styles = `
   .faq-a { padding:0 22px 18px; font-size:0.875rem; color:var(--ink-subtle); line-height:1.7; animation:fadeUp 0.25s ease; }
   .faq-a strong { color:var(--ink); font-weight:700; }
 
-  /* ── BOTTOM CTA ──────────────────────────── */
   .bottom-cta { background:var(--ink); border-radius:24px; padding:56px 48px; text-align:center; position:relative; overflow:hidden; margin-bottom:8px; animation:fadeUp 0.35s ease 0.16s both; }
   @media(max-width:600px){ .bottom-cta{ padding:40px 24px; } }
   .bottom-cta-blob { position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none; }
@@ -145,10 +138,18 @@ const styles = `
   .bottom-cta-note { font-size:0.75rem; color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px; }
   .bottom-cta-note::before { content:"✓"; color:rgba(255,255,255,0.5); font-weight:800; }
 
-  /* ── PAYSTACK TRUST ──────────────────────── */
   .paystack-trust { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:20px; flex-wrap:wrap; }
   .paystack-logo { background:var(--white); border-radius:8px; padding:4px 12px; font-size:0.72rem; font-weight:800; color:#00C3F7; letter-spacing:0.02em; }
   .paystack-text { font-size:0.72rem; color:rgba(255,255,255,0.3); }
+
+  .toast {
+    position:fixed; bottom:24px; right:24px; z-index:200;
+    background:var(--ink); color:var(--white); padding:13px 20px;
+    border-radius:12px; font-size:0.875rem; font-weight:600;
+    display:flex; align-items:center; gap:9px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.22);
+    animation:scaleIn 0.3s ease;
+  }
 `;
 
 const FEATURES = [
@@ -297,19 +298,74 @@ const FAQS = [
   },
 ];
 
+function Toast({ msg, onDone }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 2600);
+    return () => clearTimeout(t);
+  }, [onDone]);
+
+  return <div className="toast">✓ {msg}</div>;
+}
+
 export default function UpgradePage() {
   const navigate = useNavigate();
-  const { user, isLoggedIn, isPremium, isTrialing, profile } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { user, isLoggedIn, isPremium, isTrialing, profile, ensureProfile } =
+    useAuth();
 
   const [billing, setBilling] = useState("monthly");
   const [faqOpen, setFaqOpen] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [toast, setToast] = useState(null);
 
+  const reference = searchParams.get("reference");
+  const trxref = searchParams.get("trxref");
+  const paymentReference = reference || trxref;
+
+  const monthlyAmountKobo = 6500 * 100;
+  const annualAmountKobo = 58500 * 100;
   const price = billing === "monthly" ? "6,500" : "4,875";
   const annualTotal = billing === "annual" ? "58,500" : null;
 
+  useEffect(() => {
+    const verifyPayment = async () => {
+      if (!paymentReference || verifying) return;
+
+      setVerifying(true);
+
+      try {
+        const res = await fetch("/api/paystack/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reference: paymentReference }),
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          throw new Error(result?.error || "Payment verification failed.");
+        }
+
+        if (user) {
+          await ensureProfile(user);
+        }
+
+        setToast("Payment verified. Premium activated successfully.");
+        setSearchParams({}, { replace: true });
+      } catch (err) {
+        console.error("Paystack verification error:", err);
+        setToast(err?.message || "Could not verify payment.");
+      } finally {
+        setVerifying(false);
+      }
+    };
+
+    verifyPayment();
+  }, [paymentReference, verifying, setSearchParams, user, ensureProfile]);
+
   const startUpgrade = async () => {
-    if (loading) return;
+    if (loading || verifying) return;
 
     if (!isLoggedIn) {
       navigate("/auth");
@@ -324,10 +380,31 @@ export default function UpgradePage() {
     setLoading(true);
 
     try {
-      // Temporary safe route fix only.
-      // Real Paystack init will replace this next.
-      navigate("/settings");
-    } finally {
+      const res = await fetch("/api/paystack/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user?.email || profile?.email,
+          userId: user?.id || profile?.id,
+          billingCycle: billing,
+          amount: billing === "monthly" ? monthlyAmountKobo : annualAmountKobo,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result?.error || "Could not start payment.");
+      }
+
+      if (!result?.authorization_url) {
+        throw new Error("Missing Paystack authorization URL.");
+      }
+
+      window.location.href = result.authorization_url;
+    } catch (err) {
+      console.error("Paystack initialize error:", err);
+      setToast(err?.message || "Could not start upgrade.");
       setLoading(false);
     }
   };
@@ -343,6 +420,8 @@ export default function UpgradePage() {
   return (
     <>
       <style>{FONTS + styles}</style>
+      {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+
       <div className="page">
         <div className="hero">
           <div className="hero-blob hero-blob-1" />
@@ -372,12 +451,12 @@ export default function UpgradePage() {
                 <button
                   className="hero-btn-primary"
                   onClick={startUpgrade}
-                  disabled={loading}
+                  disabled={loading || verifying}
                 >
-                  {loading ? (
+                  {loading || verifying ? (
                     <>
                       <div className="spinner" />
-                      Processing…
+                      {verifying ? "Verifying…" : "Processing…"}
                     </>
                   ) : (
                     <>{ctaText} →</>
@@ -386,7 +465,7 @@ export default function UpgradePage() {
 
                 <div className="hero-notes">
                   {[
-                    "No card required",
+                    "Secure checkout",
                     "Cancel any time",
                     "Instant activation",
                   ].map((n) => (
@@ -424,9 +503,9 @@ export default function UpgradePage() {
               <button
                 className="hero-cta-btn"
                 onClick={startUpgrade}
-                disabled={loading}
+                disabled={loading || verifying}
               >
-                {loading ? "Processing…" : priceButtonText}
+                {loading || verifying ? "Processing…" : priceButtonText}
               </button>
 
               <div className="hero-cta-note">
@@ -441,9 +520,8 @@ export default function UpgradePage() {
         <div className="info-banner">
           <div className="info-banner-icon">ℹ️</div>
           <div className="info-banner-text">
-            <strong>Current step:</strong> this page is now properly wired to
-            your auth state and routing. The actual Paystack checkout will be
-            connected next, replacing the temporary redirect to Settings.
+            <strong>Checkout is live:</strong> upgrade opens Paystack securely,
+            then returns here for payment verification and Premium activation.
           </div>
         </div>
 
@@ -560,7 +638,7 @@ export default function UpgradePage() {
                   >
                     <button
                       onClick={startUpgrade}
-                      disabled={loading}
+                      disabled={loading || verifying}
                       style={{
                         background:
                           "linear-gradient(135deg,var(--green-deep),var(--green-light))",
@@ -580,7 +658,7 @@ export default function UpgradePage() {
                         margin: "0 auto",
                       }}
                     >
-                      {loading ? (
+                      {loading || verifying ? (
                         <div
                           className="spinner"
                           style={{
@@ -638,15 +716,15 @@ export default function UpgradePage() {
           <h2 className="bottom-cta-title">Ready to take control?</h2>
           <p className="bottom-cta-sub">
             Join thousands of Nigerians who finally understand their money.
-            Start your free trial today — no card, no commitment.
+            Start your free trial today.
           </p>
 
           <button
             className="bottom-cta-btn"
             onClick={startUpgrade}
-            disabled={loading}
+            disabled={loading || verifying}
           >
-            {loading ? (
+            {loading || verifying ? (
               <>
                 <div
                   className="spinner"
@@ -655,21 +733,20 @@ export default function UpgradePage() {
                     borderColor: "rgba(255,255,255,0.25)",
                   }}
                 />
-                Processing…
+                {verifying ? "Verifying…" : "Processing…"}
               </>
             ) : (
               <>
                 {isPremium
                   ? "Manage subscription"
-                  : `Start free trial — ₦${price}/mo after`}
+                  : `Start upgrade — ₦${price}/mo`}
               </>
             )}
           </button>
 
           <div className="bottom-cta-notes">
             {[
-              "7-day free trial",
-              "No credit card needed",
+              "Secure Paystack checkout",
               "Cancel any time",
               "Instant activation",
             ].map((n) => (

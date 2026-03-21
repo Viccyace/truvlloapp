@@ -22,13 +22,15 @@ const styles = `
   @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:0.5} }
   @keyframes float   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
 
-  .page { display:flex; flex-direction:column; gap:0; animation:fadeIn 0.3s ease; }
-
+  .page { display:flex; flex-direction:column; gap:0; animation:fadeIn 0.3s ease; overflow-x:hidden; max-width:100%; }
+  
   .hero {
-    background:linear-gradient(145deg,var(--green-deep) 0%,var(--green-mid) 55%,#52B788 100%);
-    border-radius:24px; padding:60px 48px; position:relative; overflow:hidden;
-    margin-bottom:32px; animation:fadeUp 0.4s ease;
-  }
+  background:linear-gradient(145deg,var(--green-deep) 0%,var(--green-mid) 55%,#52B788 100%);
+  border-radius:24px; padding:60px 48px; position:relative; overflow:hidden;
+  margin-bottom:32px; animation:fadeUp 0.4s ease;
+  max-width:100%; width:100%;
+}
+
   @media(max-width:700px){ .hero{ padding:40px 24px; } }
 
   .hero-blob { position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none; }

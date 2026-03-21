@@ -35,7 +35,11 @@ const styles = `
   @keyframes fadeIn { from{opacity:0} to{opacity:1} }
   @keyframes slideInLeft { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
 
-  .shell-root { display:flex; min-height:100vh; }
+  /* ── FIXED: overflow-x on root containers ─────────────────────── */
+  .shell-root {
+    display:flex; min-height:100vh;
+    overflow-x:hidden; max-width:100vw;
+  }
 
   /* Sidebar */
   .sidebar { width:var(--sidebar-w); flex-shrink:0; background:var(--ink); height:100vh; position:fixed; top:0; left:0; z-index:50; display:flex; flex-direction:column; overflow:hidden; }
@@ -74,8 +78,11 @@ const styles = `
   .signout-btn:hover { background:rgba(192,57,43,0.18); color:#FFD6D1; }
   .signout-btn:disabled { opacity:0.65; cursor:not-allowed; }
 
-  /* Main */
-  .main-content { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; }
+  /* ── FIXED: overflow-x on main content ────────────────────────── */
+  .main-content {
+    margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column;
+    min-height:100vh; overflow-x:hidden; max-width:100%;
+  }
 
   /* Desktop topbar */
   .desktop-topbar { height:var(--topbar-h); background:var(--cream); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 32px; position:sticky; top:0; z-index:40; flex-shrink:0; }
@@ -97,7 +104,7 @@ const styles = `
   .mobile-menu-btn { width:34px; height:34px; border-radius:10px; border:1.5px solid var(--border); background:var(--white); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.85rem; color:var(--ink-muted); }
 
   /* Page content */
-  .page-content { flex:1; padding:32px; padding-bottom:40px; animation:fadeUp 0.3s ease; }
+  .page-content { flex:1; padding:32px; padding-bottom:40px; animation:fadeUp 0.3s ease; overflow-x:hidden; }
 
   /* Bottom nav */
   .bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; height:var(--bottomnav-h); background:var(--white); border-top:1px solid var(--border); z-index:50; align-items:center; justify-content:space-around; padding:0 8px; padding-bottom:env(safe-area-inset-bottom); box-shadow:0 -4px 24px rgba(0,0,0,0.06); }
@@ -251,6 +258,7 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const { displayName, initials, isTrialing, trialDaysLeft, signOut } =
     useAuth();
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [searchVal, setSearchVal] = useState("");
@@ -274,17 +282,14 @@ export default function AppLayout() {
 
   const handleSignOut = async () => {
     if (signingOut) return;
-
     try {
       setSigningOut(true);
       const { error } = await signOut();
-
       if (error) {
         console.error("Sign out error:", error);
         setSigningOut(false);
         return;
       }
-
       navigate("/auth", { replace: true });
     } catch (err) {
       console.error("Sign out failed:", err);
@@ -296,6 +301,7 @@ export default function AppLayout() {
     <>
       <style>{FONTS + styles}</style>
 
+      {/* Drawer overlay */}
       <div
         className={`drawer-overlay${drawerOpen ? " open" : ""}`}
         onClick={() => setDrawerOpen(false)}
@@ -342,7 +348,6 @@ export default function AppLayout() {
               Upgrade to Premium
             </button>
           </div>
-
           <button
             className="signout-btn"
             onClick={handleSignOut}
@@ -357,6 +362,7 @@ export default function AppLayout() {
       {quickAddOpen && <QuickAddModal onClose={() => setQuickAddOpen(false)} />}
 
       <div className="shell-root">
+        {/* Desktop sidebar */}
         <aside className="sidebar">
           <div className="sidebar-bg" />
           <div className="sidebar-logo">
@@ -404,7 +410,6 @@ export default function AppLayout() {
               </div>
               <span className="profile-chevron">⋯</span>
             </div>
-
             <button
               className="signout-btn"
               onClick={handleSignOut}
@@ -416,6 +421,7 @@ export default function AppLayout() {
           </div>
         </aside>
 
+        {/* Main content */}
         <div className="main-content">
           {isTrialing && (
             <div className="trial-banner">
@@ -432,6 +438,7 @@ export default function AppLayout() {
             </div>
           )}
 
+          {/* Desktop topbar */}
           <div className="desktop-topbar">
             <div>
               <div className="topbar-page-title">{meta.title}</div>
@@ -463,6 +470,7 @@ export default function AppLayout() {
             </div>
           </div>
 
+          {/* Mobile topbar */}
           <div className="mobile-topbar">
             <button
               className="mobile-back-btn"
@@ -493,6 +501,7 @@ export default function AppLayout() {
           </div>
         </div>
 
+        {/* Bottom nav */}
         <nav className="bottom-nav">
           {BOTTOM_NAV.map((item) => (
             <div

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 import {
   Plus,
@@ -633,6 +634,8 @@ function Toast({ msg, onDone }) {
 }
 
 export default function ExpensesPage() {
+  const navigate = useNavigate();
+
   const [expenses, setExpenses] = useState(MOCK_EXPENSES);
   const [recurring, setRecurring] = useState(MOCK_RECURRING);
   const [search, setSearch] = useState("");
@@ -646,6 +649,11 @@ export default function ExpensesPage() {
 
   const { isPremiumOrTrial, profile, updateProfile } = useAuth();
   const isPremium = isPremiumOrTrial;
+
+  const goToUpgrade = () => {
+    setShowGate(false);
+    navigate("/upgrade");
+  };
 
   const activateTrialIfEligible = useCallback(async () => {
     if (!profile) return;
@@ -728,6 +736,7 @@ export default function ExpensesPage() {
       setShowGate(true);
       return;
     }
+
     const rows = [
       ["Date", "Description", "Category", "Amount", "Note"],
       ...expenses.map((e) => [
@@ -1203,7 +1212,9 @@ export default function ExpensesPage() {
                 Recurring expenses, CSV export, and category caps are on the
                 Premium plan.
                 <div>
-                  <button className="gate-btn">Upgrade — ₦6,500/mo</button>
+                  <button className="gate-btn" onClick={goToUpgrade}>
+                    Upgrade — ₦6,500/mo
+                  </button>
                 </div>
               </div>
             </div>

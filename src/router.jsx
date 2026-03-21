@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import AppLayout from "./layouts/AppLayout";
+import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -34,17 +35,22 @@ function PublicRoute() {
 }
 
 export const router = createBrowserRouter([
+  // Landing — accessible to everyone
+  { path: "/", element: <Landing /> },
+
+  // Auth — redirects to dashboard if already logged in
   {
     element: <PublicRoute />,
     children: [{ path: "/auth", element: <Auth /> }],
   },
+
+  // Protected app pages
   {
     element: <ProtectedRoute />,
     children: [
       {
         element: <AppLayout />,
         children: [
-          { path: "/", element: <Navigate to="/dashboard" replace /> },
           { path: "/dashboard", element: <Dashboard /> },
           { path: "/onboarding", element: <Onboarding /> },
           { path: "/budget", element: <Budget /> },
@@ -56,8 +62,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  {
-    path: "*",
-    element: <NotFound />,
-  },
+
+  { path: "*", element: <NotFound /> },
 ]);

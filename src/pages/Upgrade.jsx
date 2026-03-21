@@ -30,13 +30,20 @@ const styles = `
     margin-bottom:32px; animation:fadeUp 0.4s ease;
   }
   @media(max-width:700px){ .hero{ padding:40px 24px; } }
+
   .hero-blob { position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none; }
   .hero-blob-1 { width:400px; height:400px; top:-120px; right:-80px; background:rgba(255,255,255,0.08); }
   .hero-blob-2 { width:300px; height:300px; bottom:-100px; left:-60px; background:rgba(212,160,23,0.12); }
   .hero-blob-3 { width:200px; height:200px; top:40px; left:40%; background:rgba(255,255,255,0.04); }
 
-  .hero-inner { position:relative; z-index:1; display:grid; grid-template-columns:1fr auto; gap:40px; align-items:center; }
-  @media(max-width:800px){ .hero-inner{ grid-template-columns:1fr; } }
+  /* ── FIXED: mobile overflow ─────────────────────────────────────── */
+  .hero-inner {
+    position:relative; z-index:1;
+    display:grid; grid-template-columns:1fr auto; gap:40px; align-items:center;
+  }
+  @media(max-width:800px){
+    .hero-inner { grid-template-columns:1fr; gap:24px; }
+  }
 
   .hero-badge { display:inline-flex; align-items:center; gap:7px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.9); padding:5px 14px; border-radius:100px; font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.09em; margin-bottom:16px; }
   .hero-badge-dot { width:6px; height:6px; border-radius:50%; background:var(--amber-light); animation:pulse 2s ease infinite; }
@@ -44,7 +51,17 @@ const styles = `
   .hero-headline em { font-style:italic; color:rgba(255,255,255,0.65); }
   .hero-sub { font-size:1rem; color:rgba(255,255,255,0.65); line-height:1.7; max-width:480px; margin-bottom:32px; }
 
-  .hero-price-card { background:rgba(255,255,255,0.1); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.18); border-radius:20px; padding:28px 32px; text-align:center; flex-shrink:0; min-width:220px; }
+  /* ── FIXED: removed min-width, added max-width and width:100% ───── */
+  .hero-price-card {
+    background:rgba(255,255,255,0.1); backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,0.18); border-radius:20px;
+    padding:28px 32px; text-align:center; flex-shrink:0;
+    min-width:0; width:100%; max-width:320px;
+  }
+  @media(max-width:800px){
+    .hero-price-card { max-width:100%; }
+  }
+
   .hero-price-label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.5); margin-bottom:8px; }
   .hero-price { font-family:'Playfair Display',serif; font-size:2.8rem; font-weight:900; color:var(--white); line-height:1; }
   .hero-price sup { font-size:1.2rem; vertical-align:top; margin-top:6px; display:inline-block; }
@@ -57,9 +74,18 @@ const styles = `
   .hero-cta-note { font-size:0.68rem; color:rgba(255,255,255,0.4); margin-top:8px; text-align:center; }
 
   .hero-cta-main { display:flex; flex-direction:column; gap:10px; }
-  .hero-btn-primary { display:inline-flex; align-items:center; gap:10px; padding:15px 32px; background:var(--white); color:var(--green-deep); border:none; border-radius:14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:1rem; font-weight:800; cursor:pointer; transition:all 0.22s; box-shadow:0 6px 24px rgba(0,0,0,0.18); width:fit-content; }
+
+  /* ── FIXED: added max-width:100% ────────────────────────────────── */
+  .hero-btn-primary {
+    display:inline-flex; align-items:center; gap:10px; padding:15px 32px;
+    background:var(--white); color:var(--green-deep); border:none; border-radius:14px;
+    font-family:'Plus Jakarta Sans',sans-serif; font-size:1rem; font-weight:800;
+    cursor:pointer; transition:all 0.22s; box-shadow:0 6px 24px rgba(0,0,0,0.18);
+    width:fit-content; max-width:100%;
+  }
   .hero-btn-primary:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 36px rgba(0,0,0,0.25); }
   .hero-btn-primary:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
+
   .hero-notes { display:flex; gap:16px; flex-wrap:wrap; }
   .hero-note { display:flex; align-items:center; gap:6px; font-size:0.78rem; color:rgba(255,255,255,0.55); }
   .hero-note-check { color:rgba(255,255,255,0.8); font-weight:800; }
@@ -303,7 +329,6 @@ function Toast({ msg, onDone }) {
     const t = setTimeout(onDone, 2600);
     return () => clearTimeout(t);
   }, [onDone]);
-
   return <div className="toast">✓ {msg}</div>;
 }
 
@@ -331,26 +356,17 @@ export default function UpgradePage() {
   useEffect(() => {
     const verifyPayment = async () => {
       if (!paymentReference || verifying) return;
-
       setVerifying(true);
-
       try {
         const res = await fetch("/api/paystack/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ reference: paymentReference }),
         });
-
         const result = await res.json();
-
-        if (!res.ok) {
+        if (!res.ok)
           throw new Error(result?.error || "Payment verification failed.");
-        }
-
-        if (user) {
-          await ensureProfile(user);
-        }
-
+        if (user) await ensureProfile(user);
         setToast("Payment verified. Premium activated successfully.");
         setSearchParams({}, { replace: true });
       } catch (err) {
@@ -360,25 +376,20 @@ export default function UpgradePage() {
         setVerifying(false);
       }
     };
-
     verifyPayment();
   }, [paymentReference, verifying, setSearchParams, user, ensureProfile]);
 
   const startUpgrade = async () => {
     if (loading || verifying) return;
-
     if (!isLoggedIn) {
       navigate("/auth");
       return;
     }
-
     if (isPremium) {
       navigate("/settings");
       return;
     }
-
     setLoading(true);
-
     try {
       const res = await fetch("/api/paystack/initialize", {
         method: "POST",
@@ -390,17 +401,10 @@ export default function UpgradePage() {
           amount: billing === "monthly" ? monthlyAmountKobo : annualAmountKobo,
         }),
       });
-
       const result = await res.json();
-
-      if (!res.ok) {
-        throw new Error(result?.error || "Could not start payment.");
-      }
-
-      if (!result?.authorization_url) {
+      if (!res.ok) throw new Error(result?.error || "Could not start payment.");
+      if (!result?.authorization_url)
         throw new Error("Missing Paystack authorization URL.");
-      }
-
       window.location.href = result.authorization_url;
     } catch (err) {
       console.error("Paystack initialize error:", err);
@@ -414,7 +418,6 @@ export default function UpgradePage() {
     : isTrialing
       ? "Upgrade to keep Premium"
       : "Start 7-day free trial";
-
   const priceButtonText = isPremium ? "Manage plan" : `Upgrade — ₦${price}/mo`;
 
   return (
@@ -423,6 +426,7 @@ export default function UpgradePage() {
       {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
 
       <div className="page">
+        {/* ── HERO ───────────────────────────────────────────────────── */}
         <div className="hero">
           <div className="hero-blob hero-blob-1" />
           <div className="hero-blob hero-blob-2" />
@@ -462,7 +466,6 @@ export default function UpgradePage() {
                     <>{ctaText} →</>
                   )}
                 </button>
-
                 <div className="hero-notes">
                   {[
                     "Secure checkout",
@@ -485,7 +488,6 @@ export default function UpgradePage() {
                 {price}
                 <sub>/mo</sub>
               </div>
-
               {billing === "annual" ? (
                 <div className="hero-price-annual">
                   ₦{annualTotal}/yr · <strong>Save 25%</strong>
@@ -499,7 +501,6 @@ export default function UpgradePage() {
                   billed annually
                 </div>
               )}
-
               <button
                 className="hero-cta-btn"
                 onClick={startUpgrade}
@@ -507,7 +508,6 @@ export default function UpgradePage() {
               >
                 {loading || verifying ? "Processing…" : priceButtonText}
               </button>
-
               <div className="hero-cta-note">
                 {isLoggedIn
                   ? `Signed in as ${user?.email || profile?.email || "user"}`
@@ -517,6 +517,7 @@ export default function UpgradePage() {
           </div>
         </div>
 
+        {/* ── INFO BANNER ────────────────────────────────────────────── */}
         <div className="info-banner">
           <div className="info-banner-icon">ℹ️</div>
           <div className="info-banner-text">
@@ -525,6 +526,7 @@ export default function UpgradePage() {
           </div>
         </div>
 
+        {/* ── BILLING TOGGLE ─────────────────────────────────────────── */}
         <div className="billing-toggle-wrap">
           <span
             className={`billing-label${billing === "monthly" ? " active" : ""}`}
@@ -547,13 +549,13 @@ export default function UpgradePage() {
           <span className="billing-save-pill">Save 25%</span>
         </div>
 
+        {/* ── FEATURES ───────────────────────────────────────────────── */}
         <div className="features-section">
           <div className="section-label">What you unlock</div>
           <div className="section-headline">12 features. One price.</div>
           <div className="section-sub">
             Everything in the Free plan, plus all of this.
           </div>
-
           <div className="features-grid">
             {FEATURES.map((f, i) => (
               <div key={i} className="feature-card">
@@ -567,13 +569,13 @@ export default function UpgradePage() {
           </div>
         </div>
 
+        {/* ── COMPARE TABLE ──────────────────────────────────────────── */}
         <div className="compare-section">
           <div className="section-label">Compare plans</div>
           <div className="section-headline">Free vs Premium</div>
           <div className="section-sub" style={{ marginBottom: 24 }}>
             See exactly what each plan includes.
           </div>
-
           <div style={{ overflowX: "auto" }}>
             <table className="compare-table">
               <thead>
@@ -593,7 +595,6 @@ export default function UpgradePage() {
                     <tr className="compare-cat-row">
                       <td colSpan={3}>{cat.cat}</td>
                     </tr>
-
                     {cat.rows.map((row, i) => (
                       <tr key={`${cat.cat}-${i}`}>
                         <td className="feature-name">{row.f}</td>
@@ -615,7 +616,6 @@ export default function UpgradePage() {
                     ))}
                   </Fragment>
                 ))}
-
                 <tr>
                   <td></td>
                   <td
@@ -677,13 +677,13 @@ export default function UpgradePage() {
           </div>
         </div>
 
+        {/* ── FAQ ────────────────────────────────────────────────────── */}
         <div className="faq-section">
           <div className="section-label">FAQs</div>
           <div className="section-headline">Common questions</div>
           <div className="section-sub" style={{ marginBottom: 24 }}>
             Everything you need to know before upgrading.
           </div>
-
           <div className="faq-list">
             {FAQS.map((faq, i) => (
               <div
@@ -708,17 +708,16 @@ export default function UpgradePage() {
           </div>
         </div>
 
+        {/* ── BOTTOM CTA ─────────────────────────────────────────────── */}
         <div className="bottom-cta">
           <div className="bottom-cta-blob bottom-cta-blob-1" />
           <div className="bottom-cta-blob bottom-cta-blob-2" />
-
           <span className="bottom-cta-icon">🚀</span>
           <h2 className="bottom-cta-title">Ready to take control?</h2>
           <p className="bottom-cta-sub">
-            Join thousands of Nigerians who finally understand their money.
-            Start your free trial today.
+            Join thousands of people who finally understand their money. Start
+            your free trial today.
           </p>
-
           <button
             className="bottom-cta-btn"
             onClick={startUpgrade}
@@ -743,7 +742,6 @@ export default function UpgradePage() {
               </>
             )}
           </button>
-
           <div className="bottom-cta-notes">
             {[
               "Secure Paystack checkout",
@@ -755,7 +753,6 @@ export default function UpgradePage() {
               </div>
             ))}
           </div>
-
           <div className="paystack-trust">
             <span className="paystack-text">Payments secured by</span>
             <span className="paystack-logo">Paystack</span>

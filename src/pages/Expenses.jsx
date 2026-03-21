@@ -166,10 +166,7 @@ const styles = `
 
   .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:100; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.2s ease; }
   @media(max-width:600px){ .modal-bg{ align-items:flex-end; padding:0; } }
-  .modal {
-    background:var(--white); border-radius:24px; padding:36px; width:100%; max-width:480px;
-    box-shadow:0 24px 64px rgba(0,0,0,0.18); animation:scaleIn 0.3s cubic-bezier(0.34,1.3,0.64,1);
-  }
+  .modal { background:var(--white); border-radius:24px; padding:36px; width:100%; max-width:480px; box-shadow:0 24px 64px rgba(0,0,0,0.18); animation:scaleIn 0.3s cubic-bezier(0.34,1.3,0.64,1); }
   @media(max-width:600px){ .modal{ border-radius:24px 24px 0 0; padding:28px 24px 36px; } }
   .modal-handle { width:40px; height:4px; border-radius:100px; background:var(--border); margin:0 auto 20px; display:none; }
   @media(max-width:600px){ .modal-handle{ display:block; } }
@@ -455,6 +452,7 @@ const PAGE_SIZE = 8;
 function fmt(n) {
   return Number(n).toLocaleString("en-NG");
 }
+
 function fmtDate(d) {
   const today = new Date().toISOString().split("T")[0];
   const yest = new Date();
@@ -625,7 +623,6 @@ function Toast({ msg, onDone }) {
     const t = setTimeout(onDone, 2600);
     return () => clearTimeout(t);
   }, [onDone]);
-
   return (
     <div className="toast">
       <span style={{ color: "#52B788" }}>✓</span> {msg}
@@ -635,6 +632,8 @@ function Toast({ msg, onDone }) {
 
 export default function ExpensesPage() {
   const navigate = useNavigate();
+  const { isPremiumOrTrial, profile, updateProfile } = useAuth();
+  const isPremium = isPremiumOrTrial;
 
   const [expenses, setExpenses] = useState(MOCK_EXPENSES);
   const [recurring, setRecurring] = useState(MOCK_RECURRING);
@@ -647,9 +646,6 @@ export default function ExpensesPage() {
   const [showGate, setShowGate] = useState(false);
   const [showImport, setShowImport] = useState(false);
 
-  const { isPremiumOrTrial, profile, updateProfile } = useAuth();
-  const isPremium = isPremiumOrTrial;
-
   const goToUpgrade = () => {
     setShowGate(false);
     navigate("/upgrade");
@@ -659,23 +655,17 @@ export default function ExpensesPage() {
     if (!profile) return;
     if (profile.plan === "premium" || profile.plan === "trial") return;
     if (profile.trial_activated) return;
-
     const now = new Date();
     const endsAt = new Date(now);
     endsAt.setDate(endsAt.getDate() + 7);
-
     const { error } = await updateProfile({
       plan: "trial",
       trial_activated: true,
       trial_started_at: now.toISOString(),
       trial_ends_at: endsAt.toISOString(),
     });
-
-    if (!error) {
-      setToast("🎉 7-day Premium trial activated");
-    } else {
-      console.error("Trial activation failed:", error);
-    }
+    if (!error) setToast("🎉 7-day Premium trial activated");
+    else console.error("Trial activation failed:", error);
   }, [profile, updateProfile]);
 
   const filtered = useMemo(
@@ -691,8 +681,8 @@ export default function ExpensesPage() {
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
   const totalSpent = expenses.reduce((s, e) => s + e.amount, 0);
+
   const topCat = useMemo(() => {
     const map = {};
     expenses.forEach((e) => {
@@ -701,13 +691,13 @@ export default function ExpensesPage() {
     const top = Object.entries(map).sort((a, b) => b[1] - a[1])[0];
     return top ? CAT_MAP[top[0]] : null;
   }, [expenses]);
+
   const avgExpense = expenses.length
     ? Math.round(totalSpent / expenses.length)
     : 0;
 
   const saveExpense = async (data) => {
     const exists = expenses.find((e) => e.id === data.id);
-
     if (exists) {
       setExpenses((prev) => prev.map((e) => (e.id === data.id ? data : e)));
       setToast("Expense updated");
@@ -716,7 +706,6 @@ export default function ExpensesPage() {
       setToast("Expense added");
       await activateTrialIfEligible();
     }
-
     setModal(null);
   };
 
@@ -725,7 +714,6 @@ export default function ExpensesPage() {
     setModal(null);
     setToast("Expense deleted");
   };
-
   const deleteRecurring = (id) => {
     setRecurring((prev) => prev.filter((r) => r.id !== id));
     setToast("Recurring removed");
@@ -736,7 +724,6 @@ export default function ExpensesPage() {
       setShowGate(true);
       return;
     }
-
     const rows = [
       ["Date", "Description", "Category", "Amount", "Note"],
       ...expenses.map((e) => [
@@ -769,13 +756,9 @@ export default function ExpensesPage() {
       date: t.date,
       note: "Imported from bank",
     }));
-
     setExpenses((prev) => [...newExpenses, ...prev]);
     setToast(`${newExpenses.length} transactions imported`);
-
-    if (newExpenses.length > 0) {
-      await activateTrialIfEligible();
-    }
+    if (newExpenses.length > 0) await activateTrialIfEligible();
   };
 
   const searchRef = useRef();
@@ -804,6 +787,7 @@ export default function ExpensesPage() {
       )}
 
       <div className="page">
+        {/* Header */}
         <div className="page-header">
           <div>
             <div className="page-title">Expenses</div>
@@ -815,16 +799,18 @@ export default function ExpensesPage() {
             <button className="btn-import" onClick={() => setShowImport(true)}>
               <Upload size={15} /> Import from bank
             </button>
-            <div className="btn-outline btn-premium" onClick={exportCSV}>
+            {/* ✅ Fixed: proper <button> element for accessibility */}
+            <button className="btn-outline btn-premium" onClick={exportCSV}>
               <Download size={15} /> Export CSV
               {!isPremium && <span className="premium-badge">PRO</span>}
-            </div>
+            </button>
             <button className="btn-primary" onClick={() => setModal("add")}>
               <Plus size={16} /> Add Expense
             </button>
           </div>
         </div>
 
+        {/* Stats */}
         <div className="stats-row">
           <div className="stat-card">
             <div className="stat-label">Total Spent</div>
@@ -851,6 +837,7 @@ export default function ExpensesPage() {
           </div>
         </div>
 
+        {/* Toolbar */}
         <div className="toolbar">
           <div
             className="search-wrap"
@@ -917,6 +904,7 @@ export default function ExpensesPage() {
           </div>
         </div>
 
+        {/* Expense list */}
         {paginated.length === 0 ? (
           <div className="empty">
             <div className="empty-icon">
@@ -1097,6 +1085,7 @@ export default function ExpensesPage() {
           </div>
         )}
 
+        {/* Card view pagination */}
         {view === "card" && totalPages > 1 && (
           <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
             <button
@@ -1125,6 +1114,7 @@ export default function ExpensesPage() {
           </div>
         )}
 
+        {/* Recurring expenses */}
         <div className="recurring-section" style={{ position: "relative" }}>
           <div className="section-header">
             <div>

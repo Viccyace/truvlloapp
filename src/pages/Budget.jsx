@@ -812,7 +812,9 @@ export default function BudgetPage() {
   }, [activeBudget, budgets]);
 
   const spentAmount = Number(totalSpent || currentBudget?.spent || 0);
-  const budgetAmount = Number(currentBudget?.amount || 0);
+  const budgetAmount = Number(
+    currentBudget?.total_amount || currentBudget?.amount || 0,
+  );
   const remainingAmount = Number(
     remaining || Math.max(0, budgetAmount - spentAmount),
   );
@@ -1232,11 +1234,13 @@ export default function BudgetPage() {
                 <div className="budget-list">
                   {budgets.map((b) => {
                     const usedPct =
-                      Number(b.amount) > 0
+                      Number(b.total_amount || b.amount || 0) > 0
                         ? Math.min(
                             100,
                             Math.round(
-                              (Number(b.spent || 0) / Number(b.amount)) * 100,
+                              (Number(b.spent || 0) /
+                                Number(b.total_amount || b.amount || 0)) *
+                                100,
                             ),
                           )
                         : 0;
@@ -1275,7 +1279,7 @@ export default function BudgetPage() {
 
                         <div className="budget-item-right">
                           <div className="budget-item-amount">
-                            ₦{fmt(b.amount)}
+                            ₦{fmt(b.total_amount || b.amount || 0)}
                           </div>
                           <div
                             className="budget-item-pct"

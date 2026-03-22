@@ -380,7 +380,7 @@ export function BudgetProvider({ children }) {
       const payload = {
         user_id: user.id,
         name: budgetData.name,
-        amount: Number(budgetData.amount),
+        total_amount: Number(budgetData.amount || budgetData.total_amount || 0),
         start_date: budgetData.start_date || budgetData.start || null,
         end_date: budgetData.end_date || budgetData.end || null,
         is_active: budgetData.is_active ?? true,
@@ -405,7 +405,7 @@ export function BudgetProvider({ children }) {
 
       return { data };
     },
-    [user?.id],
+    [user?.id, setAllBudgets],
   );
 
   const setActiveB = useCallback(

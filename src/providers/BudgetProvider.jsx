@@ -250,7 +250,14 @@ export function BudgetProvider({ children }) {
         ...expenseData,
         user_id: user.id,
         budget_id: activeBudget.id,
-        date: expenseData.date ?? new Date().toISOString().split("T")[0],
+        expense_date:
+          expenseData.date ??
+          expenseData.expense_date ??
+          new Date().toISOString().split("T")[0],
+        date:
+          expenseData.date ??
+          expenseData.expense_date ??
+          new Date().toISOString().split("T")[0],
       };
       const tempId = `temp_${Date.now()}`;
       const optimistic = { ...newExpense, id: tempId };

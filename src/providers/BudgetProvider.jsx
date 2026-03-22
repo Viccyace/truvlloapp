@@ -381,6 +381,7 @@ export function BudgetProvider({ children }) {
         user_id: user.id,
         name: budgetData.name,
         total_amount: Number(budgetData.amount || budgetData.total_amount || 0),
+        timeframe: budgetData.period || budgetData.timeframe || "monthly",
         start_date: budgetData.start_date || budgetData.start || null,
         end_date: budgetData.end_date || budgetData.end || null,
         is_active: budgetData.is_active ?? true,

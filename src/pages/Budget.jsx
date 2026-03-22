@@ -989,11 +989,14 @@ export default function BudgetPage() {
                 </div>
                 <div className="hero-period">
                   {formatDateRange(
-                    currentBudget.start_date || currentBudget.start,
+                    urrentBudget.start_date || currentBudget.start,
                     currentBudget.end_date || currentBudget.end,
-                    currentBudget.period,
+                    currentBudget.timeframe || currentBudget.period,
                   )}{" "}
-                  · {formatPeriodLabel(currentBudget.period)}
+                  ·{" "}
+                  {formatPeriodLabel(
+                    currentBudget.timeframe || currentBudget.period,
+                  )}
                 </div>
               </div>
 
@@ -1259,7 +1262,8 @@ export default function BudgetPage() {
                         <div className="budget-item-body">
                           <div className="budget-item-name">{b.name}</div>
                           <div className="budget-item-meta">
-                            {formatPeriodLabel(b.period)} · {usedPct}% used
+                            {formatPeriodLabel(b.timeframe || b.period)} ·{" "}
+                            {usedPct}% used
                           </div>
                           <div
                             className="bar-track"

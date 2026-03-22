@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 
 import { AuthProvider } from "./providers/AuthProvider";
+import { BudgetProvider } from "./providers/BudgetProvider";
 import { router } from "./router";
 
 // TEMP: keep service worker disabled while debugging
@@ -14,9 +15,13 @@ import { router } from "./router";
 function Root() {
   return (
     <AuthProvider>
-      <RouterProvider router={router} />
+      <BudgetProvider>
+        <RouterProvider router={router} />
+      </BudgetProvider>
     </AuthProvider>
   );
 }
 
 createRoot(document.getElementById("root")).render(<Root />);
+
+export default Root;

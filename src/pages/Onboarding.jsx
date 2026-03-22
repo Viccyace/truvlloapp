@@ -1,72 +1,55 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
+import { useBudget } from "../providers/BudgetProvider";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
 const styles = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Plus Jakarta Sans', sans-serif; background: #FAF8F3; }
-
   :root {
-    --cream: #FAF8F3;
-    --cream-dark: #F0EDE4;
-    --green-deep: #1B4332;
-    --green-mid: #2D6A4F;
-    --green-light: #40916C;
-    --green-pale: #D8F3DC;
-    --ink: #0A0A0A;
-    --ink-muted: #3A3A3A;
-    --ink-subtle: #6B6B6B;
-    --amber: #D4A017;
-    --white: #FFFFFF;
-    --border: rgba(10,10,10,0.1);
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
-    --shadow-md: 0 8px 32px rgba(0,0,0,0.1);
-    --shadow-lg: 0 20px 60px rgba(0,0,0,0.15);
+    --cream: #FAF8F3; --cream-dark: #F0EDE4;
+    --green-deep: #1B4332; --green-mid: #2D6A4F; --green-light: #40916C; --green-pale: #D8F3DC;
+    --ink: #0A0A0A; --ink-muted: #3A3A3A; --ink-subtle: #6B6B6B;
+    --amber: #D4A017; --white: #FFFFFF; --border: rgba(10,10,10,0.1);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06); --shadow-lg: 0 20px 60px rgba(0,0,0,0.15);
   }
-
-  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-  @keyframes scaleIn { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
-  @keyframes spin { to{transform:rotate(360deg)} }
-  @keyframes checkPop { 0%{transform:scale(0);opacity:0} 70%{transform:scale(1.2);opacity:1} 100%{transform:scale(1)} }
-  @keyframes floatUp { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-8px)} }
+  @keyframes fadeUp    { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn    { from{opacity:0} to{opacity:1} }
+  @keyframes scaleIn   { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+  @keyframes spin      { to{transform:rotate(360deg)} }
+  @keyframes checkPop  { 0%{transform:scale(0);opacity:0} 70%{transform:scale(1.2);opacity:1} 100%{transform:scale(1)} }
+  @keyframes floatUp   { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-8px)} }
   @keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(80px) rotate(720deg);opacity:0} }
 
   .ob-root { min-height:100vh; display:flex; flex-direction:column; background:var(--cream); position:relative; overflow:hidden; }
   .ob-blob { position:fixed; border-radius:50%; filter:blur(100px); pointer-events:none; transition:all 1s ease; }
   .ob-blob-1 { width:500px; height:500px; top:-150px; right:-100px; opacity:0.25; }
   .ob-blob-2 { width:400px; height:400px; bottom:-100px; left:-80px; opacity:0.18; }
-
   .ob-topbar { display:flex; align-items:center; justify-content:space-between; padding:24px 5%; position:relative; z-index:10; }
   .ob-logo { font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:7px; }
   .ob-logo-dot { width:7px; height:7px; border-radius:50%; background:var(--amber); }
   .ob-skip { font-size:0.85rem; color:var(--ink-subtle); font-weight:600; cursor:pointer; background:none; border:none; }
-
   .ob-progress { padding:0 5%; margin-bottom:8px; position:relative; z-index:10; }
-
-  .ob-step-circle { width:36px; height:36px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:700; transition:all 0.4s ease; position:relative; z-index:1; }
-  .ob-step-circle.done { background:var(--green-light); color:var(--white); box-shadow:0 4px 16px rgba(64,145,108,0.4); }
-  .ob-step-circle.active { background:var(--ink); color:var(--white); box-shadow:0 4px 16px rgba(10,10,10,0.25); }
-  .ob-step-circle.upcoming { background:var(--cream-dark); color:var(--ink-subtle); border:1.5px solid var(--border); }
+  .ob-step-circle { width:36px; height:36px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:700; transition:all 0.4s ease; }
+  .ob-step-circle.done    { background:var(--green-light); color:var(--white); box-shadow:0 4px 16px rgba(64,145,108,0.4); }
+  .ob-step-circle.active  { background:var(--ink); color:var(--white); box-shadow:0 4px 16px rgba(10,10,10,0.25); }
+  .ob-step-circle.upcoming{ background:var(--cream-dark); color:var(--ink-subtle); border:1.5px solid var(--border); }
   .ob-step-check { animation:checkPop 0.4s ease; }
   .ob-step-connector { flex:1; height:3px; background:var(--cream-dark); border-radius:100px; overflow:hidden; margin:0 6px; }
   .ob-step-connector-fill { height:100%; background:var(--green-light); border-radius:100px; transition:width 0.5s cubic-bezier(0.4,0,0.2,1); }
-  .ob-step-label { font-size:0.7rem; font-weight:600; margin-top:6px; text-align:center; white-space:nowrap; transition:color 0.3s; }
-  .ob-step-label.active { color:var(--ink); }
-  .ob-step-label.done { color:var(--green-mid); }
+  .ob-step-label { font-size:0.7rem; font-weight:600; margin-top:6px; text-align:center; white-space:nowrap; }
+  .ob-step-label.active   { color:var(--ink); }
+  .ob-step-label.done     { color:var(--green-mid); }
   .ob-step-label.upcoming { color:var(--ink-subtle); }
-
   .ob-card-wrap { flex:1; display:flex; align-items:flex-start; justify-content:center; padding:24px 5% 40px; position:relative; z-index:10; }
   .ob-card { background:var(--white); border-radius:28px; padding:48px; border:1.5px solid rgba(10,10,10,0.07); box-shadow:var(--shadow-lg); width:100%; max-width:580px; animation:scaleIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
   @media(max-width:600px){ .ob-card{ padding:32px 24px; border-radius:22px; } }
-
   .ob-step-tag { display:inline-flex; align-items:center; gap:7px; background:var(--cream-dark); color:var(--ink-subtle); padding:5px 14px; border-radius:100px; font-size:0.75rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:20px; }
   .ob-step-tag-dot { width:5px; height:5px; border-radius:50%; background:var(--green-light); }
   .ob-card-headline { font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:800; color:var(--ink); line-height:1.18; letter-spacing:-0.015em; margin-bottom:8px; }
   .ob-card-sub { font-size:0.9rem; color:var(--ink-subtle); line-height:1.65; margin-bottom:32px; }
-
   .currency-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:32px; }
   @media(max-width:480px){ .currency-grid{ grid-template-columns:repeat(2,1fr); } }
   .currency-card { border:2px solid var(--border); border-radius:16px; padding:18px 14px; cursor:pointer; transition:all 0.22s; text-align:center; background:var(--white); position:relative; overflow:hidden; }
@@ -76,7 +59,6 @@ const styles = `
   .currency-code { font-weight:800; font-size:0.95rem; color:var(--ink); margin-bottom:2px; }
   .currency-name { font-size:0.72rem; color:var(--ink-subtle); font-weight:500; }
   .currency-selected-check { position:absolute; top:8px; right:8px; width:18px; height:18px; border-radius:50%; background:var(--green-light); display:flex; align-items:center; justify-content:center; font-size:0.65rem; color:var(--white); animation:checkPop 0.3s ease; }
-
   .field-wrap { margin-bottom:20px; }
   .field-label { display:block; font-size:0.82rem; font-weight:600; color:var(--ink-muted); margin-bottom:8px; }
   .input-prefix-wrap { display:flex; align-items:stretch; border:1.5px solid var(--border); border-radius:14px; overflow:hidden; transition:border-color 0.2s,box-shadow 0.2s; background:var(--white); }
@@ -86,15 +68,13 @@ const styles = `
   .plain-input { width:100%; padding:14px 16px; border:1.5px solid var(--border); border-radius:14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:500; color:var(--ink); background:var(--white); outline:none; transition:border-color 0.2s,box-shadow 0.2s; }
   .plain-input:focus { border-color:var(--green-light); box-shadow:0 0 0 3px rgba(64,145,108,0.1); }
   .field-error { font-size:0.75rem; color:#C0392B; margin-top:5px; font-weight:500; }
-
   .period-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
   .period-card { border:2px solid var(--border); border-radius:14px; padding:14px 10px; cursor:pointer; transition:all 0.2s; text-align:center; background:var(--white); }
   .period-card:hover { border-color:rgba(64,145,108,0.3); }
   .period-card.selected { border-color:var(--green-light); background:var(--green-pale); }
-  .period-icon { font-size:1.2rem; margin-bottom:6px; }
+  .period-icon  { font-size:1.2rem; margin-bottom:6px; }
   .period-label { font-size:0.8rem; font-weight:700; color:var(--ink); }
-  .period-desc { font-size:0.7rem; color:var(--ink-subtle); margin-top:2px; }
-
+  .period-desc  { font-size:0.7rem; color:var(--ink-subtle); margin-top:2px; }
   .confirm-hero { text-align:center; margin-bottom:36px; }
   .confirm-emoji { font-size:3.5rem; display:block; margin-bottom:16px; animation:floatUp 3s ease-in-out infinite; }
   .confirm-summary { background:var(--cream-dark); border-radius:18px; padding:24px; display:flex; flex-direction:column; gap:16px; margin-bottom:28px; }
@@ -105,21 +85,19 @@ const styles = `
   .confirm-trial { background:var(--green-pale); border:1.5px solid rgba(27,67,50,0.15); border-radius:14px; padding:16px 18px; display:flex; gap:12px; align-items:flex-start; margin-bottom:28px; }
   .confirm-trial-icon { font-size:1.2rem; flex-shrink:0; }
   .confirm-trial-text { font-size:0.85rem; color:var(--green-deep); line-height:1.6; font-weight:500; }
-
   .confetti-wrap { position:fixed; top:0; left:0; right:0; pointer-events:none; z-index:100; display:flex; justify-content:center; }
   .confetti-piece { width:10px; height:10px; border-radius:2px; position:absolute; animation:confettiFall 1.2s ease forwards; }
-
   .ob-nav { display:flex; gap:12px; margin-top:28px; }
   .btn-back { flex:0; padding:14px 24px; border:1.5px solid var(--border); border-radius:14px; background:transparent; color:var(--ink-muted); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; font-weight:600; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
   .btn-next { flex:1; padding:15px; border-radius:14px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:1rem; font-weight:700; cursor:pointer; transition:all 0.25s; box-shadow:0 6px 24px rgba(27,67,50,0.28); display:flex; align-items:center; justify-content:center; gap:8px; }
   .btn-next:disabled { opacity:0.55; cursor:not-allowed; }
   .spinner { width:18px; height:18px; border:2.5px solid rgba(255,255,255,0.4); border-top-color:var(--white); border-radius:50%; animation:spin 0.7s linear infinite; }
-
   .success-root { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--cream); padding:40px 5%; text-align:center; animation:fadeIn 0.5s ease; }
   .success-check { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 24px; box-shadow:0 12px 40px rgba(27,67,50,0.35); animation:checkPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
   .success-title { font-family:'Playfair Display',serif; font-size:2.4rem; font-weight:900; color:var(--ink); margin-bottom:12px; letter-spacing:-0.02em; }
   .success-sub { font-size:1rem; color:var(--ink-subtle); line-height:1.7; max-width:420px; margin:0 auto 40px; }
-  .success-btn { padding:16px 48px; border-radius:14px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:1.05rem; font-weight:700; cursor:pointer; transition:all 0.25s; box-shadow:0 8px 32px rgba(27,67,50,0.3); }
+  .success-btn { padding:16px 48px; border-radius:14px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:1.05rem; font-weight:700; cursor:pointer; box-shadow:0 8px 32px rgba(27,67,50,0.3); }
+  .error-box { margin-bottom:18px; background:rgba(192,57,43,0.08); border:1.5px solid rgba(192,57,43,0.2); border-radius:12px; padding:12px 16px; font-size:0.875rem; color:#C0392B; line-height:1.5; }
 `;
 
 const CURRENCIES = [
@@ -146,11 +124,8 @@ const CONFETTI_COLORS = [
   "#74C69D",
 ];
 
-function ConfettiPiece({ style }) {
-  return <div className="confetti-piece" style={style} />;
-}
-
 function Confetti({ show }) {
+  if (!show) return null;
   const pieces = Array.from({ length: 30 }, (_, i) => ({
     left: `${Math.random() * 100}%`,
     background: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
@@ -160,13 +135,10 @@ function Confetti({ show }) {
     height: `${6 + Math.random() * 8}px`,
     borderRadius: Math.random() > 0.5 ? "50%" : "2px",
   }));
-
-  if (!show) return null;
-
   return (
     <div className="confetti-wrap">
-      {pieces.map((piece, i) => (
-        <ConfettiPiece key={i} style={piece} />
+      {pieces.map((p, i) => (
+        <div key={i} className="confetti-piece" style={p} />
       ))}
     </div>
   );
@@ -187,7 +159,6 @@ function Step1({ data, onChange, onNext }) {
       <p className="ob-card-sub">
         We'll use this across your entire Truvllo experience.
       </p>
-
       <div className="currency-grid">
         {CURRENCIES.map((c) => (
           <div
@@ -204,7 +175,6 @@ function Step1({ data, onChange, onNext }) {
           </div>
         ))}
       </div>
-
       <div className="ob-nav">
         <button className="btn-next" onClick={onNext} disabled={!data.currency}>
           Continue <span>→</span>
@@ -232,15 +202,12 @@ function Step2({ data, onChange, onNext, onBack }) {
     if (
       !data.monthlyBudget ||
       parseFloat(data.monthlyBudget.replace(/,/g, "")) < 1
-    ) {
+    )
       e.monthlyBudget = "Enter a budget amount";
-    }
-
     if (Object.keys(e).length) {
       setErrors(e);
       return;
     }
-
     onNext();
   };
 
@@ -401,7 +368,6 @@ function Step3({ data, onBack, onFinish, loading }) {
     CURRENCIES.find((c) => c.code === data.currency) || CURRENCIES[0];
   const sym = currencyObj.symbol;
   const daysInPeriod = data.period === "weekly" ? 7 : 30;
-
   const daily = data.monthlyBudget
     ? parseInt(
         parseFloat(data.monthlyBudget.replace(/,/g, "")) / daysInPeriod,
@@ -415,7 +381,6 @@ function Step3({ data, onBack, onFinish, loading }) {
         <span className="ob-step-tag-dot" />
         Step 3 of 3
       </div>
-
       <div className="confirm-hero">
         <span className="confirm-emoji">🎯</span>
         <h2 className="ob-card-headline">
@@ -427,7 +392,6 @@ function Step3({ data, onBack, onFinish, loading }) {
           Everything looks right? You can edit this later.
         </p>
       </div>
-
       <div className="confirm-summary">
         <div className="confirm-row">
           <span className="confirm-row-label">Currency</span>
@@ -457,7 +421,6 @@ function Step3({ data, onBack, onFinish, loading }) {
           </span>
         </div>
       </div>
-
       <div className="confirm-trial">
         <span className="confirm-trial-icon">🎁</span>
         <div className="confirm-trial-text">
@@ -465,7 +428,6 @@ function Step3({ data, onBack, onFinish, loading }) {
           you log your first expense.
         </div>
       </div>
-
       <div className="ob-nav">
         <button className="btn-back" onClick={onBack}>
           ← Back
@@ -481,6 +443,7 @@ function Step3({ data, onBack, onFinish, loading }) {
 export default function Onboarding() {
   const navigate = useNavigate();
   const { completeOnboarding } = useAuth();
+  const { createBudget } = useBudget();
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -492,7 +455,6 @@ export default function Onboarding() {
     budgetName: "",
     monthlyBudget: "",
     period: "monthly",
-    categories: ["food", "transport"],
   });
 
   const onChange = (key, val) => {
@@ -507,30 +469,56 @@ export default function Onboarding() {
         ? "rgba(212,160,23,0.18)"
         : "rgba(27,67,50,0.2)";
 
+  // ── FIXED: now creates budget + marks onboarding complete ──────────────────
   const handleFinish = async () => {
     if (loading) return;
+    setLoading(true);
+    setErrorMsg("");
 
     try {
-      setLoading(true);
-      setErrorMsg("");
-
-      const { error } = await completeOnboarding({
+      // Step 1: Mark profile as onboarding complete
+      const { error: profileError } = await completeOnboarding({
         currency: data.currency,
         _budgetName: data.budgetName,
         _period: data.period,
       });
 
-      if (error) {
-        console.error("Onboarding completion failed:", error);
+      if (profileError) {
         setErrorMsg(
-          error.message ||
-            "We could not complete onboarding. Please try again.",
+          profileError.message ||
+            "Could not complete onboarding. Please try again.",
         );
         setLoading(false);
         return;
       }
 
-      navigate("/dashboard", { replace: true });
+      // Step 2: Create the first budget
+      const amountRaw = parseFloat(
+        (data.monthlyBudget || "0").replace(/,/g, ""),
+      );
+      const startDate = new Date().toISOString().split("T")[0];
+      const endDate = (() => {
+        const s = new Date(startDate);
+        if (data.period === "weekly") s.setDate(s.getDate() + 7);
+        else s.setMonth(s.getMonth() + 1);
+        return s.toISOString().split("T")[0];
+      })();
+
+      if (amountRaw > 0 && data.budgetName.trim()) {
+        await createBudget({
+          name: data.budgetName.trim(),
+          amount: amountRaw,
+          period: data.period,
+          start_date: startDate,
+          end_date: endDate,
+          is_active: true,
+        });
+      }
+
+      // Step 3: Show success
+      setShowConfetti(true);
+      setDone(true);
+      setTimeout(() => setShowConfetti(false), 1800);
     } catch (err) {
       console.error("Onboarding error:", err);
       setErrorMsg(
@@ -540,34 +528,18 @@ export default function Onboarding() {
     }
   };
 
-  const handleGoToDashboard = () => {
-    navigate("/dashboard", { replace: true });
-  };
-
   const handleSkip = async () => {
     if (loading) return;
-
+    setLoading(true);
     try {
-      setLoading(true);
-      setErrorMsg("");
-
-      const { error } = await completeOnboarding({
+      await completeOnboarding({
         currency: data.currency || "NGN",
-        _budgetName: data.budgetName,
-        _period: data.period,
+        _budgetName: "",
+        _period: "monthly",
       });
-
-      if (error) {
-        console.error("Skip onboarding failed:", error);
-        setErrorMsg(error.message || "We could not skip onboarding right now.");
-        setLoading(false);
-        return;
-      }
-
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      console.error("Skip onboarding error:", err);
-      setErrorMsg(err?.message || "Something went wrong while skipping.");
+      console.error("Skip error:", err);
       setLoading(false);
     }
   };
@@ -579,17 +551,15 @@ export default function Onboarding() {
         <Confetti show={showConfetti} />
         <div className="success-root">
           <div className="success-check">✓</div>
-          <h1
-            className="success-title"
-            style={{ fontFamily: "'Playfair Display', serif" }}
-          >
-            You're all set!
-          </h1>
+          <h1 className="success-title">You're all set!</h1>
           <p className="success-sub">
             Your budget is ready. Start logging expenses to activate your 7-day
             Premium trial and unlock all AI features instantly.
           </p>
-          <button className="success-btn" onClick={handleGoToDashboard}>
+          <button
+            className="success-btn"
+            onClick={() => navigate("/dashboard", { replace: true })}
+          >
             Go to my Dashboard →
           </button>
         </div>
@@ -601,7 +571,6 @@ export default function Onboarding() {
     <>
       <style>{FONTS + styles}</style>
       <Confetti show={showConfetti} />
-
       <div className="ob-root">
         <div
           className="ob-blob ob-blob-1"
@@ -682,23 +651,7 @@ export default function Onboarding() {
 
         <div className="ob-card-wrap">
           <div className="ob-card" key={step}>
-            {errorMsg && (
-              <div
-                style={{
-                  marginBottom: 18,
-                  background: "rgba(192,57,43,0.08)",
-                  border: "1.5px solid rgba(192,57,43,0.2)",
-                  borderRadius: 12,
-                  padding: "12px 16px",
-                  fontSize: "0.875rem",
-                  color: "#C0392B",
-                  lineHeight: 1.5,
-                }}
-              >
-                {errorMsg}
-              </div>
-            )}
-
+            {errorMsg && <div className="error-box">{errorMsg}</div>}
             {step === 1 && (
               <Step1
                 data={data}
@@ -706,7 +659,6 @@ export default function Onboarding() {
                 onNext={() => setStep(2)}
               />
             )}
-
             {step === 2 && (
               <Step2
                 data={data}
@@ -715,7 +667,6 @@ export default function Onboarding() {
                 onBack={() => setStep(1)}
               />
             )}
-
             {step === 3 && (
               <Step3
                 data={data}

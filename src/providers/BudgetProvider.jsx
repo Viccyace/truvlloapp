@@ -38,17 +38,23 @@ export function useBudget() {
 
 // ─── Currency formatting ──────────────────────────────────────────────────────
 const CURRENCY_SYMBOLS = {
-  NGN: "₦", USD: "$", GBP: "£", EUR: "€", KES: "KSh", GHS: "₵",
+  NGN: "₦",
+  USD: "$",
+  GBP: "£",
+  EUR: "€",
+  KES: "KSh",
+  GHS: "₵",
 };
 
 export function formatCurrency(amount, currency = "NGN") {
   const sym = CURRENCY_SYMBOLS[currency] ?? currency;
   const num = Math.abs(amount ?? 0);
-  const formatted = num >= 1_000_000
-    ? `${(num / 1_000_000).toFixed(1)}M`
-    : num >= 1_000
-    ? num.toLocaleString("en-NG")
-    : num.toFixed(0);
+  const formatted =
+    num >= 1_000_000
+      ? `${(num / 1_000_000).toFixed(1)}M`
+      : num >= 1_000
+        ? num.toLocaleString("en-NG")
+        : num.toFixed(0);
   return `${sym}${formatted}`;
 }
 
@@ -61,12 +67,15 @@ export function formatCurrency(amount, currency = "NGN") {
 export function calcExpectedSpend(budget) {
   if (!budget) return 0;
   const start = new Date(budget.start_date);
-  const end   = new Date(budget.end_date);
-  const now   = new Date();
+  const end = new Date(budget.end_date);
+  const now = new Date();
 
-  const totalDays   = Math.max(1, (end - start) / 86_400_000);
-  const elapsedDays = Math.max(0, Math.min(totalDays, (now - start) / 86_400_000));
-  const fraction    = elapsedDays / totalDays;
+  const totalDays = Math.max(1, (end - start) / 86_400_000);
+  const elapsedDays = Math.max(
+    0,
+    Math.min(totalDays, (now - start) / 86_400_000),
+  );
+  const fraction = elapsedDays / totalDays;
 
   return Math.round(budget.amount * fraction);
 }
@@ -77,10 +86,10 @@ export function calcExpectedSpend(budget) {
  */
 export function calcSafeToSpend(budget, totalSpent) {
   if (!budget) return 0;
-  const end       = new Date(budget.end_date);
-  const now       = new Date();
+  const end = new Date(budget.end_date);
+  const now = new Date();
   const remaining = Math.max(0, budget.amount - totalSpent);
-  const daysLeft  = Math.max(1, Math.ceil((end - now) / 86_400_000));
+  const daysLeft = Math.max(1, Math.ceil((end - now) / 86_400_000));
   return Math.round(remaining / daysLeft);
 }
 
@@ -91,7 +100,12 @@ export function calcSafeToSpend(budget, totalSpent) {
  */
 export function calcPaceStatus(totalSpent, expectedSpend, budget) {
   if (!budget || expectedSpend === 0) {
-    return { key: "on_track", label: "On Track", color: "#52B788", bg: "rgba(82,183,136,0.12)" };
+    return {
+      key: "on_track",
+      label: "On Track",
+      color: "#52B788",
+      bg: "rgba(82,183,136,0.12)",
+    };
   }
 
   const ratio = totalSpent / expectedSpend;
@@ -137,15 +151,18 @@ export function calcPaceStatus(totalSpent, expectedSpend, budget) {
  * For each category cap, calculate how much has been spent and the % used.
  */
 export function calcCategoryProgress(caps, expenses) {
-  return caps.map(cap => {
+  return caps.map((cap) => {
     const spent = expenses
-      .filter(e => e.category === cap.category)
+      .filter((e) => e.category === cap.category)
       .reduce((sum, e) => sum + e.amount, 0);
     return {
       ...cap,
       spent,
       remaining: Math.max(0, cap.limit - spent),
-      pct: cap.limit > 0 ? Math.min(100, Math.round((spent / cap.limit) * 100)) : 0,
+      pct:
+        cap.limit > 0
+          ? Math.min(100, Math.round((spent / cap.limit) * 100))
+          : 0,
       over: spent > cap.limit,
     };
   });
@@ -156,13 +173,13 @@ export function BudgetProvider({ children }) {
   const { user, isLoggedIn, currency } = useAuth();
 
   // ── Core state ─────────────────────────────────────────────────────────────
-  const [activeBudget,   setActiveBudget]   = useState(null);
-  const [allBudgets,     setAllBudgets]     = useState([]);
-  const [expenses,       setExpenses]       = useState([]);
-  const [categoryCaps,   setCategoryCaps]   = useState([]);
-  const [recurring,      setRecurring]      = useState([]);
-  const [loading,        setLoading]        = useState(false);
-  const [error,          setError]          = useState(null);
+  const [activeBudget, setActiveBudget] = useState(null);
+  const [allBudgets, setAllBudgets] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [categoryCaps, setCategoryCaps] = useState([]);
+  const [recurring, setRecurring] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [lastFetchedUid, setLastFetchedUid] = useState(null);
 
   const realtimeRef = useRef(null);
@@ -175,40 +192,35 @@ export function BudgetProvider({ children }) {
 
     try {
       // Parallel fetch — all four tables at once
-      const [budgetsRes, expensesRes, capsRes, recurringRes] = await Promise.all([
-        supabase
-          .from("budgets")
-          .select("*")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false }),
+      const [budgetsRes, expensesRes, capsRes, recurringRes] =
+        await Promise.all([
+          supabase
+            .from("budgets")
+            .select("*")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false }),
 
-        supabase
-          .from("expenses")
-          .select("*")
-          .eq("user_id", userId)
-          .order("date", { ascending: false }),
+          supabase
+            .from("expenses")
+            .select("*")
+            .eq("user_id", userId)
+            .order("date", { ascending: false }),
 
-        supabase
-          .from("category_caps")
-          .select("*")
-          .eq("user_id", userId),
+          supabase.from("category_caps").select("*").eq("user_id", userId),
 
-        supabase
-          .from("recurring_expenses")
-          .select("*")
-          .eq("user_id", userId),
-      ]);
+          supabase.from("recurring_expenses").select("*").eq("user_id", userId),
+        ]);
 
-      if (budgetsRes.error)   throw budgetsRes.error;
-      if (expensesRes.error)  throw expensesRes.error;
+      if (budgetsRes.error) throw budgetsRes.error;
+      if (expensesRes.error) throw expensesRes.error;
       // caps and recurring are premium — ignore errors gracefully
-      const budgets   = budgetsRes.data   ?? [];
-      const exps      = expensesRes.data  ?? [];
-      const caps      = capsRes.data      ?? [];
-      const rec       = recurringRes.data ?? [];
+      const budgets = budgetsRes.data ?? [];
+      const exps = expensesRes.data ?? [];
+      const caps = capsRes.data ?? [];
+      const rec = recurringRes.data ?? [];
 
       setAllBudgets(budgets);
-      setActiveBudget(budgets.find(b => b.is_active) ?? budgets[0] ?? null);
+      setActiveBudget(budgets.find((b) => b.is_active) ?? budgets[0] ?? null);
       setExpenses(exps);
       setCategoryCaps(caps);
       setRecurring(rec);
@@ -248,18 +260,25 @@ export function BudgetProvider({ children }) {
       .channel(`expenses:${user.id}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "expenses", filter: `user_id=eq.${user.id}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "expenses",
+          filter: `user_id=eq.${user.id}`,
+        },
         (payload) => {
           if (payload.eventType === "INSERT") {
-            setExpenses(prev => [payload.new, ...prev]);
+            setExpenses((prev) => [payload.new, ...prev]);
           }
           if (payload.eventType === "UPDATE") {
-            setExpenses(prev => prev.map(e => e.id === payload.new.id ? payload.new : e));
+            setExpenses((prev) =>
+              prev.map((e) => (e.id === payload.new.id ? payload.new : e)),
+            );
           }
           if (payload.eventType === "DELETE") {
-            setExpenses(prev => prev.filter(e => e.id !== payload.old.id));
+            setExpenses((prev) => prev.filter((e) => e.id !== payload.old.id));
           }
-        }
+        },
       )
       .subscribe();
 
@@ -268,182 +287,231 @@ export function BudgetProvider({ children }) {
   }, [user?.id]);
 
   // ── Expense CRUD ───────────────────────────────────────────────────────────
-  const addExpense = useCallback(async (expenseData) => {
-    if (!user?.id || !activeBudget?.id) return { error: "No active budget" };
+  const addExpense = useCallback(
+    async (expenseData) => {
+      if (!user?.id || !activeBudget?.id) return { error: "No active budget" };
 
-    const newExpense = {
-      ...expenseData,
-      user_id:   user.id,
-      budget_id: activeBudget.id,
-      date:      expenseData.date ?? new Date().toISOString().split("T")[0],
-    };
+      const newExpense = {
+        ...expenseData,
+        user_id: user.id,
+        budget_id: activeBudget.id,
+        date: expenseData.date ?? new Date().toISOString().split("T")[0],
+      };
 
-    // Optimistic update
-    const tempId = `temp_${Date.now()}`;
-    const optimistic = { ...newExpense, id: tempId };
-    setExpenses(prev => [optimistic, ...prev]);
+      // Optimistic update
+      const tempId = `temp_${Date.now()}`;
+      const optimistic = { ...newExpense, id: tempId };
+      setExpenses((prev) => [optimistic, ...prev]);
 
-    const { data, error } = await supabase
-      .from("expenses")
-      .insert(newExpense)
-      .select()
-      .single();
+      const { data, error } = await supabase
+        .from("expenses")
+        .insert(newExpense)
+        .select()
+        .single();
 
-    if (error) {
-      // Rollback
-      setExpenses(prev => prev.filter(e => e.id !== tempId));
-      return { error };
-    }
+      if (error) {
+        // Rollback
+        setExpenses((prev) => prev.filter((e) => e.id !== tempId));
+        return { error };
+      }
 
-    // Replace temp with real record
-    setExpenses(prev => prev.map(e => e.id === tempId ? data : e));
-    return { data };
-  }, [user?.id, activeBudget?.id]);
+      // Replace temp with real record
+      setExpenses((prev) => prev.map((e) => (e.id === tempId ? data : e)));
+      return { data };
+    },
+    [user?.id, activeBudget?.id],
+  );
 
-  const updateExpense = useCallback(async (id, updates) => {
-    // Optimistic update
-    setExpenses(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+  const updateExpense = useCallback(
+    async (id, updates) => {
+      // Optimistic update
+      setExpenses((prev) =>
+        prev.map((e) => (e.id === id ? { ...e, ...updates } : e)),
+      );
 
-    const { data, error } = await supabase
-      .from("expenses")
-      .update(updates)
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .select()
-      .single();
+      const { data, error } = await supabase
+        .from("expenses")
+        .update(updates)
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .select()
+        .single();
 
-    if (error) {
-      // Rollback — re-fetch
-      fetchAll(user.id);
-      return { error };
-    }
+      if (error) {
+        // Rollback — re-fetch
+        fetchAll(user.id);
+        return { error };
+      }
 
-    setExpenses(prev => prev.map(e => e.id === id ? data : e));
-    return { data };
-  }, [user?.id, fetchAll]);
+      setExpenses((prev) => prev.map((e) => (e.id === id ? data : e)));
+      return { data };
+    },
+    [user?.id, fetchAll],
+  );
 
-  const deleteExpense = useCallback(async (id) => {
-    // Optimistic update
-    const snapshot = expenses.find(e => e.id === id);
-    setExpenses(prev => prev.filter(e => e.id !== id));
+  const deleteExpense = useCallback(
+    async (id) => {
+      // Optimistic update
+      const snapshot = expenses.find((e) => e.id === id);
+      setExpenses((prev) => prev.filter((e) => e.id !== id));
 
-    const { error } = await supabase
-      .from("expenses")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", user.id);
+      const { error } = await supabase
+        .from("expenses")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
 
-    if (error) {
-      // Rollback
-      if (snapshot) setExpenses(prev => [snapshot, ...prev]);
-      return { error };
-    }
+      if (error) {
+        // Rollback
+        if (snapshot) setExpenses((prev) => [snapshot, ...prev]);
+        return { error };
+      }
 
-    return { error: null };
-  }, [user?.id, expenses]);
+      return { error: null };
+    },
+    [user?.id, expenses],
+  );
 
   // ── Budget CRUD ────────────────────────────────────────────────────────────
-  const createBudget = useCallback(async (budgetData) => {
-    if (!user?.id) return { error: "Not logged in" };
+  const createBudget = useCallback(
+    async (budgetData) => {
+      if (!user?.id) return { error: "Not logged in" };
 
-    const { data, error } = await supabase
-      .from("budgets")
-      .insert({ ...budgetData, user_id: user.id })
-      .select()
-      .single();
+      const payload = {
+        user_id: user.id,
+        name: budgetData.name,
+        amount: Number(budgetData.amount),
+        start_date: budgetData.start_date || budgetData.start || null,
+        end_date: budgetData.end_date || budgetData.end || null,
+        is_active: budgetData.is_active ?? true,
+      };
 
-    if (!error && data) {
-      setAllBudgets(prev => [data, ...prev]);
-      if (budgetData.is_active) setActiveBudget(data);
-    }
+      const { data, error } = await supabase
+        .from("budgets")
+        .insert(payload)
+        .select()
+        .single();
 
-    return { data, error };
-  }, [user?.id]);
+      if (error) {
+        console.error("Create budget error:", error);
+        return { error: error.message };
+      }
 
-  const setActiveB = useCallback(async (budgetId) => {
-    if (!user?.id) return;
+      setAllBudgets((prev) => [data, ...prev]);
 
-    // Deactivate all, activate selected
-    await supabase.from("budgets").update({ is_active: false }).eq("user_id", user.id);
-    const { data, error } = await supabase
-      .from("budgets")
-      .update({ is_active: true })
-      .eq("id", budgetId)
-      .select()
-      .single();
+      if (data?.is_active) {
+        setActiveBudgetState(data);
+      }
 
-    if (!error && data) {
-      setAllBudgets(prev => prev.map(b => ({ ...b, is_active: b.id === budgetId })));
-      setActiveBudget(data);
-    }
-  }, [user?.id]);
+      return { data };
+    },
+    [user?.id],
+  );
+
+  const setActiveB = useCallback(
+    async (budgetId) => {
+      if (!user?.id) return;
+
+      // Deactivate all, activate selected
+      await supabase
+        .from("budgets")
+        .update({ is_active: false })
+        .eq("user_id", user.id);
+      const { data, error } = await supabase
+        .from("budgets")
+        .update({ is_active: true })
+        .eq("id", budgetId)
+        .select()
+        .single();
+
+      if (!error && data) {
+        setAllBudgets((prev) =>
+          prev.map((b) => ({ ...b, is_active: b.id === budgetId })),
+        );
+        setActiveBudget(data);
+      }
+    },
+    [user?.id],
+  );
 
   // ── Category caps CRUD ─────────────────────────────────────────────────────
-  const upsertCategoryCap = useCallback(async ({ category, limit: capLimit }) => {
-    if (!user?.id || !activeBudget?.id) return { error: "No active budget" };
+  const upsertCategoryCap = useCallback(
+    async ({ category, limit: capLimit }) => {
+      if (!user?.id || !activeBudget?.id) return { error: "No active budget" };
 
-    const payload = {
-      user_id:   user.id,
-      budget_id: activeBudget.id,
-      category,
-      limit:     capLimit,
-    };
+      const payload = {
+        user_id: user.id,
+        budget_id: activeBudget.id,
+        category,
+        limit: capLimit,
+      };
 
-    const { data, error } = await supabase
-      .from("category_caps")
-      .upsert(payload, { onConflict: "user_id,budget_id,category" })
-      .select()
-      .single();
+      const { data, error } = await supabase
+        .from("category_caps")
+        .upsert(payload, { onConflict: "user_id,budget_id,category" })
+        .select()
+        .single();
 
-    if (!error && data) {
-      setCategoryCaps(prev => {
-        const exists = prev.find(c => c.category === category);
-        return exists
-          ? prev.map(c => c.category === category ? data : c)
-          : [...prev, data];
-      });
-    }
+      if (!error && data) {
+        setCategoryCaps((prev) => {
+          const exists = prev.find((c) => c.category === category);
+          return exists
+            ? prev.map((c) => (c.category === category ? data : c))
+            : [...prev, data];
+        });
+      }
 
-    return { data, error };
-  }, [user?.id, activeBudget?.id]);
+      return { data, error };
+    },
+    [user?.id, activeBudget?.id],
+  );
 
-  const deleteCategoryCap = useCallback(async (category) => {
-    await supabase
-      .from("category_caps")
-      .delete()
-      .eq("user_id", user.id)
-      .eq("budget_id", activeBudget?.id)
-      .eq("category", category);
+  const deleteCategoryCap = useCallback(
+    async (category) => {
+      await supabase
+        .from("category_caps")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("budget_id", activeBudget?.id)
+        .eq("category", category);
 
-    setCategoryCaps(prev => prev.filter(c => c.category !== category));
-  }, [user?.id, activeBudget?.id]);
+      setCategoryCaps((prev) => prev.filter((c) => c.category !== category));
+    },
+    [user?.id, activeBudget?.id],
+  );
 
   // ── Recurring expenses CRUD ────────────────────────────────────────────────
-  const addRecurring = useCallback(async (recurringData) => {
-    const { data, error } = await supabase
-      .from("recurring_expenses")
-      .insert({ ...recurringData, user_id: user.id })
-      .select()
-      .single();
+  const addRecurring = useCallback(
+    async (recurringData) => {
+      const { data, error } = await supabase
+        .from("recurring_expenses")
+        .insert({ ...recurringData, user_id: user.id })
+        .select()
+        .single();
 
-    if (!error && data) setRecurring(prev => [...prev, data]);
-    return { data, error };
-  }, [user?.id]);
+      if (!error && data) setRecurring((prev) => [...prev, data]);
+      return { data, error };
+    },
+    [user?.id],
+  );
 
-  const deleteRecurring = useCallback(async (id) => {
-    await supabase
-      .from("recurring_expenses")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", user.id);
+  const deleteRecurring = useCallback(
+    async (id) => {
+      await supabase
+        .from("recurring_expenses")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
 
-    setRecurring(prev => prev.filter(r => r.id !== id));
-  }, [user?.id]);
+      setRecurring((prev) => prev.filter((r) => r.id !== id));
+    },
+    [user?.id],
+  );
 
   // ── CSV export ─────────────────────────────────────────────────────────────
   const exportCSV = useCallback(() => {
     const headers = ["Date", "Description", "Category", "Amount", "Notes"];
-    const rows = expenses.map(e => [
+    const rows = expenses.map((e) => [
       e.date,
       `"${(e.description ?? "").replace(/"/g, '""')}"`,
       e.category ?? "",
@@ -451,11 +519,11 @@ export function BudgetProvider({ children }) {
       `"${(e.notes ?? "").replace(/"/g, '""')}"`,
     ]);
 
-    const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
+    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement("a");
-    a.href     = url;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
     a.download = `truvllo-expenses-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
@@ -464,25 +532,32 @@ export function BudgetProvider({ children }) {
   // ── Derived calculations (memoised) ───────────────────────────────────────
   const derived = useMemo(() => {
     const budgetExpenses = activeBudget
-      ? expenses.filter(e => e.budget_id === activeBudget.id)
+      ? expenses.filter((e) => e.budget_id === activeBudget.id)
       : expenses;
 
-    const totalSpent    = budgetExpenses.reduce((sum, e) => sum + (e.amount ?? 0), 0);
-    const totalBudget   = activeBudget?.amount ?? 0;
-    const remaining     = Math.max(0, totalBudget - totalSpent);
+    const totalSpent = budgetExpenses.reduce(
+      (sum, e) => sum + (e.amount ?? 0),
+      0,
+    );
+    const totalBudget = activeBudget?.amount ?? 0;
+    const remaining = Math.max(0, totalBudget - totalSpent);
     const expectedSpend = calcExpectedSpend(activeBudget);
-    const safeToSpend   = calcSafeToSpend(activeBudget, totalSpent);
-    const paceStatus    = calcPaceStatus(totalSpent, expectedSpend, activeBudget);
+    const safeToSpend = calcSafeToSpend(activeBudget, totalSpent);
+    const paceStatus = calcPaceStatus(totalSpent, expectedSpend, activeBudget);
 
     // Days info
-    const now      = new Date();
-    const start    = activeBudget ? new Date(activeBudget.start_date) : now;
-    const end      = activeBudget ? new Date(activeBudget.end_date)   : now;
-    const totalDays   = Math.max(1, Math.round((end - start) / 86_400_000));
-    const currentDay  = Math.max(1, Math.min(totalDays, Math.round((now - start) / 86_400_000) + 1));
-    const daysLeft    = Math.max(0, Math.ceil((end - now) / 86_400_000));
-    const pctElapsed  = Math.round((currentDay / totalDays) * 100);
-    const pctSpent    = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
+    const now = new Date();
+    const start = activeBudget ? new Date(activeBudget.start_date) : now;
+    const end = activeBudget ? new Date(activeBudget.end_date) : now;
+    const totalDays = Math.max(1, Math.round((end - start) / 86_400_000));
+    const currentDay = Math.max(
+      1,
+      Math.min(totalDays, Math.round((now - start) / 86_400_000) + 1),
+    );
+    const daysLeft = Math.max(0, Math.ceil((end - now) / 86_400_000));
+    const pctElapsed = Math.round((currentDay / totalDays) * 100);
+    const pctSpent =
+      totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
 
     // Category breakdown
     const categoryTotals = budgetExpenses.reduce((acc, e) => {
@@ -504,10 +579,10 @@ export function BudgetProvider({ children }) {
       d.setDate(d.getDate() - (29 - i));
       return d.toISOString().split("T")[0];
     });
-    const spendByDay = last30.map(date => ({
+    const spendByDay = last30.map((date) => ({
       date,
       amount: budgetExpenses
-        .filter(e => e.date === date)
+        .filter((e) => e.date === date)
         .reduce((sum, e) => sum + e.amount, 0),
     }));
 
@@ -565,9 +640,10 @@ export function BudgetProvider({ children }) {
     exportCSV,
   };
 
-  return <BudgetContext.Provider value={value}>{children}</BudgetContext.Provider>;
+  return (
+    <BudgetContext.Provider value={value}>{children}</BudgetContext.Provider>
+  );
 }
-
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * Supabase SQL — run in SQL editor

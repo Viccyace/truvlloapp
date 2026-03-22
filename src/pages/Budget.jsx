@@ -82,10 +82,7 @@ const styles = `
     font-size:0.65rem; font-weight:800; padding:3px 9px; border-radius:100px;
     border:1px solid rgba(212,160,23,0.2); text-transform:uppercase; letter-spacing:0.06em;
   }
-  .btn-sm {
-    padding:8px 14px; border-radius:9px; font-size:0.8rem; font-weight:700; cursor:pointer;
-    transition:all 0.18s; font-family:'Plus Jakarta Sans',sans-serif; border:none;
-  }
+  .btn-sm { padding:8px 14px; border-radius:9px; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.18s; font-family:'Plus Jakarta Sans',sans-serif; border:none; }
   .btn-sm.outline { background:transparent; border:1.5px solid var(--border); color:var(--ink-muted); }
   .btn-sm.outline:hover { border-color:rgba(10,10,10,0.2); color:var(--ink); }
 
@@ -106,38 +103,19 @@ const styles = `
   .cap-edit-row { display:flex; gap:8px; margin-top:10px; align-items:center; }
   .cap-input-wrap { flex:1; display:flex; align-items:stretch; border:1.5px solid var(--border); border-radius:10px; overflow:hidden; transition:all 0.2s; }
   .cap-input-wrap:focus-within { border-color:var(--green-light); }
-  .cap-prefix {
-    padding:0 10px; background:var(--cream-dark); border-right:1.5px solid var(--border);
-    font-size:0.82rem; font-weight:700; color:var(--ink-muted); display:flex; align-items:center;
-  }
-  .cap-input {
-    border:none; outline:none; padding:8px 10px; font-family:'Plus Jakarta Sans',sans-serif;
-    font-size:15px; font-weight:600; color:var(--ink); background:transparent; width:100%;
-  }
-  .cap-save-btn {
-    padding:8px 14px; background:var(--green-light); color:var(--white); border:none;
-    border-radius:9px; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.18s; white-space:nowrap;
-  }
+  .cap-prefix { padding:0 10px; background:var(--cream-dark); border-right:1.5px solid var(--border); font-size:0.82rem; font-weight:700; color:var(--ink-muted); display:flex; align-items:center; }
+  .cap-input { border:none; outline:none; padding:8px 10px; font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:600; color:var(--ink); background:transparent; width:100%; }
+  .cap-save-btn { padding:8px 14px; background:var(--green-light); color:var(--white); border:none; border-radius:9px; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.18s; white-space:nowrap; }
   .cap-save-btn:hover { background:var(--green-mid); }
-  .cap-add-btn {
-    width:100%; padding:12px; border:1.5px dashed var(--border); border-radius:12px; background:transparent;
-    color:var(--ink-subtle); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.85rem; font-weight:600;
-    cursor:pointer; transition:all 0.2s; margin-top:16px;
-  }
+  .cap-add-btn { width:100%; padding:12px; border:1.5px dashed var(--border); border-radius:12px; background:transparent; color:var(--ink-subtle); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s; margin-top:16px; }
   .cap-add-btn:hover { border-color:var(--green-light); color:var(--green-mid); background:var(--green-pale); }
   .cap-divider { height:1px; background:var(--border); margin:4px 0; }
 
   .budget-list { display:flex; flex-direction:column; gap:10px; }
-  .budget-item {
-    display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:14px;
-    border:1.5px solid var(--border); background:var(--white); transition:all 0.2s; cursor:pointer;
-  }
+  .budget-item { display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:14px; border:1.5px solid var(--border); background:var(--white); transition:all 0.2s; cursor:pointer; }
   .budget-item:hover { border-color:rgba(64,145,108,0.3); box-shadow:var(--shadow-sm); }
   .budget-item.active-budget { border-color:var(--green-light); background:var(--green-pale); }
-  .budget-item-icon {
-    width:38px; height:38px; border-radius:11px; background:var(--cream-dark);
-    display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0;
-  }
+  .budget-item-icon { width:38px; height:38px; border-radius:11px; background:var(--cream-dark); display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
   .budget-item.active-budget .budget-item-icon { background:rgba(64,145,108,0.2); }
   .budget-item-body { flex:1; min-width:0; }
   .budget-item-name { font-size:0.9rem; font-weight:700; color:var(--ink); }
@@ -145,15 +123,8 @@ const styles = `
   .budget-item-right { text-align:right; }
   .budget-item-amount { font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:800; color:var(--ink); }
   .budget-item-pct { font-size:0.72rem; margin-top:2px; }
-  .active-check {
-    width:20px; height:20px; border-radius:50%; background:var(--green-light); color:var(--white);
-    font-size:0.7rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:800;
-  }
-  .budget-add-card {
-    display:flex; align-items:center; justify-content:center; gap:8px; padding:14px;
-    border:1.5px dashed var(--border); border-radius:14px; cursor:pointer; transition:all 0.2s;
-    color:var(--ink-subtle); font-size:0.875rem; font-weight:600; background:transparent;
-  }
+  .active-check { width:20px; height:20px; border-radius:50%; background:var(--green-light); color:var(--white); font-size:0.7rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:800; }
+  .budget-add-card { display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; border:1.5px dashed var(--border); border-radius:14px; cursor:pointer; transition:all 0.2s; color:var(--ink-subtle); font-size:0.875rem; font-weight:600; background:transparent; }
   .budget-add-card:hover { border-color:var(--green-light); color:var(--green-mid); background:var(--green-pale); }
 
   .rec-list { display:flex; flex-direction:column; gap:10px; }
@@ -165,78 +136,42 @@ const styles = `
   .rec-meta { font-size:0.72rem; color:var(--ink-subtle); margin-top:2px; }
   .rec-right { text-align:right; }
   .rec-amount { font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:800; color:var(--ink); }
-  .rec-freq-pill {
-    font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:100px;
-    background:var(--cream-dark); color:var(--ink-subtle); margin-top:4px; display:inline-block;
-  }
-  .rec-del-btn {
-    width:28px; height:28px; border-radius:8px; border:none; background:var(--cream-dark);
-    color:var(--ink-subtle); cursor:pointer; font-size:0.75rem; display:flex; align-items:center;
-    justify-content:center; transition:all 0.18s; flex-shrink:0;
-  }
+  .rec-freq-pill { font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:100px; background:var(--cream-dark); color:var(--ink-subtle); margin-top:4px; display:inline-block; }
+  .rec-del-btn { width:28px; height:28px; border-radius:8px; border:none; background:var(--cream-dark); color:var(--ink-subtle); cursor:pointer; font-size:0.75rem; display:flex; align-items:center; justify-content:center; transition:all 0.18s; flex-shrink:0; }
   .rec-del-btn:hover { background:var(--red-pale); color:var(--red); }
-  .rec-add-btn {
-    width:100%; padding:11px; border:1.5px dashed var(--border); border-radius:12px; background:transparent;
-    color:var(--ink-subtle); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.82rem; font-weight:600;
-    cursor:pointer; transition:all 0.2s; margin-top:4px;
-  }
+  .rec-add-btn { width:100%; padding:11px; border:1.5px dashed var(--border); border-radius:12px; background:transparent; color:var(--ink-subtle); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.82rem; font-weight:600; cursor:pointer; transition:all 0.2s; margin-top:4px; }
   .rec-add-btn:hover { border-color:var(--green-light); color:var(--green-mid); background:var(--green-pale); }
 
   .gate-wrap { position:relative; }
   .gate-blur { filter:blur(3px); opacity:0.5; pointer-events:none; user-select:none; }
   .gate-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:5; }
-  .gate-card {
-    background:var(--ink); border-radius:16px; padding:20px 24px; text-align:center;
-    box-shadow:0 8px 32px rgba(0,0,0,0.22); max-width:260px;
-  }
+  .gate-card { background:var(--ink); border-radius:16px; padding:20px 24px; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.22); max-width:260px; }
   .gate-icon { font-size:1.6rem; margin-bottom:10px; }
   .gate-title { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--white); margin-bottom:6px; }
   .gate-sub { font-size:0.78rem; color:rgba(255,255,255,0.5); line-height:1.55; margin-bottom:14px; }
-  .gate-upgrade-btn {
-    background:var(--amber); color:var(--ink); border:none; border-radius:9px; padding:9px 20px;
-    font-family:'Plus Jakarta Sans',sans-serif; font-size:0.82rem; font-weight:800; cursor:pointer; transition:all 0.2s;
-  }
+  .gate-upgrade-btn { background:var(--amber); color:var(--ink); border:none; border-radius:9px; padding:9px 20px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.82rem; font-weight:800; cursor:pointer; transition:all 0.2s; }
   .gate-upgrade-btn:hover { background:var(--amber-light); }
 
-  .modal-bg {
-    position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:100; display:flex;
-    align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.2s ease;
-  }
+  .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:100; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.2s ease; }
   @media(max-width:600px){ .modal-bg{ align-items:flex-end; padding:0; } }
-  .modal {
-    background:var(--white); border-radius:24px; padding:36px; width:100%; max-width:460px;
-    box-shadow:0 24px 64px rgba(0,0,0,0.18); animation:scaleIn 0.3s cubic-bezier(0.34,1.3,0.64,1);
-  }
+  .modal { background:var(--white); border-radius:24px; padding:36px; width:100%; max-width:460px; box-shadow:0 24px 64px rgba(0,0,0,0.18); animation:scaleIn 0.3s cubic-bezier(0.34,1.3,0.64,1); }
   @media(max-width:600px){ .modal{ border-radius:24px 24px 0 0; padding:28px 24px 36px; } }
   .modal-handle { width:40px; height:4px; border-radius:100px; background:var(--border); margin:0 auto 20px; display:none; }
   @media(max-width:600px){ .modal-handle{ display:block; } }
   .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
   .modal-title { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:800; color:var(--ink); }
-  .modal-close {
-    width:30px; height:30px; border-radius:8px; border:none; background:var(--cream-dark);
-    color:var(--ink-subtle); cursor:pointer; font-size:0.85rem; display:flex; align-items:center; justify-content:center;
-  }
+  .modal-close { width:30px; height:30px; border-radius:8px; border:none; background:var(--cream-dark); color:var(--ink-subtle); cursor:pointer; font-size:0.85rem; display:flex; align-items:center; justify-content:center; }
   .modal-close:hover { background:var(--border); }
   .field-wrap { margin-bottom:16px; }
   .field-label { display:block; font-size:0.78rem; font-weight:600; color:var(--ink-muted); margin-bottom:6px; }
-  .field-input {
-    width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:12px;
-    font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:500; color:var(--ink);
-    background:var(--cream); outline:none; transition:all 0.2s;
-  }
+  .field-input { width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:12px; font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:500; color:var(--ink); background:var(--cream); outline:none; transition:all 0.2s; }
   .field-input:focus { border-color:var(--green-light); box-shadow:0 0 0 3px rgba(64,145,108,0.1); background:var(--white); }
   .field-input.error { border-color:var(--red); }
   .field-error { font-size:0.72rem; color:var(--red); margin-top:4px; font-weight:500; }
   .field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .prefix-wrap {
-    display:flex; align-items:stretch; border:1.5px solid var(--border); border-radius:12px;
-    overflow:hidden; transition:all 0.2s; background:var(--cream);
-  }
+  .prefix-wrap { display:flex; align-items:stretch; border:1.5px solid var(--border); border-radius:12px; overflow:hidden; transition:all 0.2s; background:var(--cream); }
   .prefix-wrap:focus-within { border-color:var(--green-light); box-shadow:0 0 0 3px rgba(64,145,108,0.1); background:var(--white); }
-  .prefix-sym {
-    padding:0 12px; background:var(--cream-dark); border-right:1.5px solid var(--border);
-    font-weight:700; font-size:0.9rem; color:var(--ink-muted); display:flex; align-items:center;
-  }
+  .prefix-sym { padding:0 12px; background:var(--cream-dark); border-right:1.5px solid var(--border); font-weight:700; font-size:0.9rem; color:var(--ink-muted); display:flex; align-items:center; }
   .prefix-wrap .field-input { border:none; box-shadow:none; background:transparent; border-radius:0; }
   .period-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
   .period-item { padding:10px 8px; border-radius:11px; border:1.5px solid var(--border); cursor:pointer; text-align:center; transition:all 0.18s; }
@@ -247,26 +182,14 @@ const styles = `
   .period-item-desc { font-size:0.65rem; color:var(--ink-subtle); margin-top:2px; }
   .period-item.active .period-item-label { color:var(--green-deep); }
   .modal-footer { display:flex; gap:10px; margin-top:22px; }
-  .modal-cancel {
-    flex:0; padding:12px 20px; border:1.5px solid var(--border); border-radius:12px; background:transparent;
-    color:var(--ink-muted); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.9rem; font-weight:600;
-    cursor:pointer; transition:all 0.2s; white-space:nowrap;
-  }
+  .modal-cancel { flex:0; padding:12px 20px; border:1.5px solid var(--border); border-radius:12px; background:transparent; color:var(--ink-muted); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
   .modal-cancel:hover { border-color:rgba(10,10,10,0.2); color:var(--ink); }
-  .modal-submit {
-    flex:1; padding:13px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light));
-    color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer;
-    transition:all 0.22s; box-shadow:0 4px 16px rgba(27,67,50,0.25); display:flex; align-items:center; justify-content:center; gap:7px;
-  }
+  .modal-submit { flex:1; padding:13px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; transition:all 0.22s; box-shadow:0 4px 16px rgba(27,67,50,0.25); display:flex; align-items:center; justify-content:center; gap:7px; }
   .modal-submit:hover { transform:translateY(-1px); }
   .modal-submit:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
   .spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,0.35); border-top-color:var(--white); border-radius:50%; animation:spin 0.7s linear infinite; }
 
-  .toast {
-    position:fixed; bottom:24px; right:24px; z-index:200; background:var(--ink); color:var(--white);
-    padding:13px 20px; border-radius:12px; font-size:0.875rem; font-weight:600; display:flex; align-items:center;
-    gap:9px; box-shadow:0 8px 32px rgba(0,0,0,0.22); animation:scaleIn 0.3s ease;
-  }
+  .toast { position:fixed; bottom:24px; right:24px; z-index:200; background:var(--ink); color:var(--white); padding:13px 20px; border-radius:12px; font-size:0.875rem; font-weight:600; display:flex; align-items:center; gap:9px; box-shadow:0 8px 32px rgba(0,0,0,0.22); animation:scaleIn 0.3s ease; }
 `;
 
 const CATS = [
@@ -320,6 +243,15 @@ function formatDateRange(start, end, period) {
   return "Custom budget";
 }
 
+// ── Helper: calculate end_date from period + start ────────────────────────────
+function calcEndDate(period, startDate) {
+  const s = new Date(startDate);
+  if (period === "weekly") s.setDate(s.getDate() + 7);
+  if (period === "monthly") s.setMonth(s.getMonth() + 1);
+  if (period === "annual") s.setFullYear(s.getFullYear() + 1);
+  return s.toISOString().split("T")[0];
+}
+
 function BudgetModal({ budget, onSave, onClose }) {
   const isEdit = !!budget?.id;
   const [name, setName] = useState(budget?.name ?? "");
@@ -342,14 +274,8 @@ function BudgetModal({ budget, onSave, onClose }) {
     if (!amount || Number(amount) < 1) e.amount = "Enter a valid amount";
     if (period === "custom" && !start) e.start = "Start date is required";
     if (period === "custom" && !end) e.end = "End date is required";
-    if (
-      period === "custom" &&
-      start &&
-      end &&
-      new Date(end) < new Date(start)
-    ) {
+    if (period === "custom" && start && end && new Date(end) < new Date(start))
       e.end = "End date cannot be before start date";
-    }
     return e;
   };
 
@@ -359,7 +285,6 @@ function BudgetModal({ budget, onSave, onClose }) {
       setErrors(e);
       return;
     }
-
     setLoading(true);
     try {
       await onSave({
@@ -516,15 +441,9 @@ function RecurringModal({ onSave, onClose }) {
       setErrors(e);
       return;
     }
-
     setLoading(true);
     try {
-      await onSave({
-        cat,
-        name: name.trim(),
-        amount: Number(amount),
-        freq,
-      });
+      await onSave({ cat, name: name.trim(), amount: Number(amount), freq });
     } finally {
       setLoading(false);
     }
@@ -580,7 +499,6 @@ function RecurringModal({ onSave, onClose }) {
               <div className="field-error">{errors.amount}</div>
             )}
           </div>
-
           <div className="field-wrap" style={{ marginBottom: 0 }}>
             <label className="field-label">Frequency</label>
             <select
@@ -702,14 +620,12 @@ function CapRow({ cap, onUpdate, onDelete }) {
           </div>
         </div>
       </div>
-
       <div className="bar-track">
         <div
           className="bar-fill"
           style={{ width: `${pct}%`, background: barColor }}
         />
       </div>
-
       {editing ? (
         <div className="cap-edit-row">
           <div className="cap-input-wrap">
@@ -769,7 +685,6 @@ function Toast({ msg, onDone }) {
     const t = setTimeout(onDone, 2600);
     return () => clearTimeout(t);
   }, [onDone]);
-
   return <div className="toast">✓ {msg}</div>;
 }
 
@@ -823,14 +738,20 @@ export default function BudgetPage() {
       ? Math.min(100, Math.round((spentAmount / budgetAmount) * 100))
       : 0;
 
+  // ── BUG FIX 2: Auto-calculate end_date for weekly/monthly ────────────────
   const saveBudget = async (data) => {
     try {
+      let end_date = data.end || null;
+      if (!end_date && data.start && data.period !== "custom") {
+        end_date = calcEndDate(data.period, data.start);
+      }
+
       await createBudget({
         name: data.name,
         amount: Number(data.amount),
         period: data.period,
         start_date: data.start,
-        end_date: data.end,
+        end_date,
         is_active: true,
       });
       setToast(data.id ? "Budget updated" : "Budget created");
@@ -847,7 +768,6 @@ export default function BudgetPage() {
       const selected = budgets.find((b) => b.id === id);
       if (selected) setToast(`Switched to "${selected.name}"`);
     } catch (error) {
-      console.error("Switch budget error:", error);
       setToast(error?.message || "Could not switch budget");
     }
   };
@@ -860,7 +780,6 @@ export default function BudgetPage() {
       });
       setToast("Cap updated");
     } catch (error) {
-      console.error("Update cap error:", error);
       setToast(error?.message || "Could not update cap");
     }
   };
@@ -870,7 +789,6 @@ export default function BudgetPage() {
       await deleteCategoryCap(normalizeCategory(cap.category || cap.cat));
       setToast("Cap removed");
     } catch (error) {
-      console.error("Delete cap error:", error);
       setToast(error?.message || "Could not remove cap");
     }
   };
@@ -880,15 +798,10 @@ export default function BudgetPage() {
       const usedCats = caps.map((c) => normalizeCategory(c.cat));
       const available = CATS.filter((c) => !usedCats.includes(c.id));
       if (!available.length) return;
-
       const first = available[0];
-      await upsertCategoryCap({
-        category: first.id,
-        limit: 20000,
-      });
+      await upsertCategoryCap({ category: first.id, limit: 20000 });
       setToast(`${first.label} cap added`);
     } catch (error) {
-      console.error("Add cap error:", error);
       setToast(error?.message || "Could not add cap");
     }
   };
@@ -904,7 +817,6 @@ export default function BudgetPage() {
       setModal(null);
       setToast(`${data.name} added as recurring`);
     } catch (error) {
-      console.error("Add recurring error:", error);
       setToast(error?.message || "Could not add recurring expense");
     }
   };
@@ -914,7 +826,6 @@ export default function BudgetPage() {
       await deleteRecurring(id);
       setToast("Recurring expense removed");
     } catch (error) {
-      console.error("Delete recurring error:", error);
       setToast(error?.message || "Could not remove recurring expense");
     }
   };
@@ -941,7 +852,6 @@ export default function BudgetPage() {
       {modal === "new_budget" && (
         <BudgetModal onSave={saveBudget} onClose={() => setModal(null)} />
       )}
-
       {modal === "edit_budget" && currentBudget && (
         <BudgetModal
           budget={currentBudget}
@@ -949,7 +859,6 @@ export default function BudgetPage() {
           onClose={() => setModal(null)}
         />
       )}
-
       {modal === "new_recurring" && (
         <RecurringModal
           onSave={addRecurringItem}
@@ -987,9 +896,10 @@ export default function BudgetPage() {
                 <div className="hero-name" style={{ marginTop: 10 }}>
                   {currentBudget.name}
                 </div>
+                {/* ── BUG FIX 4: Fixed typo urrentBudget → currentBudget ── */}
                 <div className="hero-period">
                   {formatDateRange(
-                    urrentBudget.start_date || currentBudget.start,
+                    currentBudget.start_date || currentBudget.start,
                     currentBudget.end_date || currentBudget.end,
                     currentBudget.timeframe || currentBudget.period,
                   )}{" "}
@@ -999,7 +909,6 @@ export default function BudgetPage() {
                   )}
                 </div>
               </div>
-
               <button
                 className="hero-edit-btn"
                 onClick={() => setModal("edit_budget")}
@@ -1034,7 +943,6 @@ export default function BudgetPage() {
               <span>{spentPct}% used</span>
               <span>₦{fmt(budgetAmount)}</span>
             </div>
-
             <div className="hero-bar-track">
               <div
                 className="hero-bar-fill"
@@ -1049,6 +957,7 @@ export default function BudgetPage() {
 
         <div className="two-col">
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {/* Category Spending Caps */}
             <div className="section-card">
               <div className="section-card-header">
                 <div>
@@ -1059,7 +968,6 @@ export default function BudgetPage() {
                 </div>
                 <span className="pro-tag">✦ Premium</span>
               </div>
-
               <div className="section-card-body">
                 {isPremium ? (
                   <div className="cap-list">
@@ -1095,7 +1003,6 @@ export default function BudgetPage() {
                         ))}
                       </div>
                     </div>
-
                     <div className="gate-overlay">
                       <div className="gate-card">
                         <div className="gate-icon">⭐</div>
@@ -1117,6 +1024,7 @@ export default function BudgetPage() {
               </div>
             </div>
 
+            {/* Recurring Expenses */}
             <div className="section-card">
               <div className="section-card-header">
                 <div>
@@ -1127,7 +1035,6 @@ export default function BudgetPage() {
                 </div>
                 <span className="pro-tag">✦ Premium</span>
               </div>
-
               <div className="section-card-body">
                 {isPremium ? (
                   <>
@@ -1164,7 +1071,6 @@ export default function BudgetPage() {
                         );
                       })}
                     </div>
-
                     <button
                       className="rec-add-btn"
                       onClick={() => setModal("new_recurring")}
@@ -1199,7 +1105,6 @@ export default function BudgetPage() {
                         })}
                       </div>
                     </div>
-
                     <div className="gate-overlay">
                       <div className="gate-card">
                         <div className="gate-icon">🔁</div>
@@ -1222,6 +1127,7 @@ export default function BudgetPage() {
             </div>
           </div>
 
+          {/* All Budgets */}
           <div>
             <div className="section-card">
               <div className="section-card-header">
@@ -1232,7 +1138,6 @@ export default function BudgetPage() {
                   </div>
                 </div>
               </div>
-
               <div className="section-card-body">
                 <div className="budget-list">
                   {budgets.map((b) => {
@@ -1248,7 +1153,6 @@ export default function BudgetPage() {
                           )
                         : 0;
                     const isActive = b.is_active || currentBudget?.id === b.id;
-
                     return (
                       <div
                         key={b.id}
@@ -1258,7 +1162,6 @@ export default function BudgetPage() {
                         <div className="budget-item-icon">
                           {isActive ? "🟢" : "📋"}
                         </div>
-
                         <div className="budget-item-body">
                           <div className="budget-item-name">{b.name}</div>
                           <div className="budget-item-meta">
@@ -1280,7 +1183,6 @@ export default function BudgetPage() {
                             />
                           </div>
                         </div>
-
                         <div className="budget-item-right">
                           <div className="budget-item-amount">
                             ₦{fmt(b.total_amount || b.amount || 0)}
@@ -1299,7 +1201,6 @@ export default function BudgetPage() {
                             ₦{fmt(b.spent || 0)} spent
                           </div>
                         </div>
-
                         {isActive ? (
                           <div className="active-check">✓</div>
                         ) : (
@@ -1317,7 +1218,6 @@ export default function BudgetPage() {
                       </div>
                     );
                   })}
-
                   <div
                     className="budget-add-card"
                     onClick={() => setModal("new_budget")}

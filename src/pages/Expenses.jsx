@@ -52,20 +52,14 @@ const styles = `
   .header-actions { display:flex; gap:10px; flex-wrap:wrap; }
   .btn-primary,.btn-outline,.btn-import,.gate-btn {
     display:inline-flex; align-items:center; gap:8px; border:none; cursor:pointer;
-    font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; border-radius:12px;
-    transition:all 0.18s ease;
+    font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; border-radius:12px; transition:all 0.18s ease;
   }
   .btn-primary { background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); padding:12px 16px; box-shadow:0 8px 24px rgba(27,67,50,0.22); }
   .btn-primary:hover { transform:translateY(-1px); box-shadow:0 12px 28px rgba(27,67,50,0.3); }
   .btn-outline,.btn-import { background:var(--white); color:var(--ink); border:1.5px solid var(--border); padding:12px 16px; }
   .btn-outline:hover,.btn-import:hover { border-color:rgba(10,10,10,0.18); background:var(--cream); }
   .btn-premium { position:relative; }
-  .premium-badge {
-    display:inline-flex; align-items:center; justify-content:center;
-    margin-left:4px; padding:2px 7px; border-radius:100px;
-    font-size:0.62rem; font-weight:800; background:var(--amber-pale); color:var(--amber);
-    border:1px solid rgba(212,160,23,0.18);
-  }
+  .premium-badge { display:inline-flex; align-items:center; justify-content:center; margin-left:4px; padding:2px 7px; border-radius:100px; font-size:0.62rem; font-weight:800; background:var(--amber-pale); color:var(--amber); border:1px solid rgba(212,160,23,0.18); }
 
   .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; animation:fadeUp 0.32s ease 0.03s both; }
   @media(max-width:920px){ .stats-row{ grid-template-columns:repeat(2,1fr); } }
@@ -78,193 +72,93 @@ const styles = `
   .stat-val.amber { color:var(--amber); }
   .stat-sub { font-size:0.76rem; color:var(--ink-subtle); margin-top:8px; }
 
-  .toolbar {
-    display:grid; grid-template-columns:minmax(240px,1fr) auto auto; gap:12px; align-items:center;
-    animation:fadeUp 0.32s ease 0.06s both;
-  }
+  .toolbar { display:grid; grid-template-columns:minmax(240px,1fr) auto auto; gap:12px; align-items:center; animation:fadeUp 0.32s ease 0.06s both; }
   @media(max-width:980px){ .toolbar{ grid-template-columns:1fr; } }
-  .search-wrap {
-    display:flex; align-items:center; gap:10px; background:var(--white); border:1.5px solid var(--border);
-    border-radius:14px; padding:0 12px; min-height:48px; cursor:text;
-  }
-  .search-input {
-    flex:1; min-width:0; border:none; outline:none; background:transparent;
-    font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; color:var(--ink);
-  }
+  .search-wrap { display:flex; align-items:center; gap:10px; background:var(--white); border:1.5px solid var(--border); border-radius:14px; padding:0 12px; min-height:48px; cursor:text; }
+  .search-input { flex:1; min-width:0; border:none; outline:none; background:transparent; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; color:var(--ink); }
   .search-input::placeholder { color:rgba(10,10,10,0.35); }
-  .search-clear {
-    width:28px; height:28px; border:none; border-radius:8px; background:var(--cream-dark);
-    display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink-subtle);
-  }
+  .search-clear { width:28px; height:28px; border:none; border-radius:8px; background:var(--cream-dark); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink-subtle); }
 
-  .filter-group {
-    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-    background:var(--white); border:1.5px solid var(--border); border-radius:16px; padding:8px;
-  }
-  .filter-pill {
-    display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border-radius:100px;
-    font-size:0.8rem; font-weight:700; color:var(--ink-muted); cursor:pointer; transition:all 0.18s;
-    border:1px solid transparent;
-  }
+  .filter-group { display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:var(--white); border:1.5px solid var(--border); border-radius:16px; padding:8px; }
+  .filter-pill { display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border-radius:100px; font-size:0.8rem; font-weight:700; color:var(--ink-muted); cursor:pointer; transition:all 0.18s; border:1px solid transparent; }
   .filter-pill:hover { background:var(--cream); color:var(--ink); }
   .filter-pill.active { background:var(--green-pale); color:var(--green-deep); border-color:rgba(64,145,108,0.2); }
 
-  .view-toggle {
-    display:flex; gap:8px; background:var(--white); border:1.5px solid var(--border);
-    border-radius:14px; padding:6px;
-  }
-  .view-btn {
-    width:40px; height:40px; border:none; border-radius:10px; background:transparent;
-    display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink-subtle);
-  }
+  .view-toggle { display:flex; gap:8px; background:var(--white); border:1.5px solid var(--border); border-radius:14px; padding:6px; }
+  .view-btn { width:40px; height:40px; border:none; border-radius:10px; background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink-subtle); }
   .view-btn.active { background:var(--green-pale); color:var(--green-deep); }
 
-  .empty {
-    background:var(--white); border:1.5px solid var(--border); border-radius:22px;
-    padding:48px 24px; text-align:center; color:var(--ink-subtle); animation:fadeUp 0.32s ease 0.09s both;
-  }
+  .empty { background:var(--white); border:1.5px solid var(--border); border-radius:22px; padding:48px 24px; text-align:center; color:var(--ink-subtle); animation:fadeUp 0.32s ease 0.09s both; }
   .empty-icon { display:flex; justify-content:center; margin-bottom:12px; opacity:0.55; }
   .empty-title { font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:700; color:var(--ink); margin-bottom:6px; }
   .empty-sub { font-size:0.9rem; line-height:1.6; }
 
   .expense-cards { display:grid; grid-template-columns:1fr; gap:10px; animation:fadeUp 0.32s ease 0.09s both; }
-  .expense-card {
-    background:var(--white); border:1.5px solid var(--border); border-radius:18px; padding:16px;
-    display:grid; grid-template-columns:auto 1fr auto; gap:14px; align-items:center;
-  }
+  .expense-card { background:var(--white); border:1.5px solid var(--border); border-radius:18px; padding:16px; display:grid; grid-template-columns:auto 1fr auto; gap:14px; align-items:center; }
   @media(max-width:620px){ .expense-card{ grid-template-columns:auto 1fr; } .exp-right{ grid-column:1/-1; display:flex; justify-content:space-between; align-items:center; } }
-  .exp-cat-icon,.td-icon,.rec-cat-icon {
-    width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
-  }
+  .exp-cat-icon,.td-icon,.rec-cat-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .exp-body { min-width:0; }
   .exp-desc,.td-desc,.rec-desc { font-size:0.92rem; font-weight:700; color:var(--ink); line-height:1.4; }
-  .exp-meta {
-    display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:8px;
-    font-size:0.76rem; color:var(--ink-subtle);
-  }
-  .exp-cat-pill,.rec-freq {
-    display:inline-flex; align-items:center; gap:4px; padding:4px 10px;
-    border-radius:100px; font-size:0.72rem; font-weight:700;
-  }
+  .exp-meta { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:8px; font-size:0.76rem; color:var(--ink-subtle); }
+  .exp-cat-pill,.rec-freq { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:100px; font-size:0.72rem; font-weight:700; }
   .exp-date,.exp-note,.rec-next { color:var(--ink-subtle); font-size:0.76rem; }
   .exp-right { display:flex; align-items:center; gap:12px; }
   .exp-amount,.td-amount,.rec-amount { font-family:'Playfair Display',serif; font-size:1rem; font-weight:800; color:var(--red); white-space:nowrap; }
   .exp-actions,.td-actions,.rec-actions { display:flex; gap:6px; }
-  .exp-act-btn,.page-btn,.gate-close {
-    width:30px; height:30px; border:none; border-radius:9px; background:var(--cream-dark);
-    display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink-subtle);
-    transition:all 0.16s ease;
-  }
+  .exp-act-btn,.page-btn,.gate-close { width:30px; height:30px; border:none; border-radius:9px; background:var(--cream-dark); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink-subtle); transition:all 0.16s ease; }
   .exp-act-btn:hover,.page-btn:hover,.gate-close:hover { background:rgba(10,10,10,0.1); color:var(--ink); }
   .exp-act-btn.del:hover { background:var(--red-pale); color:var(--red); }
 
-  .table-wrap {
-    background:var(--white); border:1.5px solid var(--border); border-radius:20px; overflow:hidden;
-    animation:fadeUp 0.32s ease 0.09s both;
-  }
+  .table-wrap { background:var(--white); border:1.5px solid var(--border); border-radius:20px; overflow:hidden; animation:fadeUp 0.32s ease 0.09s both; }
   .table-wrap table { width:100%; border-collapse:collapse; }
-  .table-wrap th {
-    text-align:left; padding:16px 14px; font-size:0.72rem; font-weight:800; letter-spacing:0.08em;
-    text-transform:uppercase; color:var(--ink-subtle); background:var(--bg); border-bottom:1px solid rgba(10,10,10,0.05);
-  }
+  .table-wrap th { text-align:left; padding:16px 14px; font-size:0.72rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-subtle); background:var(--bg); border-bottom:1px solid rgba(10,10,10,0.05); }
   .table-wrap td { padding:14px; border-bottom:1px solid rgba(10,10,10,0.05); vertical-align:middle; }
   .table-wrap tr:last-child td { border-bottom:none; }
   .right { text-align:right; }
-  .pagination {
-    display:flex; justify-content:space-between; align-items:center; gap:12px;
-    padding:14px 16px; border-top:1px solid rgba(10,10,10,0.05); flex-wrap:wrap;
-  }
+  .pagination { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 16px; border-top:1px solid rgba(10,10,10,0.05); flex-wrap:wrap; }
   .page-info { font-size:0.8rem; color:var(--ink-subtle); }
   .page-btns { display:flex; gap:6px; flex-wrap:wrap; }
   .page-btn { background:var(--white); border:1.5px solid var(--border); }
   .page-btn.active { background:var(--green-pale); color:var(--green-deep); border-color:rgba(64,145,108,0.18); }
   .page-btn:disabled { opacity:0.45; cursor:not-allowed; }
 
-  .recurring-section {
-    background:var(--white); border:1.5px solid var(--border); border-radius:22px; padding:18px;
-    animation:fadeUp 0.32s ease 0.12s both;
-  }
+  .recurring-section { background:var(--white); border:1.5px solid var(--border); border-radius:22px; padding:18px; animation:fadeUp 0.32s ease 0.12s both; }
   .section-header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
   .section-title { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; color:var(--ink); }
   .section-sub { font-size:0.8rem; color:var(--ink-subtle); margin-top:4px; }
   .recurring-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
   @media(max-width:980px){ .recurring-grid{ grid-template-columns:repeat(2,1fr); } }
   @media(max-width:620px){ .recurring-grid{ grid-template-columns:1fr; } }
-  .rec-card,.rec-add-card {
-    border:1.5px solid var(--border); border-radius:18px; padding:14px; background:var(--cream);
-  }
+  .rec-card,.rec-add-card { border:1.5px solid var(--border); border-radius:18px; padding:14px; background:var(--cream); }
   .rec-card-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px; }
   .rec-meta { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px; }
-  .rec-add-card {
-    display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; color:var(--green-deep);
-    background:linear-gradient(135deg,var(--green-pale),var(--white));
-    min-height:132px; font-weight:800;
-  }
+  .rec-add-card { display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; color:var(--green-deep); background:linear-gradient(135deg,var(--green-pale),var(--white)); min-height:132px; font-weight:800; }
 
-  .premium-gate {
-    position:absolute; inset:16px; background:rgba(250,248,243,0.88); backdrop-filter:blur(7px);
-    border:1px solid rgba(10,10,10,0.06); border-radius:18px; padding:18px;
-    display:flex; gap:12px; align-items:flex-start; justify-content:center;
-  }
+  .premium-gate { position:absolute; inset:16px; background:rgba(250,248,243,0.88); backdrop-filter:blur(7px); border:1px solid rgba(10,10,10,0.06); border-radius:18px; padding:18px; display:flex; gap:12px; align-items:flex-start; justify-content:center; }
   .gate-close { position:absolute; top:12px; right:12px; }
   .gate-text { max-width:420px; font-size:0.9rem; color:var(--ink-muted); line-height:1.6; }
   .gate-text strong { display:block; color:var(--ink); margin-bottom:4px; }
-  .gate-btn {
-    margin-top:12px; padding:10px 16px; background:linear-gradient(135deg,var(--green-deep),var(--green-light));
-    color:var(--white);
-  }
+  .gate-btn { margin-top:12px; padding:10px 16px; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); }
 
-  .modal-overlay {
-    position:fixed; inset:0; background:rgba(10,10,10,0.45); display:flex; align-items:center; justify-content:center;
-    z-index:400; padding:16px;
-  }
-  .modal-card {
-    width:100%; max-width:520px; background:#fff; border-radius:22px; padding:22px;
-    border:1.5px solid rgba(10,10,10,0.08); box-shadow:0 20px 60px rgba(0,0,0,0.2);
-  }
-  .modal-header {
-    display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px;
-  }
-  .modal-title {
-    font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:800; color:#0A0A0A;
-  }
+  .modal-overlay { position:fixed; inset:0; background:rgba(10,10,10,0.45); display:flex; align-items:center; justify-content:center; z-index:400; padding:16px; }
+  .modal-card { width:100%; max-width:520px; background:#fff; border-radius:22px; padding:22px; border:1.5px solid rgba(10,10,10,0.08); box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+  .modal-header { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
+  .modal-title { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:800; color:#0A0A0A; }
   .modal-sub { font-size:0.82rem; color:#6B6B6B; margin-top:4px; }
-  .icon-btn {
-    width:34px; height:34px; border:none; border-radius:10px; background:#F0EDE4; cursor:pointer; color:#6B6B6B;
-    display:flex; align-items:center; justify-content:center;
-  }
+  .icon-btn { width:34px; height:34px; border:none; border-radius:10px; background:#F0EDE4; cursor:pointer; color:#6B6B6B; display:flex; align-items:center; justify-content:center; }
   .modal-form { display:grid; gap:14px; }
-  .modal-label {
-    font-size:0.8rem; font-weight:700; color:#3A3A3A; display:block; margin-bottom:6px;
-  }
-  .modal-input, .modal-textarea {
-    width:100%; padding:12px 14px; border-radius:12px; border:1.5px solid rgba(10,10,10,0.08);
-    background:#FAF8F3; font-size:16px; outline:none; font-family:'Plus Jakarta Sans',sans-serif;
-  }
+  .modal-label { font-size:0.8rem; font-weight:700; color:#3A3A3A; display:block; margin-bottom:6px; }
+  .modal-input,.modal-textarea { width:100%; padding:12px 14px; border-radius:12px; border:1.5px solid rgba(10,10,10,0.08); background:#FAF8F3; font-size:16px; outline:none; font-family:'Plus Jakarta Sans',sans-serif; }
   .modal-textarea { resize:vertical; }
   .modal-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .modal-cat-grid { display:flex; flex-wrap:wrap; gap:8px; }
-  .modal-cat-btn {
-    padding:8px 12px; border-radius:100px; border:1.5px solid rgba(10,10,10,0.08); background:#fff;
-    color:#3A3A3A; cursor:pointer; font-weight:700; font-size:0.76rem;
-  }
-  .modal-cat-btn.active {
-    border-color:rgba(64,145,108,0.3); background:#D8F3DC; color:#1B4332;
-  }
+  .modal-cat-btn { padding:8px 12px; border-radius:100px; border:1.5px solid rgba(10,10,10,0.08); background:#fff; color:#3A3A3A; cursor:pointer; font-weight:700; font-size:0.76rem; }
+  .modal-cat-btn.active { border-color:rgba(64,145,108,0.3); background:#D8F3DC; color:#1B4332; }
   .modal-actions { display:flex; justify-content:space-between; gap:10px; margin-top:4px; }
-  .btn-danger {
-    display:inline-flex; align-items:center; gap:8px; padding:11px 14px; border-radius:12px; cursor:pointer;
-    border:1.5px solid rgba(229,57,53,0.18); background:rgba(229,57,53,0.08); color:#E53935; font-weight:700;
-  }
-  .btn-secondary {
-    padding:11px 14px; border-radius:12px; cursor:pointer; border:1.5px solid rgba(10,10,10,0.08); background:#fff; color:#3A3A3A; font-weight:700;
-  }
+  .btn-danger { display:inline-flex; align-items:center; gap:8px; padding:11px 14px; border-radius:12px; cursor:pointer; border:1.5px solid rgba(229,57,53,0.18); background:rgba(229,57,53,0.08); color:#E53935; font-weight:700; }
+  .btn-secondary { padding:11px 14px; border-radius:12px; cursor:pointer; border:1.5px solid rgba(10,10,10,0.08); background:#fff; color:#3A3A3A; font-weight:700; }
 
-  .toast {
-    position:fixed; bottom:22px; right:22px; z-index:300; background:var(--ink); color:var(--white);
-    padding:12px 16px; border-radius:14px; font-size:0.88rem; font-weight:700;
-    box-shadow:0 10px 30px rgba(0,0,0,0.2); animation:scaleIn 0.25s ease;
-  }
+  .toast { position:fixed; bottom:22px; right:22px; z-index:300; background:var(--ink); color:var(--white); padding:12px 16px; border-radius:14px; font-size:0.88rem; font-weight:700; box-shadow:0 10px 30px rgba(0,0,0,0.2); animation:scaleIn 0.25s ease; }
 `;
 
 const PAGE_SIZE = 10;
@@ -315,7 +209,6 @@ const CATEGORIES = [
     bg: "#F5F5F5",
   },
 ];
-
 const CAT_MAP = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
 
 function fmt(n) {
@@ -335,10 +228,8 @@ function fmtDate(d) {
 
 function normalizeCategory(value) {
   if (!value) return "other";
-
   const v = String(value).toLowerCase().replace(/\s+/g, "");
   if (CAT_MAP[v]) return v;
-
   const aliases = {
     shop: "shopping",
     fun: "entertainment",
@@ -347,7 +238,6 @@ function normalizeCategory(value) {
     bills: "bills",
     bill: "bills",
   };
-
   return aliases[v] || "other";
 }
 
@@ -356,7 +246,6 @@ function Toast({ msg, onDone }) {
     const t = setTimeout(onDone, 2600);
     return () => clearTimeout(t);
   }, [onDone]);
-
   return <div className="toast">✓ {msg}</div>;
 }
 
@@ -430,7 +319,6 @@ function ExpenseModal({ expense, onSave, onDelete, onClose }) {
                 placeholder="0"
               />
             </div>
-
             <div>
               <label className="modal-label">Date</label>
               <input
@@ -483,7 +371,6 @@ function ExpenseModal({ expense, onSave, onDelete, onClose }) {
                 </button>
               )}
             </div>
-
             <div style={{ display: "flex", gap: 10 }}>
               <button type="button" className="btn-secondary" onClick={onClose}>
                 Cancel
@@ -509,8 +396,7 @@ export default function ExpensesPage() {
     updateExpense,
     deleteExpense,
     deleteRecurring,
-    importExpenses,
-    exportExpensesCSV,
+    exportCSV, // ✅ BUG FIX 3: was exportExpensesCSV — correct name is exportCSV
   } = useBudget();
 
   const isPremium = isPremiumOrTrial;
@@ -533,40 +419,32 @@ export default function ExpensesPage() {
     if (!profile) return;
     if (profile.plan === "premium" || profile.plan === "trial") return;
     if (profile.trial_activated) return;
-
     const now = new Date();
     const endsAt = new Date(now);
     endsAt.setDate(endsAt.getDate() + 7);
-
     const { error } = await updateProfile({
       plan: "trial",
       trial_activated: true,
       trial_started_at: now.toISOString(),
       trial_ends_at: endsAt.toISOString(),
     });
-
-    if (!error) {
-      setToast("🎉 7-day Premium trial activated");
-    } else {
-      console.error("Trial activation failed:", error);
-    }
+    if (!error) setToast("🎉 7-day Premium trial activated");
+    else console.error("Trial activation failed:", error);
   }, [profile, updateProfile]);
 
   const filtered = useMemo(() => {
     return expenses.filter((e) => {
       const desc = (e.description || e.desc || "").toLowerCase();
       const category = normalizeCategory(e.category || e.cat || "other");
-
-      const matchSearch = !search || desc.includes(search.toLowerCase());
-      const matchCat = catFilter === "all" || category === catFilter;
-
-      return matchSearch && matchCat;
+      return (
+        (!search || desc.includes(search.toLowerCase())) &&
+        (catFilter === "all" || category === catFilter)
+      );
     });
   }, [expenses, search, catFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
   const totalSpent = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
 
   const topCat = useMemo(() => {
@@ -583,21 +461,20 @@ export default function ExpensesPage() {
     ? Math.round(totalSpent / expenses.length)
     : 0;
 
+  // ── BUG FIX 1: updateExpense takes (id, updates) not one object ────────────
   const saveExpense = async (data) => {
     try {
       const payload = {
         description: data.description || "",
         amount: Number(data.amount || 0),
         category: normalizeCategory(data.category),
-        date: data.date || new Date().toISOString(),
+        date: data.date || new Date().toISOString().split("T")[0],
         notes: data.note || "",
       };
 
-      if (expenses.find((e) => e.id === data.id)) {
-        await updateExpense({
-          id: data.id,
-          ...payload,
-        });
+      if (data.id && expenses.find((e) => e.id === data.id)) {
+        // ✅ BUG FIX 1: correct signature is updateExpense(id, updates)
+        await updateExpense(data.id, payload);
         setToast("Expense updated");
       } else {
         await addExpense(payload);
@@ -618,7 +495,6 @@ export default function ExpensesPage() {
       setModal(null);
       setToast("Expense deleted");
     } catch (error) {
-      console.error("Delete expense error:", error);
       setToast(error?.message || "Could not delete expense");
     }
   };
@@ -628,35 +504,33 @@ export default function ExpensesPage() {
       await deleteRecurring(id);
       setToast("Recurring removed");
     } catch (error) {
-      console.error("Delete recurring error:", error);
       setToast(error?.message || "Could not delete recurring");
     }
   };
 
-  const exportCSV = async () => {
+  // ── BUG FIX 3: use exportCSV from BudgetProvider ─────────────────────────
+  const handleExportCSV = async () => {
     if (!isPremium) {
       setShowGate(true);
       return;
     }
-
     try {
-      if (typeof exportExpensesCSV === "function") {
-        await exportExpensesCSV();
+      if (typeof exportCSV === "function") {
+        exportCSV();
         setToast("CSV exported");
         return;
       }
-
+      // Fallback manual CSV
       const rows = [
         ["Date", "Description", "Category", "Amount", "Note"],
         ...expenses.map((e) => [
-          e.date || e.expense_date || "",
-          `"${e.description || e.desc || ""}"`,
-          CAT_MAP[normalizeCategory(e.category || e.cat)]?.label || "Other",
+          e.date || "",
+          `"${e.description || ""}"`,
+          CAT_MAP[normalizeCategory(e.category)]?.label || "Other",
           Number(e.amount || 0),
-          `"${e.notes || e.note || ""}"`,
+          `"${e.notes || ""}"`,
         ]),
       ];
-
       const csv = rows.map((r) => r.join(",")).join("\n");
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
@@ -667,29 +541,28 @@ export default function ExpensesPage() {
       URL.revokeObjectURL(url);
       setToast("CSV exported");
     } catch (error) {
-      console.error("Export CSV error:", error);
       setToast(error?.message || "Could not export CSV");
     }
   };
 
+  // ── BUG FIX 2: importExpenses doesn't exist — call addExpense per item ────
   const handleImport = async (transactions) => {
     try {
-      const newExpenses = transactions.map((t) => ({
-        description: t.description,
-        category: normalizeCategory(t.category),
-        amount: Number(t.amount),
-        date: t.date,
-        notes: "Imported from bank",
-      }));
-
-      await importExpenses(newExpenses);
-      setToast(`${newExpenses.length} transactions imported`);
-
-      if (newExpenses.length > 0) {
-        await activateTrialIfEligible();
+      let count = 0;
+      for (const t of transactions) {
+        await addExpense({
+          description: t.description,
+          category: normalizeCategory(t.category),
+          amount: Number(t.amount),
+          date: t.date,
+          notes: "Imported from bank",
+        });
+        count++;
       }
+      setToast(`${count} transactions imported`);
+      if (count > 0) await activateTrialIfEligible();
     } catch (error) {
-      console.error("Import expenses error:", error);
+      console.error("Import error:", error);
       setToast(error?.message || "Could not import transactions");
     }
   };
@@ -725,17 +598,17 @@ export default function ExpensesPage() {
             <div className="page-title">Expenses</div>
             <div className="page-sub">{expenses.length} transactions</div>
           </div>
-
           <div className="header-actions">
             <button className="btn-import" onClick={() => setShowImport(true)}>
               <Upload size={15} /> Import from bank
             </button>
-
-            <button className="btn-outline btn-premium" onClick={exportCSV}>
+            <button
+              className="btn-outline btn-premium"
+              onClick={handleExportCSV}
+            >
               <Download size={15} /> Export CSV
               {!isPremium && <span className="premium-badge">PRO</span>}
             </button>
-
             <button className="btn-primary" onClick={() => setModal("add")}>
               <Plus size={16} /> Add Expense
             </button>
@@ -748,19 +621,16 @@ export default function ExpensesPage() {
             <div className="stat-val red">₦{fmt(totalSpent)}</div>
             <div className="stat-sub">From saved expenses</div>
           </div>
-
           <div className="stat-card">
             <div className="stat-label">Transactions</div>
             <div className="stat-val">{expenses.length}</div>
             <div className="stat-sub">Logged expenses</div>
           </div>
-
           <div className="stat-card">
             <div className="stat-label">Avg. Expense</div>
             <div className="stat-val amber">₦{fmt(avgExpense)}</div>
             <div className="stat-sub">Per transaction</div>
           </div>
-
           <div className="stat-card">
             <div className="stat-label">Top Category</div>
             <div className="stat-val green">
@@ -810,7 +680,6 @@ export default function ExpensesPage() {
             >
               All
             </div>
-
             {CATEGORIES.map((c) => (
               <div
                 key={c.id}
@@ -862,13 +731,11 @@ export default function ExpensesPage() {
               const catId = normalizeCategory(e.category || e.cat || "other");
               const c = CAT_MAP[catId] ?? CAT_MAP.other;
               const rowDate = e.date || e.expense_date;
-
               return (
                 <div key={e.id} className="expense-card">
                   <div className="exp-cat-icon" style={{ background: c.bg }}>
                     <c.Icon size={20} color={c.color} />
                   </div>
-
                   <div className="exp-body">
                     <div className="exp-desc">{e.description || e.desc}</div>
                     <div className="exp-meta">
@@ -884,7 +751,6 @@ export default function ExpensesPage() {
                       )}
                     </div>
                   </div>
-
                   <div className="exp-right">
                     <div className="exp-amount">−₦{fmt(e.amount)}</div>
                     <div className="exp-actions">
@@ -928,7 +794,6 @@ export default function ExpensesPage() {
                   );
                   const c = CAT_MAP[catId] ?? CAT_MAP.other;
                   const rowDate = e.date || e.expense_date;
-
                   return (
                     <tr key={e.id}>
                       <td>
@@ -997,7 +862,6 @@ export default function ExpensesPage() {
                 })}
               </tbody>
             </table>
-
             {totalPages > 1 && (
               <div className="pagination">
                 <div className="page-info">
@@ -1104,7 +968,6 @@ export default function ExpensesPage() {
             {recurring.map((r) => {
               const catId = normalizeCategory(r.category || r.cat || "other");
               const c = CAT_MAP[catId] ?? CAT_MAP.other;
-
               return (
                 <div key={r.id} className="rec-card">
                   <div className="rec-card-top">

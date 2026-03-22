@@ -16,6 +16,7 @@ import {
   LogOut,
 } from "lucide-react"; // eslint-disable-line no-unused-vars
 import { useAuth } from "../providers/AuthProvider";
+import { useBudget } from "../providers/BudgetProvider";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
@@ -34,14 +35,10 @@ const styles = `
   @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
   @keyframes fadeIn { from{opacity:0} to{opacity:1} }
   @keyframes slideInLeft { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes spin { to{transform:rotate(360deg)} }
 
-  /* ── FIXED: overflow-x on root containers ─────────────────────── */
-  .shell-root {
-    display:flex; min-height:100vh;
-    overflow-x:hidden; max-width:100vw;
-  }
+  .shell-root { display:flex; min-height:100vh; overflow-x:hidden; max-width:100vw; }
 
-  /* Sidebar */
   .sidebar { width:var(--sidebar-w); flex-shrink:0; background:var(--ink); height:100vh; position:fixed; top:0; left:0; z-index:50; display:flex; flex-direction:column; overflow:hidden; }
   .sidebar-bg { position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none; width:300px; height:300px; top:-80px; right:-80px; background:radial-gradient(circle,rgba(64,145,108,0.18) 0%,transparent 70%); }
   .sidebar-logo { padding:28px 24px 20px; display:flex; align-items:center; gap:8px; font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:700; color:var(--white); border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
@@ -69,22 +66,12 @@ const styles = `
   .upgrade-btn { width:100%; padding:9px; border-radius:8px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s; }
   .upgrade-btn:hover { opacity:0.9; }
 
-  .signout-btn {
-    width:100%; margin-top:12px; padding:10px 12px; border-radius:10px; border:none;
-    background:var(--danger-bg); color:#F8C9C4; font-family:'Plus Jakarta Sans',sans-serif;
-    font-size:0.84rem; font-weight:700; cursor:pointer; transition:all 0.2s;
-    display:flex; align-items:center; justify-content:center; gap:8px;
-  }
+  .signout-btn { width:100%; margin-top:12px; padding:10px 12px; border-radius:10px; border:none; background:var(--danger-bg); color:#F8C9C4; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.84rem; font-weight:700; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
   .signout-btn:hover { background:rgba(192,57,43,0.18); color:#FFD6D1; }
   .signout-btn:disabled { opacity:0.65; cursor:not-allowed; }
 
-  /* ── FIXED: overflow-x on main content ────────────────────────── */
-  .main-content {
-    margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column;
-    min-height:100vh; overflow-x:hidden; max-width:100%;
-  }
+  .main-content { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; overflow-x:hidden; max-width:100%; }
 
-  /* Desktop topbar */
   .desktop-topbar { height:var(--topbar-h); background:var(--cream); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 32px; position:sticky; top:0; z-index:40; flex-shrink:0; }
   .topbar-page-title { font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:700; color:var(--ink); }
   .topbar-breadcrumb { font-size:0.78rem; color:var(--ink-subtle); margin-top:1px; }
@@ -94,7 +81,6 @@ const styles = `
   .notif-dot { position:absolute; top:6px; right:6px; width:7px; height:7px; border-radius:50%; background:var(--amber); border:1.5px solid var(--white); }
   .topbar-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--green-mid),var(--green-light)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:var(--white); cursor:pointer; }
 
-  /* Mobile topbar */
   .mobile-topbar { display:none; height:var(--topbar-h); background:var(--cream); border-bottom:1px solid var(--border); align-items:center; justify-content:space-between; padding:0 20px; position:sticky; top:0; z-index:40; flex-shrink:0; }
   .mobile-back-btn { width:36px; height:36px; border-radius:10px; border:1.5px solid var(--border); background:var(--white); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.9rem; color:var(--ink-muted); }
   .mobile-logo { font-family:'Playfair Display',serif; font-size:1.25rem; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px; }
@@ -103,10 +89,8 @@ const styles = `
   .mobile-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--green-mid),var(--green-light)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem; color:var(--white); cursor:pointer; }
   .mobile-menu-btn { width:34px; height:34px; border-radius:10px; border:1.5px solid var(--border); background:var(--white); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.85rem; color:var(--ink-muted); }
 
-  /* Page content */
   .page-content { flex:1; padding:32px; padding-bottom:40px; animation:fadeUp 0.3s ease; overflow-x:hidden; }
 
-  /* Bottom nav */
   .bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; height:var(--bottomnav-h); background:var(--white); border-top:1px solid var(--border); z-index:50; align-items:center; justify-content:space-around; padding:0 8px; padding-bottom:env(safe-area-inset-bottom); box-shadow:0 -4px 24px rgba(0,0,0,0.06); }
   .bottom-nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 16px; border-radius:12px; cursor:pointer; transition:all 0.18s; flex:1; max-width:72px; }
   .bottom-nav-item.active { background:var(--green-pale); }
@@ -115,33 +99,38 @@ const styles = `
   .bottom-nav-label { font-size:0.65rem; font-weight:700; color:var(--ink-subtle); transition:color 0.18s; }
   .bottom-nav-item.active .bottom-nav-label { color:var(--green-deep); }
 
-  /* Drawer */
   .drawer-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:60; animation:fadeIn 0.2s ease; }
   .drawer-overlay.open { display:block; }
   .drawer { position:fixed; top:0; left:0; bottom:0; width:280px; background:var(--ink); z-index:70; transform:translateX(-100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; overflow:hidden; }
   .drawer.open { transform:translateX(0); }
   .drawer-close { position:absolute; top:20px; right:16px; width:32px; height:32px; border-radius:8px; border:none; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.6); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 
-  /* Trial banner */
   .trial-banner { background:linear-gradient(90deg,var(--green-deep),var(--green-mid)); padding:10px 32px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; flex-wrap:wrap; gap:8px; }
   .trial-banner-text { font-size:0.82rem; color:rgba(255,255,255,0.85); font-weight:500; }
   .trial-banner-text strong { color:var(--white); font-weight:700; }
   .trial-banner-cta { background:var(--amber); color:var(--ink); border:none; border-radius:100px; padding:5px 16px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.78rem; font-weight:800; cursor:pointer; white-space:nowrap; }
 
-  /* Quick add modal */
+  /* ── Quick Add Modal ──────────────────────────────────────────────────────── */
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:80; display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s ease; }
   .modal-sheet { background:var(--white); border-radius:24px 24px 0 0; padding:28px 24px 40px; width:100%; max-width:480px; animation:slideInLeft 0.3s ease; }
   .modal-handle { width:40px; height:4px; border-radius:100px; background:var(--border); margin:0 auto 20px; }
   .modal-title { font-family:'Playfair Display',serif; font-size:1.25rem; font-weight:700; margin-bottom:16px; }
-  .modal-input-row { display:flex; gap:10px; margin-bottom:14px; }
-  .modal-input { flex:1; padding:13px 16px; border:1.5px solid var(--border); border-radius:12px; font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:500; color:var(--ink); background:var(--cream); outline:none; }
+  .modal-field { margin-bottom:14px; }
+  .modal-label { display:block; font-size:0.78rem; font-weight:600; color:var(--ink-muted); margin-bottom:6px; }
+  .modal-input { width:100%; padding:13px 16px; border:1.5px solid var(--border); border-radius:12px; font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:500; color:var(--ink); background:var(--cream); outline:none; transition:border-color 0.2s; }
   .modal-input:focus { border-color:var(--green-light); }
-  .modal-btn { padding:14px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; width:100%; }
+  .modal-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .modal-cat-grid { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px; }
+  .modal-cat-btn { padding:7px 12px; border-radius:100px; border:1.5px solid var(--border); background:var(--white); color:var(--ink-muted); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.76rem; font-weight:700; cursor:pointer; transition:all 0.18s; }
+  .modal-cat-btn.active { border-color:var(--green-light); background:var(--green-pale); color:var(--green-deep); }
+  .modal-actions { display:flex; gap:10px; margin-top:4px; }
+  .modal-cancel { flex:0; padding:13px 20px; border:1.5px solid var(--border); border-radius:12px; background:transparent; color:var(--ink-muted); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; }
+  .modal-submit { flex:1; padding:14px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .modal-submit:disabled { opacity:0.6; cursor:not-allowed; }
+  .spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,0.35); border-top-color:var(--white); border-radius:50%; animation:spin 0.7s linear infinite; }
 
-  /* FAB */
   .fab { display:none; position:fixed; bottom:calc(var(--bottomnav-h) + 16px); right:20px; width:52px; height:52px; border-radius:50%; z-index:45; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-size:1.5rem; border:none; cursor:pointer; box-shadow:0 6px 24px rgba(27,67,50,0.4); transition:all 0.2s; align-items:center; justify-content:center; }
 
-  /* Topbar search */
   .topbar-search { display:flex; align-items:center; gap:8px; background:var(--cream-dark); border:1.5px solid var(--border); border-radius:10px; padding:0 14px; height:36px; }
   .topbar-search:focus-within { border-color:var(--green-light); background:var(--white); }
   .topbar-search input { border:none; background:transparent; outline:none; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.85rem; color:var(--ink); width:160px; }
@@ -159,6 +148,17 @@ const styles = `
     .trial-banner { padding:10px 16px; }
   }
 `;
+
+const QUICK_CATEGORIES = [
+  "food",
+  "transport",
+  "bills",
+  "shopping",
+  "health",
+  "airtime",
+  "entertainment",
+  "other",
+];
 
 const NAV_ITEMS = [
   {
@@ -209,45 +209,99 @@ const PAGE_META = {
   upgrade: { title: "Upgrade", breadcrumb: "Unlock Premium features" },
 };
 
-function QuickAddModal({ onClose }) {
+// ── QuickAddModal — now actually saves expenses ───────────────────────────────
+function QuickAddModal({ onClose, onSaved }) {
+  const { addExpense } = useBudget();
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("food");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    if (!desc.trim() || !amount || Number(amount) < 1) return;
+    setLoading(true);
+    try {
+      await addExpense({
+        description: desc.trim(),
+        amount: Number(amount),
+        category,
+        date: new Date().toISOString().split("T")[0],
+        notes: "",
+      });
+      onSaved?.();
+      onClose();
+    } catch (err) {
+      console.error("Quick add error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="modal-handle" />
-        <div className="modal-title">Add expense</div>
-        <div className="modal-input-row">
+        <div className="modal-title">Quick add expense</div>
+
+        <div className="modal-field">
+          <label className="modal-label">Description</label>
           <input
             className="modal-input"
             type="text"
             placeholder='e.g. "Lunch at Chicken Republic"'
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
+            autoFocus
           />
         </div>
-        <div className="modal-input-row">
-          <input
-            className="modal-input"
-            type="text"
-            inputMode="numeric"
-            placeholder="Amount (₦)"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            style={{ flex: 1 }}
-          />
-          <select className="modal-input" style={{ flex: "0 0 130px" }}>
-            <option>🍔 Food</option>
-            <option>🚗 Transport</option>
-            <option>🛍️ Shopping</option>
-            <option>💊 Health</option>
-            <option>🎬 Entertainment</option>
-            <option>📱 Airtime</option>
-          </select>
+
+        <div className="modal-row">
+          <div>
+            <label className="modal-label">Amount (₦)</label>
+            <input
+              className="modal-input"
+              type="text"
+              inputMode="numeric"
+              placeholder="0"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ""))}
+            />
+          </div>
+          <div>
+            <label className="modal-label">Date</label>
+            <input
+              className="modal-input"
+              type="date"
+              defaultValue={new Date().toISOString().split("T")[0]}
+              readOnly
+            />
+          </div>
         </div>
-        <button className="modal-btn" onClick={onClose}>
-          Log Expense
-        </button>
+
+        <div className="modal-cat-grid">
+          {QUICK_CATEGORIES.map((c) => (
+            <button
+              key={c}
+              className={`modal-cat-btn${category === c ? " active" : ""}`}
+              onClick={() => setCategory(c)}
+            >
+              {c.charAt(0).toUpperCase() + c.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        <div className="modal-actions">
+          <button className="modal-cancel" onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            className="modal-submit"
+            onClick={submit}
+            disabled={loading || !desc.trim() || !amount}
+          >
+            {loading ? <div className="spinner" /> : "Log Expense"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -301,7 +355,6 @@ export default function AppLayout() {
     <>
       <style>{FONTS + styles}</style>
 
-      {/* Drawer overlay */}
       <div
         className={`drawer-overlay${drawerOpen ? " open" : ""}`}
         onClick={() => setDrawerOpen(false)}
@@ -359,10 +412,18 @@ export default function AppLayout() {
         </div>
       </div>
 
-      {quickAddOpen && <QuickAddModal onClose={() => setQuickAddOpen(false)} />}
+      {quickAddOpen && (
+        <QuickAddModal
+          onClose={() => setQuickAddOpen(false)}
+          onSaved={() => {
+            // If already on expenses page it'll update via realtime
+            // If elsewhere, navigate there so user sees the new expense
+            if (!location.pathname.includes("expenses")) goTo("/expenses");
+          }}
+        />
+      )}
 
       <div className="shell-root">
-        {/* Desktop sidebar */}
         <aside className="sidebar">
           <div className="sidebar-bg" />
           <div className="sidebar-logo">
@@ -421,7 +482,6 @@ export default function AppLayout() {
           </div>
         </aside>
 
-        {/* Main content */}
         <div className="main-content">
           {isTrialing && (
             <div className="trial-banner">
@@ -438,7 +498,6 @@ export default function AppLayout() {
             </div>
           )}
 
-          {/* Desktop topbar */}
           <div className="desktop-topbar">
             <div>
               <div className="topbar-page-title">{meta.title}</div>
@@ -470,7 +529,6 @@ export default function AppLayout() {
             </div>
           </div>
 
-          {/* Mobile topbar */}
           <div className="mobile-topbar">
             <button
               className="mobile-back-btn"
@@ -501,7 +559,6 @@ export default function AppLayout() {
           </div>
         </div>
 
-        {/* Bottom nav */}
         <nav className="bottom-nav">
           {BOTTOM_NAV.map((item) => (
             <div

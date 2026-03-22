@@ -11,6 +11,8 @@ import {
   Trash2,
   Pencil,
 } from "lucide-react";
+import { useAuth } from "../providers/AuthProvider";
+import { useBudget } from "../providers/BudgetProvider";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
@@ -40,7 +42,6 @@ const styles = `
     animation:fadeIn 0.35s ease;
   }
 
-  /* GREETING */
   .greeting { animation:fadeUp 0.4s ease; min-width:0; }
   .greeting-time { font-size:0.78rem; color:var(--ink-subtle); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px; }
   .greeting-name { font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:800; color:var(--ink); letter-spacing:-0.015em; }
@@ -51,7 +52,6 @@ const styles = `
     .greeting-sub  { font-size:0.78rem; }
   }
 
-  /* SUMMARY GRID */
   .summary-grid {
     display:grid; grid-template-columns:repeat(4,1fr); gap:16px;
     animation:fadeUp 0.4s ease 0.05s both;
@@ -90,11 +90,9 @@ const styles = `
   .sum-change.neutral { color:var(--ink-subtle); }
   .hero-card .sum-change { color:rgba(255,255,255,0.65); }
 
-  /* TWO COL */
   .two-col { display:grid; grid-template-columns:1fr 360px; gap:20px; animation:fadeUp 0.4s ease 0.1s both; }
   @media(max-width:1100px){ .two-col{ grid-template-columns:1fr; } }
 
-  /* PACE CARD */
   .pace-card { background:var(--white); border-radius:20px; padding:24px; border:1.5px solid var(--border); min-width:0; }
   @media(max-width:480px){ .pace-card{ padding:18px 14px; } }
   .card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; gap:8px; }
@@ -116,7 +114,6 @@ const styles = `
   .pace-tick-label { position:absolute; top:-20px; transform:translateX(-50%); font-size:0.62rem; font-weight:700; color:var(--ink-subtle); white-space:nowrap; }
   .pace-bar-caption { font-size:0.78rem; color:var(--ink-subtle); line-height:1.5; margin-top:12px; }
 
-  /* SAFE CARD */
   .safe-card {
     background:linear-gradient(160deg, var(--green-deep), var(--green-mid));
     border-radius:20px; padding:24px; display:flex; flex-direction:column; justify-content:space-between;
@@ -135,7 +132,6 @@ const styles = `
   .safe-ring svg { transform:rotate(-90deg); }
   .safe-ring-pct { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:800; color:rgba(255,255,255,0.7); }
 
-  /* AI GRID */
   .ai-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; animation:fadeUp 0.4s ease 0.15s both; }
   @media(max-width:700px){ .ai-grid{ grid-template-columns:1fr; } }
   .ai-card { background:var(--ink); border-radius:20px; padding:22px; border:1px solid rgba(255,255,255,0.07); position:relative; overflow:hidden; min-width:0; }
@@ -154,7 +150,6 @@ const styles = `
   .ai-loading-dot:nth-child(2){ animation-delay:0.2s; }
   .ai-loading-dot:nth-child(3){ animation-delay:0.4s; }
 
-  /* NL ENTRY */
   .nl-card { background:var(--white); border-radius:20px; padding:22px; border:1.5px solid var(--border); animation:fadeUp 0.4s ease 0.2s both; }
   .nl-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
   .nl-icon  { width:36px; height:36px; border-radius:10px; background:var(--amber-pale); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -175,7 +170,6 @@ const styles = `
   .nl-confirm-btn { background:var(--green-light); color:var(--white); border:none; border-radius:8px; padding:7px 14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.8rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:all 0.2s; }
   .nl-confirm-btn:hover { background:var(--green-mid); }
 
-  /* QUICK ADD */
   .quick-card { background:var(--white); border-radius:20px; padding:22px; border:1.5px solid var(--border); animation:fadeUp 0.4s ease 0.22s both; }
   .quick-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px; }
   @media(max-width:500px){ .quick-grid{ grid-template-columns:1fr; } }
@@ -198,7 +192,6 @@ const styles = `
   .quick-btn-primary:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
   .spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,0.35); border-top-color:var(--white); border-radius:50%; animation:spin 0.7s linear infinite; }
 
-  /* RECENT */
   .recent-card { background:var(--white); border-radius:20px; padding:22px; border:1.5px solid var(--border); animation:fadeUp 0.4s ease 0.25s both; min-width:0; }
   .recent-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
   .see-all-btn { font-size:0.82rem; font-weight:700; color:var(--green-mid); background:none; border:none; cursor:pointer; flex-shrink:0; }
@@ -222,73 +215,8 @@ const styles = `
   .empty-title { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:700; color:var(--ink); margin-bottom:6px; }
   .empty-sub   { font-size:0.85rem; line-height:1.6; }
 
-  /* TOAST */
   .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); z-index:200; background:var(--ink); color:var(--white); padding:12px 20px; border-radius:14px; font-size:0.875rem; font-weight:600; display:flex; align-items:center; gap:10px; box-shadow:0 8px 32px rgba(0,0,0,0.25); animation:scaleIn 0.3s ease; white-space:nowrap; }
 `;
-
-const MOCK = {
-  name: "Adaeze",
-  budget: 180000,
-  spent: 112400,
-  safeToSpend: 4507,
-  totalDays: 31,
-  currentDay: 16,
-  daysLeft: 15,
-  expectedSpend: 92900,
-  paceStatus: {
-    key: "on_track",
-    label: "On Track",
-    color: "#52B788",
-    bg: "rgba(82,183,136,0.12)",
-  },
-  expenses: [
-    {
-      id: 1,
-      desc: "Chicken Republic — Lunch",
-      cat: "🍔",
-      catName: "Food",
-      amount: 4500,
-      date: "Today",
-      bg: "#FFF3E0",
-    },
-    {
-      id: 2,
-      desc: "Bolt — Office trip",
-      cat: "🚗",
-      catName: "Transport",
-      amount: 2800,
-      date: "Today",
-      bg: "#E8F5E9",
-    },
-    {
-      id: 3,
-      desc: "Netflix subscription",
-      cat: "🎬",
-      catName: "Entertain.",
-      amount: 4800,
-      date: "Yesterday",
-      bg: "#F3E5F5",
-    },
-    {
-      id: 4,
-      desc: "Chicken Republic — Dinner",
-      cat: "🍔",
-      catName: "Food",
-      amount: 5200,
-      date: "Yesterday",
-      bg: "#FFF3E0",
-    },
-    {
-      id: 5,
-      desc: "MTN Data bundle",
-      cat: "📱",
-      catName: "Airtime",
-      amount: 3000,
-      date: "2 days ago",
-      bg: "#E3F2FD",
-    },
-  ],
-};
 
 const CATEGORIES = [
   { id: "food", icon: "🍔", label: "Food", bg: "#FFF3E0" },
@@ -326,12 +254,105 @@ function getGreeting() {
   if (h < 17) return "Good afternoon";
   return "Good evening";
 }
+
 function fmt(n) {
-  return n.toLocaleString("en-NG");
+  return Number(n || 0).toLocaleString("en-NG");
 }
 
-function SummaryCards({ budget, spent, remaining, safe }) {
-  const pct = Math.min(100, Math.round((spent / budget) * 100));
+function defaultPaceStatus(spent, expected) {
+  if (spent <= expected) {
+    return {
+      key: "on_track",
+      label: "On Track",
+      color: "#52B788",
+      bg: "rgba(82,183,136,0.12)",
+    };
+  }
+
+  if (spent <= expected * 1.1) {
+    return {
+      key: "slightly_over",
+      label: "Slightly Over",
+      color: "#D4A017",
+      bg: "rgba(212,160,23,0.12)",
+    };
+  }
+
+  return {
+    key: "over_budget",
+    label: "Over Budget",
+    color: "#E53935",
+    bg: "rgba(229,57,53,0.12)",
+  };
+}
+
+function formatExpenseForDashboard(expense) {
+  const categoryId =
+    expense.category ||
+    expense.cat ||
+    expense.category_id ||
+    expense.categoryId ||
+    "other";
+
+  const category =
+    CATEGORIES.find((c) => c.id === categoryId) ||
+    CATEGORIES.find(
+      (c) => c.label.toLowerCase() === String(categoryId).toLowerCase(),
+    ) ||
+    CATEGORIES[7];
+
+  const rawDate =
+    expense.date ||
+    expense.expense_date ||
+    expense.created_at ||
+    expense.createdAt ||
+    null;
+
+  let dateLabel = "Recently";
+  if (rawDate) {
+    const d = new Date(rawDate);
+    if (!Number.isNaN(d.getTime())) {
+      const today = new Date();
+      const isSameDay =
+        d.getDate() === today.getDate() &&
+        d.getMonth() === today.getMonth() &&
+        d.getFullYear() === today.getFullYear();
+
+      const yesterday = new Date();
+      yesterday.setDate(today.getDate() - 1);
+      const isYesterday =
+        d.getDate() === yesterday.getDate() &&
+        d.getMonth() === yesterday.getMonth() &&
+        d.getFullYear() === yesterday.getFullYear();
+
+      if (isSameDay) {
+        dateLabel = "Today";
+      } else if (isYesterday) {
+        dateLabel = "Yesterday";
+      } else {
+        dateLabel = d.toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+        });
+      }
+    }
+  }
+
+  return {
+    id: expense.id,
+    desc: expense.description || expense.desc || expense.note || "Expense",
+    cat: category.icon,
+    catName: category.label,
+    amount: Number(expense.amount || 0),
+    bg: category.bg,
+    date: dateLabel,
+  };
+}
+
+function SummaryCards({ budget, spent, remaining, safe, daysLeft }) {
+  const pct =
+    budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
+
   return (
     <div className="summary-grid">
       <div className="sum-card hero-card">
@@ -344,16 +365,18 @@ function SummaryCards({ budget, spent, remaining, safe }) {
         </div>
         <div className="sum-label">Total Budget</div>
         <div className="sum-value">₦{fmt(budget)}</div>
-        <div className="sum-change neutral">March · {pct}% used</div>
+        <div className="sum-change neutral">This month · {pct}% used</div>
       </div>
+
       <div className="sum-card">
         <div className="sum-icon red">
           <ArrowUpRight size={16} color="#E53935" />
         </div>
         <div className="sum-label">Total Spent</div>
         <div className="sum-value red">₦{fmt(spent)}</div>
-        <div className="sum-change down">↑ ₦8,200 vs last week</div>
+        <div className="sum-change neutral">Live from your records</div>
       </div>
+
       <div className="sum-card">
         <div className="sum-icon green">
           <PiggyBank size={16} color="#2D6A4F" />
@@ -361,16 +384,17 @@ function SummaryCards({ budget, spent, remaining, safe }) {
         <div className="sum-label">Remaining</div>
         <div className="sum-value green">₦{fmt(remaining)}</div>
         <div className="sum-change up">
-          ✓ {Math.round((remaining / budget) * 100)}% left
+          ✓ {budget > 0 ? Math.round((remaining / budget) * 100) : 0}% left
         </div>
       </div>
+
       <div className="sum-card">
         <div className="sum-icon amber">
           <CalendarDays size={16} color="#D4A017" />
         </div>
         <div className="sum-label">Safe-to-Spend</div>
         <div className="sum-value amber">₦{fmt(safe)}</div>
-        <div className="sum-change neutral">Per day · 15 days</div>
+        <div className="sum-change neutral">Per day · {daysLeft} days</div>
       </div>
     </div>
   );
@@ -378,18 +402,24 @@ function SummaryCards({ budget, spent, remaining, safe }) {
 
 function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
   const [rendered, setRendered] = useState(false);
+
   useEffect(() => {
     const t = setTimeout(() => setRendered(true), 200);
     return () => clearTimeout(t);
   }, []);
-  const spentPct = Math.min(100, Math.round((spent / budget) * 100));
-  const expectedPct = Math.min(100, Math.round((expected / budget) * 100));
+
+  const spentPct =
+    budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
+  const expectedPct =
+    budget > 0 ? Math.min(100, Math.round((expected / budget) * 100)) : 0;
+
   const barColor =
     status.key === "over_budget"
       ? "#FF8A80"
       : status.key === "slightly_over"
         ? "#F0C040"
         : "#52B788";
+
   return (
     <div className="pace-card">
       <div className="card-header">
@@ -406,6 +436,7 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
           ● {status.label}
         </span>
       </div>
+
       <div className="pace-meta">
         <div className="pace-meta-item">
           <div className="pace-meta-label">Spent</div>
@@ -424,11 +455,13 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
           </div>
         </div>
       </div>
+
       <div className="pace-bar-wrap">
         <div className="pace-bar-labels">
           <span>₦0</span>
           <span>₦{fmt(budget)}</span>
         </div>
+
         <div className="pace-bar-track">
           <div
             className="pace-bar-expected"
@@ -449,6 +482,7 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
           </div>
         </div>
       </div>
+
       <p className="pace-bar-caption">
         You've spent <strong>₦{fmt(spent)}</strong> against an expected{" "}
         <strong>₦{fmt(expected)}</strong> for day {currentDay}.{" "}
@@ -461,23 +495,27 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
 }
 
 function SafeCard({ amount, daysLeft, totalDays, currentDay }) {
-  const pct = Math.round((currentDay / totalDays) * 100);
+  const pct = totalDays > 0 ? Math.round((currentDay / totalDays) * 100) : 0;
   const r = 18;
   const circumference = 2 * Math.PI * r;
   const dash = circumference - (pct / 100) * circumference;
+
   return (
     <div className="safe-card">
       <div className="safe-card-bg" />
       <div className="safe-card-bg2" />
+
       <div>
         <div className="safe-label">Safe-to-Spend Today</div>
         <div className="safe-amount">₦{fmt(amount)}</div>
         <div className="safe-period">daily allowance</div>
       </div>
+
       <div className="safe-footer">
         <div className="safe-days">
           <strong>{daysLeft}</strong> days remaining
         </div>
+
         <div className="safe-ring">
           <svg width="48" height="48" viewBox="0 0 48 48">
             <circle
@@ -513,6 +551,7 @@ function AIPanel({ type, insight, onRefresh, loading }) {
   const glowColor = isAnalyst ? "rgba(212,160,23,0.6)" : "rgba(64,145,108,0.6)";
   const dotColor = isAnalyst ? "var(--amber)" : "var(--green-light)";
   const tagColor = isAnalyst ? "var(--amber)" : "var(--green-light)";
+
   return (
     <div className="ai-card">
       <div
@@ -567,6 +606,7 @@ function NLEntry({ onAdd }) {
   const [parsed, setParsed] = useState(null);
   const [placeholder, setPlaceholder] = useState(NL_EXAMPLES[0]);
   const idxRef = useRef(0);
+
   useEffect(() => {
     const t = setInterval(() => {
       idxRef.current = (idxRef.current + 1) % NL_EXAMPLES.length;
@@ -574,42 +614,52 @@ function NLEntry({ onAdd }) {
     }, 3000);
     return () => clearInterval(t);
   }, []);
+
   const parse = () => {
     if (!val.trim()) return;
+
     setLoading(true);
+
     setTimeout(() => {
       const amount = val.match(/\d[\d,]*/)?.[0]?.replace(/,/g, "") ?? "0";
       const cats = {
-        lunch: "Food",
-        dinner: "Food",
-        bolt: "Transport",
-        uber: "Transport",
-        netflix: "Entertainment",
-        groceries: "Food",
-        data: "Airtime",
-        airtime: "Airtime",
+        lunch: "food",
+        dinner: "food",
+        groceries: "food",
+        bolt: "transport",
+        uber: "transport",
+        netflix: "fun",
+        entertainment: "fun",
+        data: "data",
+        airtime: "data",
       };
+
       const cat =
         Object.entries(cats).find(([k]) =>
           val.toLowerCase().includes(k),
-        )?.[1] ?? "Other";
+        )?.[1] ?? "other";
+
       const desc = val
         .replace(/\d[\d,]*/g, "")
         .replace(/spent|on|for|at/gi, "")
         .trim();
+
       setParsed({
-        amount: parseInt(amount),
-        category: cat,
-        description: desc || val,
+        amount: parseInt(amount, 10),
+        cat,
+        desc: desc || val,
       });
+
       setLoading(false);
     }, 900);
   };
-  const confirm = () => {
-    onAdd?.(parsed);
+
+  const confirm = async () => {
+    await onAdd?.(parsed);
     setParsed(null);
     setVal("");
   };
+
   return (
     <div className="nl-card">
       <div className="nl-header">
@@ -659,8 +709,11 @@ function NLEntry({ onAdd }) {
         <div className="nl-parsed">
           <div className="nl-parsed-text">
             Log <span>₦{fmt(parsed.amount)}</span> for{" "}
-            <span>{parsed.description}</span> under{" "}
-            <span>{parsed.category}</span>?
+            <span>{parsed.desc}</span> under{" "}
+            <span>
+              {CATEGORIES.find((c) => c.id === parsed.cat)?.label || "Other"}
+            </span>
+            ?
           </div>
           <button className="nl-confirm-btn" onClick={confirm}>
             Log it
@@ -677,21 +730,33 @@ function QuickAdd({ onAdd }) {
   const [cat, setCat] = useState("food");
   const [date, setDate] = useState("");
   const [loading, setLoading] = useState(false);
+
   const reset = () => {
     setDesc("");
     setAmount("");
     setCat("food");
     setDate("");
   };
-  const submit = () => {
+
+  const submit = async () => {
     if (!desc.trim() || !amount) return;
+
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      onAdd?.({ desc, amount, cat });
+
+    try {
+      await onAdd?.({
+        desc,
+        amount: Number(amount),
+        cat,
+        date: date || new Date().toISOString(),
+      });
+
       reset();
-    }, 700);
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
     <div className="quick-card">
       <div className="card-header" style={{ marginBottom: 0 }}>
@@ -772,7 +837,7 @@ function QuickAdd({ onAdd }) {
 }
 
 function RecentExpenses({ expenses, onDelete }) {
-  if (!expenses.length)
+  if (!expenses.length) {
     return (
       <div className="recent-card">
         <div className="recent-header">
@@ -789,6 +854,8 @@ function RecentExpenses({ expenses, onDelete }) {
         </div>
       </div>
     );
+  }
+
   return (
     <div className="recent-card">
       <div className="recent-header">
@@ -796,7 +863,6 @@ function RecentExpenses({ expenses, onDelete }) {
           <div className="card-title">Recent Expenses</div>
           <div className="card-sub">Last {expenses.length} transactions</div>
         </div>
-        <button className="see-all-btn">See all →</button>
       </div>
       <div className="expense-list">
         {expenses.map((e) => (
@@ -816,7 +882,7 @@ function RecentExpenses({ expenses, onDelete }) {
               </button>
               <button
                 className="exp-action-btn del"
-                onClick={() => onDelete(e.id)}
+                onClick={() => onDelete?.(e.id)}
               >
                 <Trash2 size={12} />
               </button>
@@ -838,6 +904,7 @@ function Toast({ msg, onDone }) {
     const t = setTimeout(onDone, 2800);
     return () => clearTimeout(t);
   }, [onDone]);
+
   return (
     <div className="toast">
       <span style={{ color: "#52B788" }}>✓</span> {msg}
@@ -846,95 +913,143 @@ function Toast({ msg, onDone }) {
 }
 
 export default function Dashboard() {
-  const [expenses, setExpenses] = useState(MOCK.expenses);
+  const { displayName } = useAuth();
+  const {
+    activeBudget,
+    recentExpenses,
+    totalBudget,
+    totalSpent,
+    remaining,
+    safeToSpend,
+    expectedSpend,
+    paceStatus,
+    totalDays,
+    currentDay,
+    daysLeft,
+    addExpense,
+    deleteExpense,
+  } = useBudget();
+
   const [analystIdx, setAnalystIdx] = useState(0);
   const [coachIdx, setCoachIdx] = useState(0);
   const [aiLoading, setAiLoading] = useState(false);
   const [toast, setToast] = useState(null);
-  const [spent, setSpent] = useState(MOCK.spent);
 
-  const refreshAI = (type) => {
-    setAiLoading(true);
-    setTimeout(() => {
-      if (type === "analyst")
-        setAnalystIdx((i) => (i + 1) % AI_INSIGHTS.length);
-      else setCoachIdx((i) => (i + 1) % AI_TIPS.length);
-      setAiLoading(false);
-    }, 900);
-  };
+  const normalizedExpenses = Array.isArray(recentExpenses)
+    ? recentExpenses.map(formatExpenseForDashboard)
+    : [];
 
-  const addExpense = (data) => {
-    const amount = parseInt(data.amount ?? 0);
-    const cat =
-      CATEGORIES.find((c) => c.id === (data.cat ?? data.category)) ??
-      CATEGORIES[7];
-    setExpenses((prev) => [
-      {
-        id: Date.now(),
-        desc: data.desc ?? data.description ?? "Expense",
-        cat: cat.icon,
-        catName: cat.label,
-        amount,
-        bg: cat.bg,
-        date: "Just now",
-      },
-      ...prev.slice(0, 4),
-    ]);
-    setSpent((s) => s + amount);
-    setToast(`₦${fmt(amount)} logged under ${cat.label}`);
-  };
-
-  const deleteExpense = (id) => {
-    const exp = expenses.find((e) => e.id === id);
-    setExpenses((prev) => prev.filter((e) => e.id !== id));
-    if (exp) setSpent((s) => Math.max(0, s - exp.amount));
-    setToast("Expense deleted");
-  };
-
-  const remaining = Math.max(0, MOCK.budget - spent);
-  const safe = Math.max(0, Math.round(remaining / MOCK.daysLeft));
-  const today = new Date().toLocaleDateString("en-GB", {
+  const todayDate = new Date();
+  const today = todayDate.toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
 
+  const refreshAI = (type) => {
+    setAiLoading(true);
+    setTimeout(() => {
+      if (type === "analyst") {
+        setAnalystIdx((i) => (i + 1) % AI_INSIGHTS.length);
+      } else {
+        setCoachIdx((i) => (i + 1) % AI_TIPS.length);
+      }
+      setAiLoading(false);
+    }, 900);
+  };
+
+  const handleAddExpense = async (data) => {
+    const amount = Number(data.amount ?? 0);
+    const cat =
+      CATEGORIES.find((c) => c.id === (data.cat ?? data.category)) ||
+      CATEGORIES[7];
+
+    if (!amount || amount <= 0) {
+      setToast("Enter a valid amount");
+      return;
+    }
+
+    try {
+      await addExpense({
+        description: data.desc ?? data.description ?? "Expense",
+        amount,
+        category: cat.id,
+        date: data.date || new Date().toISOString(),
+        notes: data.note || "",
+      });
+
+      setToast(`₦${fmt(amount)} logged under ${cat.label}`);
+    } catch (error) {
+      console.error("Add expense error:", error);
+      setToast(error?.message || "Could not save expense");
+    }
+  };
+
+  const handleDeleteExpense = async (id) => {
+    try {
+      await deleteExpense(id);
+      setToast("Expense deleted");
+    } catch (error) {
+      console.error("Delete expense error:", error);
+      setToast(error?.message || "Could not delete expense");
+    }
+  };
+
   return (
     <>
       <style>{FONTS + styles}</style>
       {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+
       <div className="dash">
         <div className="greeting">
           <div className="greeting-time">{getGreeting()}</div>
           <div className="greeting-name">
-            Welcome back, <em>{MOCK.name}</em>
+            Welcome back, <em>{displayName || "there"}</em>
           </div>
           <div className="greeting-sub">
             Here's where your money stands — {today}
           </div>
         </div>
+
         <SummaryCards
-          budget={MOCK.budget}
-          spent={spent}
-          remaining={remaining}
-          safe={safe}
+          budget={Number(totalBudget || activeBudget?.amount || 0)}
+          spent={Number(totalSpent || 0)}
+          remaining={Number(remaining || 0)}
+          safe={Number(safeToSpend || 0)}
+          daysLeft={Number(daysLeft || 0)}
         />
+
         <div className="two-col">
           <PaceCard
-            budget={MOCK.budget}
-            spent={spent}
-            expected={MOCK.expectedSpend}
-            status={MOCK.paceStatus}
-            currentDay={MOCK.currentDay}
-            totalDays={MOCK.totalDays}
+            budget={Number(totalBudget || activeBudget?.amount || 0)}
+            spent={Number(totalSpent || 0)}
+            expected={Number(expectedSpend || 0)}
+            status={paceStatus || defaultPaceStatus(0, 0)}
+            currentDay={Number(currentDay || todayDate.getDate())}
+            totalDays={Number(
+              totalDays ||
+                new Date(
+                  todayDate.getFullYear(),
+                  todayDate.getMonth() + 1,
+                  0,
+                ).getDate(),
+            )}
           />
           <SafeCard
-            amount={safe}
-            daysLeft={MOCK.daysLeft}
-            totalDays={MOCK.totalDays}
-            currentDay={MOCK.currentDay}
+            amount={Number(safeToSpend || 0)}
+            daysLeft={Number(daysLeft || 0)}
+            totalDays={Number(
+              totalDays ||
+                new Date(
+                  todayDate.getFullYear(),
+                  todayDate.getMonth() + 1,
+                  0,
+                ).getDate(),
+            )}
+            currentDay={Number(currentDay || todayDate.getDate())}
           />
         </div>
+
         <div className="ai-grid">
           <AIPanel
             type="analyst"
@@ -949,10 +1064,15 @@ export default function Dashboard() {
             onRefresh={() => refreshAI("coach")}
           />
         </div>
-        <NLEntry onAdd={addExpense} />
+
+        <NLEntry onAdd={handleAddExpense} />
+
         <div className="two-col">
-          <RecentExpenses expenses={expenses} onDelete={deleteExpense} />
-          <QuickAdd onAdd={addExpense} />
+          <RecentExpenses
+            expenses={normalizedExpenses}
+            onDelete={handleDeleteExpense}
+          />
+          <QuickAdd onAdd={handleAddExpense} />
         </div>
       </div>
     </>

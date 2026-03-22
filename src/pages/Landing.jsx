@@ -880,7 +880,7 @@ export default function TruvlloLanding() {
         </div>
         <div className="footer-bottom">
           <span className="footer-copy">
-            © 2026 Truvllo. All rights reserved.
+            © {new Date().getFullYear()} Truvllo. All rights reserved.
           </span>
           <span className="footer-love">
             Built with <span>♥</span> for everyone

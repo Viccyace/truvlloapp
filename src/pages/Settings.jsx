@@ -24,15 +24,11 @@ const styles = `
   @keyframes checkPop { 0%{transform:scale(0)} 70%{transform:scale(1.2)} 100%{transform:scale(1)} }
 
   .page { display:flex; flex-direction:column; gap:28px; max-width:860px; animation:fadeIn 0.3s ease; }
-
   .page-header { animation:fadeUp 0.35s ease; }
   .page-title { font-family:'Playfair Display',serif; font-size:1.75rem; font-weight:800; color:var(--ink); letter-spacing:-0.015em; }
   .page-sub   { font-size:0.875rem; color:var(--ink-subtle); margin-top:4px; }
 
-  .settings-card {
-    background:var(--white); border-radius:20px; border:1.5px solid var(--border);
-    overflow:hidden; animation:fadeUp 0.35s ease var(--delay,0s) both;
-  }
+  .settings-card { background:var(--white); border-radius:20px; border:1.5px solid var(--border); overflow:hidden; animation:fadeUp 0.35s ease var(--delay,0s) both; }
   .card-header { padding:22px 28px 0; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
   .card-title  { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:700; color:var(--ink); }
   .card-sub    { font-size:0.78rem; color:var(--ink-subtle); margin-top:2px; }
@@ -40,38 +36,26 @@ const styles = `
   .card-divider { height:1px; background:var(--border); margin:0 28px; }
 
   .avatar-section { display:flex; align-items:center; gap:20px; margin-bottom:24px; }
-  .avatar-circle  {
+  .avatar-circle {
     width:80px; height:80px; border-radius:50%; flex-shrink:0; position:relative;
     background:linear-gradient(135deg,var(--green-deep),var(--green-light));
     display:flex; align-items:center; justify-content:center;
     font-family:'Playfair Display',serif; font-size:2rem; font-weight:800; color:var(--white);
     overflow:hidden; cursor:pointer;
   }
-  .avatar-overlay {
-    position:absolute; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center;
-    opacity:0; transition:opacity 0.2s; border-radius:50%;
-  }
+  .avatar-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; border-radius:50%; }
   .avatar-circle:hover .avatar-overlay { opacity:1; }
   .avatar-overlay-text { color:var(--white); font-size:0.7rem; font-weight:700; text-align:center; line-height:1.4; }
   .avatar-name  { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:var(--ink); }
   .avatar-email { font-size:0.82rem; color:var(--ink-subtle); margin-top:2px; }
-  .avatar-plan  {
-    display:inline-flex; align-items:center; gap:5px; margin-top:8px;
-    background:var(--amber-pale); color:var(--amber); border:1px solid rgba(212,160,23,0.25);
-    padding:3px 10px; border-radius:100px; font-size:0.7rem; font-weight:800;
-    text-transform:uppercase; letter-spacing:0.06em;
-  }
+  .avatar-plan  { display:inline-flex; align-items:center; gap:5px; margin-top:8px; background:var(--amber-pale); color:var(--amber); border:1px solid rgba(212,160,23,0.25); padding:3px 10px; border-radius:100px; font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; }
 
   .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
   @media(max-width:600px){ .form-grid{ grid-template-columns:1fr; } }
   .form-grid .full { grid-column:1/-1; }
-  .field-wrap { display:flex; flex-direction:column; gap:6px; }
+  .field-wrap  { display:flex; flex-direction:column; gap:6px; }
   .field-label { font-size:0.78rem; font-weight:600; color:var(--ink-muted); }
-  .field-input {
-    padding:12px 14px; border:1.5px solid var(--border); border-radius:12px;
-    font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:500;
-    color:var(--ink); background:var(--cream); outline:none; transition:all 0.2s; width:100%;
-  }
+  .field-input { padding:12px 14px; border:1.5px solid var(--border); border-radius:12px; font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:500; color:var(--ink); background:var(--cream); outline:none; transition:all 0.2s; width:100%; }
   .field-input:focus { border-color:var(--green-light); box-shadow:0 0 0 3px rgba(64,145,108,0.1); background:var(--white); }
   .field-input.error { border-color:var(--red); }
   .field-error { font-size:0.72rem; color:var(--red); font-weight:500; }
@@ -94,46 +78,29 @@ const styles = `
 
   .currency-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
   @media(max-width:480px){ .currency-grid{ grid-template-columns:repeat(2,1fr); } }
-  .currency-tile {
-    border:1.5px solid var(--border); border-radius:14px; padding:14px 10px;
-    cursor:pointer; text-align:center; transition:all 0.2s; background:var(--white);
-    position:relative;
-  }
+  .currency-tile { border:1.5px solid var(--border); border-radius:14px; padding:14px 10px; cursor:pointer; text-align:center; transition:all 0.2s; background:var(--white); position:relative; }
   .currency-tile:hover { border-color:rgba(64,145,108,0.35); transform:translateY(-1px); }
   .currency-tile.active { border-color:var(--green-light); background:var(--green-pale); }
-  .currency-flag   { font-size:1.6rem; margin-bottom:6px; }
-  .currency-code   { font-weight:800; font-size:0.9rem; color:var(--ink); margin-bottom:2px; }
-  .currency-name   { font-size:0.68rem; color:var(--ink-subtle); font-weight:500; }
+  .currency-flag { font-size:1.6rem; margin-bottom:6px; }
+  .currency-code { font-weight:800; font-size:0.9rem; color:var(--ink); margin-bottom:2px; }
+  .currency-name { font-size:0.68rem; color:var(--ink-subtle); font-weight:500; }
   .currency-tile.active .currency-name { color:var(--green-mid); }
-  .currency-check  { position:absolute; top:7px; right:7px; width:16px; height:16px; border-radius:50%; background:var(--green-light); color:var(--white); font-size:0.6rem; display:flex; align-items:center; justify-content:center; font-weight:800; animation:checkPop 0.3s ease; }
+  .currency-check { position:absolute; top:7px; right:7px; width:16px; height:16px; border-radius:50%; background:var(--green-light); color:var(--white); font-size:0.6rem; display:flex; align-items:center; justify-content:center; font-weight:800; animation:checkPop 0.3s ease; }
 
   .toggle-list { display:flex; flex-direction:column; }
-  .toggle-row {
-    display:flex; align-items:center; justify-content:space-between; gap:16px;
-    padding:16px 0; border-bottom:1px solid var(--border);
-  }
+  .toggle-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 0; border-bottom:1px solid var(--border); }
   .toggle-row:last-child { border-bottom:none; padding-bottom:0; }
-  .toggle-left { flex:1; }
+  .toggle-left  { flex:1; }
   .toggle-title { font-size:0.9rem; font-weight:700; color:var(--ink); margin-bottom:2px; }
   .toggle-desc  { font-size:0.75rem; color:var(--ink-subtle); line-height:1.5; }
-  .toggle-switch {
-    width:44px; height:24px; border-radius:100px; position:relative;
-    cursor:pointer; transition:background 0.25s; flex-shrink:0; border:none; padding:0;
-  }
+  .toggle-switch { width:44px; height:24px; border-radius:100px; position:relative; cursor:pointer; transition:background 0.25s; flex-shrink:0; border:none; padding:0; }
   .toggle-switch.on  { background:var(--green-light); }
   .toggle-switch.off { background:rgba(10,10,10,0.15); }
-  .toggle-knob {
-    position:absolute; top:3px; width:18px; height:18px; border-radius:50%;
-    background:var(--white); transition:left 0.25s cubic-bezier(0.4,0,0.2,1);
-    box-shadow:0 1px 4px rgba(0,0,0,0.2);
-  }
+  .toggle-knob { position:absolute; top:3px; width:18px; height:18px; border-radius:50%; background:var(--white); transition:left 0.25s cubic-bezier(0.4,0,0.2,1); box-shadow:0 1px 4px rgba(0,0,0,0.2); }
   .toggle-switch.on  .toggle-knob { left:23px; }
   .toggle-switch.off .toggle-knob { left:3px; }
 
-  .plan-hero {
-    background:linear-gradient(140deg,var(--green-deep),var(--green-mid));
-    border-radius:18px; padding:24px; margin-bottom:16px; position:relative; overflow:hidden;
-  }
+  .plan-hero { background:linear-gradient(140deg,var(--green-deep),var(--green-mid)); border-radius:18px; padding:24px; margin-bottom:16px; position:relative; overflow:hidden; }
   .plan-hero-blob { position:absolute; border-radius:50%; filter:blur(50px); pointer-events:none; width:200px; height:200px; top:-60px; right:-40px; background:rgba(255,255,255,0.08); }
   .plan-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); color:rgba(255,255,255,0.9); padding:4px 12px; border-radius:100px; font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:12px; }
   .plan-badge-dot { width:5px; height:5px; border-radius:50%; background:var(--amber-light); }
@@ -261,9 +228,36 @@ function Toast({ msg, onDone }) {
     const t = setTimeout(onDone, 2600);
     return () => clearTimeout(t);
   }, [onDone]);
-
   return <div className="toast">✓ {msg}</div>;
 }
+
+const NOTIF_OPTIONS = [
+  {
+    key: "daily_summary",
+    title: "Daily spending summary",
+    desc: "A quick recap of your spending sent every evening.",
+  },
+  {
+    key: "over_pace_alert",
+    title: "Over-pace alerts",
+    desc: "Get notified immediately when your spending exceeds expected pace.",
+  },
+  {
+    key: "trial_reminder",
+    title: "Trial expiry reminder",
+    desc: "A heads-up before your free trial ends.",
+  },
+  {
+    key: "weekly_report",
+    title: "Weekly budget report",
+    desc: "Full spending breakdown delivered every Monday morning.",
+  },
+  {
+    key: "tips_and_advice",
+    title: "AI tips & savings advice",
+    desc: "Personalised saving tips from your AI coach.",
+  },
+];
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -272,7 +266,7 @@ export default function SettingsPage() {
     profile,
     displayName,
     initials,
-    isPremium,
+    isPremiumOrTrial: isPremium,
     isTrialing,
     trialDaysLeft,
     currency: authCurrency,
@@ -281,19 +275,16 @@ export default function SettingsPage() {
     signOut,
   } = useAuth();
 
+  // ── Profile ──────────────────────────────────────────────────────────────────
   const firstNameFromProfile =
-    profile?.first_name || displayName?.split(" ").filter(Boolean)[0] || "";
-
+    profile?.first_name || displayName?.split(" ")[0] || "";
   const lastNameFromProfile =
-    profile?.last_name ||
-    displayName?.split(" ").filter(Boolean).slice(1).join(" ") ||
-    "";
+    profile?.last_name || displayName?.split(" ").slice(1).join(" ") || "";
 
   const [firstName, setFirstName] = useState(firstNameFromProfile);
   const [lastName, setLastName] = useState(lastNameFromProfile);
   const [email, setEmail] = useState(profile?.email || user?.email || "");
   const [phone, setPhone] = useState(profile?.phone || "");
-
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
 
@@ -312,21 +303,14 @@ export default function SettingsPage() {
 
   const saveProfile = async () => {
     setProfileLoading(true);
-    const fullName = `${firstName} ${lastName}`.trim();
-
     const { error } = await updateProfile({
       first_name: firstName.trim(),
       last_name: lastName.trim(),
-      full_name: fullName,
+      full_name: `${firstName} ${lastName}`.trim(),
       phone: phone.trim() || null,
     });
-
     setProfileLoading(false);
-
-    if (error) {
-      return;
-    }
-
+    if (error) return;
     setProfileSaved(true);
     setTimeout(() => setProfileSaved(false), 3000);
   };
@@ -338,6 +322,7 @@ export default function SettingsPage() {
     setPhone(profile?.phone || "");
   };
 
+  // ── Password ─────────────────────────────────────────────────────────────────
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
@@ -353,7 +338,6 @@ export default function SettingsPage() {
     if (!newPw || newPw.length < 8)
       e.new = "Password must be at least 8 characters";
     if (newPw !== confirmPw) e.con = "Passwords don't match";
-
     if (Object.keys(e).length) {
       setPwErrors(e);
       return;
@@ -361,16 +345,13 @@ export default function SettingsPage() {
 
     setPwErrors({});
     setPwLoading(true);
-
     const { error } = await updatePassword(newPw);
-
     setPwLoading(false);
 
     if (error) {
       setPwErrors({ new: error.message || "Could not update password" });
       return;
     }
-
     setPwSaved(true);
     setCurrentPw("");
     setNewPw("");
@@ -378,6 +359,7 @@ export default function SettingsPage() {
     setTimeout(() => setPwSaved(false), 3000);
   };
 
+  // ── Currency ─────────────────────────────────────────────────────────────────
   const [currency, setCurrency] = useState(authCurrency || "NGN");
   const [currLoading, setCurrLoading] = useState(false);
   const [currSaved, setCurrSaved] = useState(false);
@@ -390,15 +372,12 @@ export default function SettingsPage() {
     setCurrLoading(true);
     const { error } = await updateProfile({ currency });
     setCurrLoading(false);
-
-    if (error) {
-      return;
-    }
-
+    if (error) return;
     setCurrSaved(true);
     setTimeout(() => setCurrSaved(false), 3000);
   };
 
+  // ── Notifications ─────────────────────────────────────────────────────────────
   const [notifs, setNotifs] = useState({
     daily_summary: true,
     over_pace_alert: true,
@@ -418,34 +397,7 @@ export default function SettingsPage() {
     }, 700);
   };
 
-  const NOTIF_OPTIONS = [
-    {
-      key: "daily_summary",
-      title: "Daily spending summary",
-      desc: "A quick recap of your spending sent every evening.",
-    },
-    {
-      key: "over_pace_alert",
-      title: "Over-pace alerts",
-      desc: "Get notified immediately when your spending exceeds expected pace.",
-    },
-    {
-      key: "trial_reminder",
-      title: "Trial expiry reminder",
-      desc: "A heads-up before your free trial ends.",
-    },
-    {
-      key: "weekly_report",
-      title: "Weekly budget report",
-      desc: "Full spending breakdown delivered every Monday morning.",
-    },
-    {
-      key: "tips_and_advice",
-      title: "AI tips & savings advice",
-      desc: "Personalised saving tips from your AI coach.",
-    },
-  ];
-
+  // ── Danger / sign-out ─────────────────────────────────────────────────────────
   const [confirmModal, setConfirmModal] = useState(null);
   const [toast, setToast] = useState(null);
   const [signingOut, setSigningOut] = useState(false);
@@ -455,20 +407,19 @@ export default function SettingsPage() {
       setSigningOut(true);
       const { error } = await signOut();
       setSigningOut(false);
-
       if (!error) {
         setConfirmModal(null);
         navigate("/auth", { replace: true });
         return;
       }
     }
-
     if (confirmModal === "delete") {
       setToast("Account deletion request submitted");
       setConfirmModal(null);
     }
   };
 
+  // ── Plan helpers ──────────────────────────────────────────────────────────────
   const planLabel = isTrialing
     ? "Premium Trial"
     : isPremium
@@ -477,10 +428,14 @@ export default function SettingsPage() {
 
   const trialEndDate = useMemo(() => {
     if (!isTrialing || !trialDaysLeft) return null;
-    return new Date(
-      new Date().setDate(new Date().getDate() + trialDaysLeft),
-    ).toLocaleDateString("en-NG", { day: "numeric", month: "short" });
+    return new Date(Date.now() + trialDaysLeft * 86400000).toLocaleDateString(
+      "en-NG",
+      { day: "numeric", month: "short" },
+    );
   }, [isTrialing, trialDaysLeft]);
+
+  // ── Upgrade handler ───────────────────────────────────────────────────────────
+  const goToUpgrade = () => navigate("/upgrade");
 
   return (
     <>
@@ -500,7 +455,7 @@ export default function SettingsPage() {
             <div className="confirm-desc">
               {confirmModal === "logout"
                 ? "You'll be signed out of Truvllo on this device. Your data is safe."
-                : "This will permanently delete your account and all your budget data. This action cannot be undone."}
+                : "This will permanently delete your account and all your budget data. This cannot be undone."}
             </div>
             <div className="confirm-btns">
               <button
@@ -535,6 +490,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* ── Profile ───────────────────────────────────────────────────────── */}
         <div className="settings-card" style={{ "--delay": "0.04s" }}>
           <div className="card-header">
             <div>
@@ -556,7 +512,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
-              <div className="avatar-info">
+              <div>
                 <div className="avatar-name">{displayName || "My Account"}</div>
                 <div className="avatar-email">
                   {profile?.email || user?.email || "No email"}
@@ -607,7 +563,6 @@ export default function SettingsPage() {
                 />
               </div>
             </div>
-
             <SaveRow
               loading={profileLoading}
               saved={profileSaved}
@@ -617,6 +572,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* ── Password ──────────────────────────────────────────────────────── */}
         <div className="settings-card" style={{ "--delay": "0.07s" }}>
           <div className="card-header">
             <div>
@@ -651,7 +607,6 @@ export default function SettingsPage() {
                   <div className="field-error">{pwErrors.cur}</div>
                 )}
               </div>
-
               <div className="field-wrap">
                 <label className="field-label">New password</label>
                 <div className="password-wrap">
@@ -703,7 +658,6 @@ export default function SettingsPage() {
                   <div className="field-error">{pwErrors.new}</div>
                 )}
               </div>
-
               <div className="field-wrap">
                 <label className="field-label">Confirm new password</label>
                 <div className="password-wrap">
@@ -730,7 +684,6 @@ export default function SettingsPage() {
                 )}
               </div>
             </div>
-
             <SaveRow
               loading={pwLoading}
               saved={pwSaved}
@@ -745,6 +698,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* ── Currency ──────────────────────────────────────────────────────── */}
         <div className="settings-card" style={{ "--delay": "0.1s" }}>
           <div className="card-header">
             <div>
@@ -780,6 +734,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* ── Notifications ─────────────────────────────────────────────────── */}
         <div className="settings-card" style={{ "--delay": "0.13s" }}>
           <div className="card-header">
             <div>
@@ -821,6 +776,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* ── Your Plan ─────────────────────────────────────────────────────── */}
         <div className="settings-card" style={{ "--delay": "0.16s" }}>
           <div className="card-header">
             <div>
@@ -859,7 +815,6 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
-
                 <div className="plan-features">
                   {PLAN_FEATURES_PREMIUM.map((f) => (
                     <div key={f} className="plan-feature-row">
@@ -868,8 +823,12 @@ export default function SettingsPage() {
                     </div>
                   ))}
                 </div>
-
-                <button type="button" className="plan-upgrade-btn">
+                {/* ✅ FIXED: onClick wired */}
+                <button
+                  type="button"
+                  className="plan-upgrade-btn"
+                  onClick={goToUpgrade}
+                >
                   Upgrade to Premium — ₦6,500/mo
                 </button>
                 <div
@@ -880,7 +839,7 @@ export default function SettingsPage() {
                     marginTop: 10,
                   }}
                 >
-                  Cancel any time
+                  Cancel any time · Powered by Paystack
                 </div>
               </>
             ) : isPremium ? (
@@ -904,7 +863,11 @@ export default function SettingsPage() {
                     </div>
                   ))}
                 </div>
-                <button type="button" className="plan-renew-btn">
+                <button
+                  type="button"
+                  className="plan-renew-btn"
+                  onClick={goToUpgrade}
+                >
                   Manage subscription
                 </button>
               </>
@@ -967,7 +930,12 @@ export default function SettingsPage() {
                     ))}
                   </div>
                 </div>
-                <button type="button" className="plan-upgrade-btn">
+                {/* ✅ FIXED: onClick wired */}
+                <button
+                  type="button"
+                  className="plan-upgrade-btn"
+                  onClick={goToUpgrade}
+                >
                   Upgrade to Premium — ₦6,500/mo
                 </button>
                 <div
@@ -978,7 +946,7 @@ export default function SettingsPage() {
                     marginTop: 10,
                   }}
                 >
-                  7-day free trial · No card needed
+                  7-day free trial · No card needed · Cancel any time
                 </div>
               </>
             )}

@@ -1,5 +1,6 @@
-{
-  "cleanUrls": false,
+﻿{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "routes": [
     { "src": "/sw.js",                "dest": "/sw.js" },
     { "src": "/manifest.webmanifest", "dest": "/manifest.webmanifest" },
@@ -13,14 +14,6 @@
     { "src": "/icons/(.*)",           "dest": "/icons/$1" },
     { "src": "/assets/(.*)",          "dest": "/assets/$1" },
     { "src": "/api/(.*)",             "dest": "/api/$1" },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html",
-      "headers": {
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "DENY",
-        "Referrer-Policy": "strict-origin-when-cross-origin"
-      }
-    }
+    { "src": "/(.*)",                 "dest": "/index.html" }
   ]
 }

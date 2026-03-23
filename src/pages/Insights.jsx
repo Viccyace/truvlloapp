@@ -156,7 +156,7 @@ function getCatMeta(cat) {
 }
 
 // ── Donut chart ───────────────────────────────────────────────────────────────
-function DonutChart({ data, size = 180, thickness = 32 }) {
+function DonutChart({ data, size = 180, thickness = 32, sym = "₦" }) {
   const [hovered, setHovered] = useState(null);
   const [animated, setAnimated] = useState(false);
   const total = data.reduce((s, d) => s + d.amount, 0);
@@ -215,13 +215,17 @@ function DonutChart({ data, size = 180, thickness = 32 }) {
         {hovered !== null ? (
           <>
             <div className="pie-center-val" style={{ fontSize: "0.95rem" }}>
-              ₦{fmt(slices[hovered].amount)}
+              {sym}
+              {fmt(slices[hovered].amount)}
             </div>
             <div className="pie-center-label">{slices[hovered].label}</div>
           </>
         ) : (
           <>
-            <div className="pie-center-val">₦{fmt(total)}</div>
+            <div className="pie-center-val">
+              {sym}
+              {fmt(total)}
+            </div>
             <div className="pie-center-label">Total spent</div>
           </>
         )}
@@ -231,7 +235,7 @@ function DonutChart({ data, size = 180, thickness = 32 }) {
 }
 
 // ── Bar chart ─────────────────────────────────────────────────────────────────
-function BarChart({ data }) {
+function BarChart({ data, sym = "₦" }) {
   const [tip, setTip] = useState(null);
   const [animated, setAnimated] = useState(false);
   const W = 560;
@@ -256,7 +260,8 @@ function BarChart({ data }) {
     <div className="bar-chart-wrap" style={{ position: "relative" }}>
       {tip && (
         <div className="bar-hover-tip" style={{ left: tip.x, top: tip.y }}>
-          <strong>{tip.d}</strong> · ₦{fmt(tip.v)}
+          <strong>{tip.d}</strong> · {sym}
+          {fmt(tip.v)}
         </div>
       )}
       <svg
@@ -373,7 +378,10 @@ function BudgetBreakdown({ data }) {
                 {d.label}
               </div>
               <div className="breakdown-right">
-                <div className="breakdown-amount">₦{fmt(d.amount)}</div>
+                <div className="breakdown-amount">
+                  {sym}
+                  {fmt(d.amount)}
+                </div>
                 <div className="breakdown-pct">{pct}%</div>
               </div>
             </div>
@@ -440,7 +448,10 @@ function MoMChart({ data }) {
                 }}
               />
             </div>
-            <div className="mom-amount">₦{fmt(d.amount)}</div>
+            <div className="mom-amount">
+              {sym}
+              {fmt(d.amount)}
+            </div>
             <div
               className="mom-change"
               style={{
@@ -470,6 +481,7 @@ export default function InsightsPage() {
     expenses = [],
     allBudgets = [],
     activeBudget,
+
     totalBudget = 0,
     daysLeft = 0,
     spendByDay = [],
@@ -547,7 +559,7 @@ export default function InsightsPage() {
         tag: `${getCatMeta(topCat.cat).icon} ${topCat.label}`,
         tagColor: "var(--green-light)",
         val: `${pct}%`,
-        desc: `${topCat.label} is your biggest spending category at <strong>₦${fmt(topCat.amount)}</strong> — ${pct}% of your total spend.`,
+        desc: `${topCat.label} is your biggest spending category at <strong>${sym}${fmt(topCat.amount)}</strong> — ${pct}% of your total spend.`,
       });
     }
 
@@ -561,7 +573,7 @@ export default function InsightsPage() {
         tag: "📊 Budget pace",
         tagColor: "var(--amber)",
         val: `${pctUsed}%`,
-        desc: `You've used <strong>${pctUsed}% of your budget</strong>. ₦${fmt(Math.max(0, remaining))} remaining with ${daysLeft} days left.`,
+        desc: `You've used <strong>${pctUsed}% of your budget</strong>. ${sym}${fmt(Math.max(0, remaining))} remaining with ${daysLeft} days left.`,
       });
     }
 
@@ -572,8 +584,8 @@ export default function InsightsPage() {
         dot: "rgba(255,255,255,0.5)",
         tag: "💡 Daily average",
         tagColor: "rgba(255,255,255,0.5)",
-        val: `₦${fmt(avgDaily)}`,
-        desc: `Your average daily spend over <strong>${daysTracked} days</strong> is ₦${fmt(avgDaily)}. At this rate, monthly spend will be ₦${fmt(avgDaily * 30)}.`,
+        val: `${sym}${fmt(avgDaily)}`,
+        desc: `Your average daily spend over <strong>${daysTracked} days</strong> is ${sym}${fmt(avgDaily)}. At this rate, monthly spend will be ${sym}${fmt(avgDaily * 30)}.`,
       });
     }
 
@@ -618,7 +630,10 @@ export default function InsightsPage() {
               💸
             </div>
             <div className="stat-label">Total Spent</div>
-            <div className="stat-val red">₦{fmt(totalSpentCalc)}</div>
+            <div className="stat-val red">
+              {sym}
+              {fmt(totalSpentCalc)}
+            </div>
             <div className="stat-change">{expenses.length} transactions</div>
           </div>
           <div className="stat-card">
@@ -626,7 +641,10 @@ export default function InsightsPage() {
               📅
             </div>
             <div className="stat-label">Daily Average</div>
-            <div className="stat-val amber">₦{fmt(avgDaily)}</div>
+            <div className="stat-val amber">
+              {sym}
+              {fmt(avgDaily)}
+            </div>
             <div className="stat-change">{daysTracked} days tracked</div>
           </div>
           <div className="stat-card">
@@ -638,7 +656,7 @@ export default function InsightsPage() {
               {topCat ? `${getCatMeta(topCat.cat).icon} ${topCat.label}` : "—"}
             </div>
             <div className="stat-change">
-              {topCat ? `₦${fmt(topCat.amount)} spent` : "No data yet"}
+              {topCat ? `${sym}${fmt(topCat.amount)} spent` : "No data yet"}
             </div>
           </div>
           <div className="stat-card">
@@ -648,7 +666,7 @@ export default function InsightsPage() {
             <div className="stat-label">Biggest Day</div>
             <div className="stat-val">{highestDay ? highestDay.d : "—"}</div>
             <div className="stat-change">
-              {highestDay ? `₦${fmt(highestDay.v)} spent` : "No data yet"}
+              {highestDay ? `${sym}${fmt(highestDay.v)} spent` : "No data yet"}
             </div>
           </div>
         </div>
@@ -667,7 +685,12 @@ export default function InsightsPage() {
               {isPremium ? (
                 categoryData.length > 0 ? (
                   <div className="pie-wrap">
-                    <DonutChart data={categoryData} size={190} thickness={36} />
+                    <DonutChart
+                      data={categoryData}
+                      size={190}
+                      thickness={36}
+                      sym={sym}
+                    />
                     <div className="pie-legend">
                       {categoryData.map((d, i) => {
                         const meta = getCatMeta(d.cat);
@@ -683,7 +706,10 @@ export default function InsightsPage() {
                             />
                             <div className="legend-name">{d.label}</div>
                             <div className="legend-right">
-                              <div className="legend-val">₦{fmt(d.amount)}</div>
+                              <div className="legend-val">
+                                {sym}
+                                {fmt(d.amount)}
+                              </div>
                               <div className="legend-pct">{pct}%</div>
                             </div>
                           </div>
@@ -702,6 +728,7 @@ export default function InsightsPage() {
                         data={categoryData}
                         size={190}
                         thickness={36}
+                        sym={sym}
                       />
                     )}
                   </div>
@@ -719,7 +746,7 @@ export default function InsightsPage() {
                       >
                         Unlock Insights
                       </button>
-                      <div className="gate-note">Premium · ₦6,500/mo</div>
+                      <div className="gate-note">Premium</div>
                     </div>
                   </div>
                 </div>
@@ -738,14 +765,16 @@ export default function InsightsPage() {
             <div className="chart-body">
               {isPremium ? (
                 dailyData.length > 0 ? (
-                  <BarChart data={dailyData} />
+                  <BarChart data={dailyData} sym={sym} />
                 ) : (
                   emptyChart
                 )
               ) : (
                 <div className="gate-wrap" style={{ minHeight: 220 }}>
                   <div className="gate-blur" style={{ padding: 20 }}>
-                    {dailyData.length > 0 && <BarChart data={dailyData} />}
+                    {dailyData.length > 0 && (
+                      <BarChart data={dailyData} sym={sym} />
+                    )}
                   </div>
                   <div className="gate-overlay">
                     <div className="gate-panel">
@@ -760,7 +789,7 @@ export default function InsightsPage() {
                       >
                         Unlock Insights
                       </button>
-                      <div className="gate-note">Premium · ₦6,500/mo</div>
+                      <div className="gate-note">Premium</div>
                     </div>
                   </div>
                 </div>

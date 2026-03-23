@@ -64,9 +64,9 @@ const styles = `
   .upload-format-pill { background: rgba(10,10,10,0.06); color: #3A3A3A; padding: 4px 12px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; }
 
   /* File selected */
-  .file-selected { background: #D8F3DC; border: 1.5px solid rgba(27,67,50,0.2); border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .file-selected { background: #D8F3DC; border: 1.5px solid rgba(27,67,50,0.2); border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; margin-bottom: 20px; overflow: hidden; }
   .file-icon { width: 40px; height: 40px; border-radius: 10px; background: #1B4332; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #FFFFFF; flex-shrink: 0; }
-  .file-name { font-weight: 700; font-size: 0.9rem; color: #1B4332; margin-bottom: 2px; }
+  .file-name { font-weight: 700; font-size: 0.9rem; color: #1B4332; margin-bottom: 2px; word-break: break-all; overflow-wrap: anywhere; }
   .file-size { font-size: 0.78rem; color: #2D6A4F; }
   .file-remove { margin-left: auto; background: none; border: none; color: #2D6A4F; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
 
@@ -227,7 +227,10 @@ export default function BankImport({
         `${SUPABASE_URL}/functions/v1/ai-import-statement`,
         {
           method: "POST",
-          headers: { Authorization: `Bearer ${SUPABASE_KEY}` },
+          headers: {
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+            apikey: SUPABASE_KEY,
+          },
           body: form,
         },
       );
@@ -248,7 +251,14 @@ export default function BankImport({
       );
       setStep("review");
     } catch (err) {
-      setError(err.message);
+      const msg = err.message || "Failed to fetch";
+      if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+        setError(
+          "Could not reach the AI parser. Make sure the ai-import-statement Edge Function is deployed: supabase functions deploy ai-import-statement",
+        );
+      } else {
+        setError(msg);
+      }
       setStep("upload");
     }
   };
@@ -364,7 +374,7 @@ export default function BankImport({
 
                 {file ? (
                   <div className="file-selected">
-                    <div className="file-icon">
+                    <div className="file-icon" style={{ flexShrink: 0 }}>
                       {file.name.endsWith(".pdf") ? (
                         <FileText size={18} />
                       ) : (

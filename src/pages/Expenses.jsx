@@ -396,8 +396,10 @@ export default function ExpensesPage() {
     updateExpense,
     deleteExpense,
     deleteRecurring,
-    exportCSV, // ✅ BUG FIX 3: was exportExpensesCSV — correct name is exportCSV
+    exportCSV,
+    sym: budgetSym,
   } = useBudget();
+  const sym = budgetSym || "₦";
 
   const isPremium = isPremiumOrTrial;
 
@@ -618,7 +620,10 @@ export default function ExpensesPage() {
         <div className="stats-row">
           <div className="stat-card">
             <div className="stat-label">Total Spent</div>
-            <div className="stat-val red">₦{fmt(totalSpent)}</div>
+            <div className="stat-val red">
+              {sym}
+              {fmt(totalSpent)}
+            </div>
             <div className="stat-sub">From saved expenses</div>
           </div>
           <div className="stat-card">
@@ -628,7 +633,10 @@ export default function ExpensesPage() {
           </div>
           <div className="stat-card">
             <div className="stat-label">Avg. Expense</div>
-            <div className="stat-val amber">₦{fmt(avgExpense)}</div>
+            <div className="stat-val amber">
+              {sym}
+              {fmt(avgExpense)}
+            </div>
             <div className="stat-sub">Per transaction</div>
           </div>
           <div className="stat-card">
@@ -752,7 +760,10 @@ export default function ExpensesPage() {
                     </div>
                   </div>
                   <div className="exp-right">
-                    <div className="exp-amount">−₦{fmt(e.amount)}</div>
+                    <div className="exp-amount">
+                      −{sym}
+                      {fmt(e.amount)}
+                    </div>
                     <div className="exp-actions">
                       <button
                         className="exp-act-btn"
@@ -839,7 +850,10 @@ export default function ExpensesPage() {
                         {fmtDate(rowDate)}
                       </td>
                       <td className="right">
-                        <div className="td-amount">−₦{fmt(e.amount)}</div>
+                        <div className="td-amount">
+                          −{sym}
+                          {fmt(e.amount)}
+                        </div>
                       </td>
                       <td className="right">
                         <div className="td-actions">
@@ -992,7 +1006,10 @@ export default function ExpensesPage() {
                       />
                       {r.frequency || r.freq || "Monthly"}
                     </span>
-                    <span className="rec-amount">₦{fmt(r.amount)}</span>
+                    <span className="rec-amount">
+                      {sym}
+                      {fmt(r.amount)}
+                    </span>
                   </div>
                   <div className="rec-next">
                     Next: {fmtDate(r.next_date || r.next)}
@@ -1021,7 +1038,7 @@ export default function ExpensesPage() {
                 Premium plan.
                 <div>
                   <button className="gate-btn" onClick={goToUpgrade}>
-                    Upgrade — ₦6,500/mo
+                    Upgrade to Premium
                   </button>
                 </div>
               </div>

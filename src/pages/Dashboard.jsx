@@ -19,7 +19,6 @@ const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Di
 const styles = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F5F3EE; color: #0A0A0A; }
-
   :root {
     --cream: #FAF8F3; --cream-dark: #F0EDE4; --bg: #F5F3EE;
     --green-deep: #1B4332; --green-mid: #2D6A4F; --green-light: #40916C; --green-pale: #D8F3DC;
@@ -28,47 +27,29 @@ const styles = `
     --white: #FFFFFF; --border: rgba(10,10,10,0.08);
     --red: #E53935; --red-pale: rgba(229,57,53,0.1);
   }
+  @keyframes fadeUp  { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+  @keyframes scaleIn { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
+  @keyframes barGrow { from{width:0} }
+  @keyframes spin    { to{transform:rotate(360deg)} }
+  @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-  @keyframes fadeUp  { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
-  @keyframes scaleIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
-  @keyframes barGrow { from { width:0; } to { } }
-  @keyframes spin    { to { transform:rotate(360deg); } }
-  @keyframes pulse   { 0%,100% { opacity:1; } 50%{ opacity:0.4; } }
-
-  .dash {
-    display:flex; flex-direction:column; gap:24px;
-    max-width:1200px; width:100%; overflow-x:hidden;
-    animation:fadeIn 0.35s ease;
-  }
+  .dash { display:flex; flex-direction:column; gap:24px; max-width:1200px; width:100%; overflow-x:hidden; animation:fadeIn 0.35s ease; }
 
   .greeting { animation:fadeUp 0.4s ease; min-width:0; }
   .greeting-time { font-size:0.78rem; color:var(--ink-subtle); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px; }
   .greeting-name { font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:800; color:var(--ink); letter-spacing:-0.015em; }
   .greeting-name em { font-style:italic; color:var(--green-mid); }
   .greeting-sub { font-size:0.9rem; color:var(--ink-subtle); margin-top:4px; }
-  @media(max-width:480px){
-    .greeting-name { font-size:1.5rem; }
-    .greeting-sub  { font-size:0.78rem; }
-  }
+  @media(max-width:480px){ .greeting-name{font-size:1.5rem} .greeting-sub{font-size:0.78rem} }
 
-  .summary-grid {
-    display:grid; grid-template-columns:repeat(4,1fr); gap:16px;
-    animation:fadeUp 0.4s ease 0.05s both;
-  }
-  @media(max-width:900px){ .summary-grid{ grid-template-columns:repeat(2,1fr); } }
-  @media(max-width:480px){ .summary-grid{ grid-template-columns:repeat(2,1fr); gap:10px; } }
+  .summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; animation:fadeUp 0.4s ease 0.05s both; }
+  @media(max-width:900px){ .summary-grid{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:480px){ .summary-grid{grid-template-columns:repeat(2,1fr);gap:10px} }
 
-  .sum-card {
-    background:var(--white); border-radius:20px; padding:20px 16px;
-    border:1.5px solid var(--border); transition:all 0.22s;
-    position:relative; overflow:hidden; min-width:0;
-  }
+  .sum-card { background:var(--white); border-radius:20px; padding:20px 16px; border:1.5px solid var(--border); transition:all 0.22s; position:relative; overflow:hidden; min-width:0; }
   .sum-card:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,0.08); }
-  .sum-card.hero-card {
-    background:linear-gradient(140deg, var(--green-deep) 0%, var(--green-light) 100%);
-    border-color:transparent; box-shadow:0 8px 32px rgba(27,67,50,0.28);
-  }
+  .sum-card.hero-card { background:linear-gradient(140deg,var(--green-deep) 0%,var(--green-light) 100%); border-color:transparent; box-shadow:0 8px 32px rgba(27,67,50,0.28); }
   .sum-card-bg { position:absolute; width:120px; height:120px; border-radius:50%; top:-30px; right:-30px; opacity:0.08; pointer-events:none; }
   .sum-icon { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; flex-shrink:0; }
   .sum-icon.green { background:var(--green-pale); }
@@ -78,8 +59,8 @@ const styles = `
   .sum-label { font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-subtle); margin-bottom:5px; }
   .hero-card .sum-label { color:rgba(255,255,255,0.6); }
   .sum-value { font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:900; color:var(--ink); line-height:1; word-break:break-all; }
-  @media(max-width:480px){ .sum-value{ font-size:1.1rem; } }
-  @media(max-width:360px){ .sum-value{ font-size:0.95rem; } }
+  @media(max-width:480px){ .sum-value{font-size:1.1rem} }
+  @media(max-width:360px){ .sum-value{font-size:0.95rem} }
   .hero-card .sum-value { color:var(--white); }
   .sum-value.green { color:var(--green-mid); }
   .sum-value.amber { color:var(--amber); }
@@ -91,20 +72,21 @@ const styles = `
   .hero-card .sum-change { color:rgba(255,255,255,0.65); }
 
   .two-col { display:grid; grid-template-columns:1fr 360px; gap:20px; animation:fadeUp 0.4s ease 0.1s both; }
-  @media(max-width:1100px){ .two-col{ grid-template-columns:1fr; } }
+  @media(max-width:1100px){ .two-col{grid-template-columns:1fr} }
 
   .pace-card { background:var(--white); border-radius:20px; padding:24px; border:1.5px solid var(--border); min-width:0; }
-  @media(max-width:480px){ .pace-card{ padding:18px 14px; } }
+  @media(max-width:480px){ .pace-card{padding:18px 14px} }
   .card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; gap:8px; }
   .card-title { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:700; color:var(--ink); }
   .card-sub { font-size:0.78rem; color:var(--ink-subtle); margin-top:2px; }
   .status-pill { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:100px; font-size:0.7rem; font-weight:800; white-space:nowrap; flex-shrink:0; }
   .pace-meta { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px; }
-  .pace-meta-item { background:var(--bg); border-radius:10px; padding:10px 10px; min-width:0; }
+  .pace-meta-item { background:var(--bg); border-radius:10px; padding:10px; min-width:0; }
   .pace-meta-label { font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--ink-subtle); margin-bottom:4px; }
   .pace-meta-value { font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:800; color:var(--ink); word-break:break-all; }
   .pace-meta-value.green { color:var(--green-mid); }
   .pace-meta-value.amber { color:var(--amber); }
+  .pace-meta-value.red   { color:var(--red); }
   .pace-bar-wrap { margin-bottom:10px; }
   .pace-bar-labels { display:flex; justify-content:space-between; font-size:0.72rem; color:var(--ink-subtle); font-weight:600; margin-bottom:8px; }
   .pace-bar-track { background:var(--cream-dark); border-radius:100px; height:10px; overflow:hidden; position:relative; }
@@ -114,16 +96,12 @@ const styles = `
   .pace-tick-label { position:absolute; top:-20px; transform:translateX(-50%); font-size:0.62rem; font-weight:700; color:var(--ink-subtle); white-space:nowrap; }
   .pace-bar-caption { font-size:0.78rem; color:var(--ink-subtle); line-height:1.5; margin-top:12px; }
 
-  .safe-card {
-    background:linear-gradient(160deg, var(--green-deep), var(--green-mid));
-    border-radius:20px; padding:24px; display:flex; flex-direction:column; justify-content:space-between;
-    min-height:180px; position:relative; overflow:hidden;
-  }
+  .safe-card { background:linear-gradient(160deg,var(--green-deep),var(--green-mid)); border-radius:20px; padding:24px; display:flex; flex-direction:column; justify-content:space-between; min-height:180px; position:relative; overflow:hidden; }
   .safe-card-bg  { position:absolute; width:200px; height:200px; border-radius:50%; bottom:-60px; right:-60px; background:rgba(255,255,255,0.05); pointer-events:none; }
   .safe-card-bg2 { position:absolute; width:120px; height:120px; border-radius:50%; top:-40px; left:-20px; background:rgba(255,255,255,0.04); pointer-events:none; }
   .safe-label  { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.55); margin-bottom:8px; }
   .safe-amount { font-family:'Playfair Display',serif; font-size:2.2rem; font-weight:900; color:var(--white); line-height:1; margin-bottom:4px; }
-  @media(max-width:480px){ .safe-amount{ font-size:1.8rem; } }
+  @media(max-width:480px){ .safe-amount{font-size:1.8rem} }
   .safe-period { font-size:0.82rem; color:rgba(255,255,255,0.5); }
   .safe-footer { display:flex; justify-content:space-between; align-items:flex-end; margin-top:16px; }
   .safe-days   { font-size:0.8rem; color:rgba(255,255,255,0.5); }
@@ -133,7 +111,7 @@ const styles = `
   .safe-ring-pct { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:800; color:rgba(255,255,255,0.7); }
 
   .ai-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; animation:fadeUp 0.4s ease 0.15s both; }
-  @media(max-width:700px){ .ai-grid{ grid-template-columns:1fr; } }
+  @media(max-width:700px){ .ai-grid{grid-template-columns:1fr} }
   .ai-card { background:var(--ink); border-radius:20px; padding:22px; border:1px solid rgba(255,255,255,0.07); position:relative; overflow:hidden; min-width:0; }
   .ai-card-glow { position:absolute; width:200px; height:200px; border-radius:50%; filter:blur(60px); pointer-events:none; opacity:0.15; }
   .ai-tag { display:flex; align-items:center; gap:6px; margin-bottom:12px; }
@@ -156,12 +134,12 @@ const styles = `
   .nl-title { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; }
   .nl-sub   { font-size:0.78rem; color:var(--ink-subtle); margin-top:1px; }
   .nl-input-wrap { display:flex; gap:10px; }
-  @media(max-width:500px){ .nl-input-wrap{ flex-direction:column; } }
+  @media(max-width:500px){ .nl-input-wrap{flex-direction:column} }
   .nl-input { flex:1; min-width:0; padding:12px 14px; border:1.5px solid var(--border); border-radius:12px; font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:500; color:var(--ink); background:var(--bg); outline:none; transition:all 0.2s; }
   .nl-input:focus { border-color:var(--amber); box-shadow:0 0 0 3px rgba(212,160,23,0.1); background:var(--white); }
   .nl-input::placeholder { color:rgba(10,10,10,0.3); font-weight:400; }
   .nl-btn { padding:12px 18px; border-radius:12px; border:none; background:var(--amber); color:var(--ink); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.9rem; font-weight:800; cursor:pointer; transition:all 0.2s; white-space:nowrap; display:flex; align-items:center; gap:6px; }
-  @media(max-width:500px){ .nl-btn{ width:100%; justify-content:center; } }
+  @media(max-width:500px){ .nl-btn{width:100%;justify-content:center} }
   .nl-btn:hover { background:var(--amber-light); transform:translateY(-1px); }
   .nl-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
   .nl-parsed { margin-top:12px; background:var(--green-pale); border-radius:12px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid rgba(27,67,50,0.12); animation:scaleIn 0.3s ease; flex-wrap:wrap; }
@@ -172,7 +150,7 @@ const styles = `
 
   .quick-card { background:var(--white); border-radius:20px; padding:22px; border:1.5px solid var(--border); animation:fadeUp 0.4s ease 0.22s both; }
   .quick-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px; }
-  @media(max-width:500px){ .quick-grid{ grid-template-columns:1fr; } }
+  @media(max-width:500px){ .quick-grid{grid-template-columns:1fr} }
   .field-label { font-size:0.78rem; font-weight:600; color:var(--ink-muted); display:block; margin-bottom:6px; }
   .field-input { width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:12px; font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:500; color:var(--ink); background:var(--cream); outline:none; transition:all 0.2s; }
   .field-input:focus { border-color:var(--green-light); box-shadow:0 0 0 3px rgba(64,145,108,0.1); background:var(--white); }
@@ -229,18 +207,6 @@ const CATEGORIES = [
   { id: "other", icon: "💼", label: "Other", bg: "#F5F5F5" },
 ];
 
-const AI_INSIGHTS = [
-  "Your <strong>food spending is 28% above</strong> last month — mostly weekend deliveries. Cooking 3× a week could save you <strong>₦18,000</strong> this month.",
-  "You've spent <strong>₦22,400 on food</strong> so far — that's your biggest category. Consider a weekly grocery budget to control costs.",
-  "Transport costs are <strong>on track</strong>. Your Bolt usage dropped 15% compared to last month — great progress.",
-];
-
-const AI_TIPS = [
-  "Cut your <strong>Bolt usage by half</strong> this week and redirect <strong>₦6,000</strong> to your emergency fund — you're 73% of the way to your 3-month goal.",
-  "Skip one takeout order this weekend and you'll <strong>stay under pace</strong> for the rest of the month.",
-  "Your Netflix and Showmax subscriptions overlap. Cancelling one saves <strong>₦4,800/month</strong>.",
-];
-
 const NL_EXAMPLES = [
   "spent 4500 on lunch",
   "bolt ride 2800",
@@ -260,24 +226,20 @@ function fmt(n) {
 }
 
 function defaultPaceStatus(spent, expected) {
-  if (spent <= expected) {
+  if (spent <= expected)
     return {
       key: "on_track",
       label: "On Track",
       color: "#52B788",
       bg: "rgba(82,183,136,0.12)",
     };
-  }
-
-  if (spent <= expected * 1.1) {
+  if (spent <= expected * 1.1)
     return {
       key: "slightly_over",
       label: "Slightly Over",
       color: "#D4A017",
       bg: "rgba(212,160,23,0.12)",
     };
-  }
-
   return {
     key: "over_budget",
     label: "Over Budget",
@@ -287,13 +249,7 @@ function defaultPaceStatus(spent, expected) {
 }
 
 function formatExpenseForDashboard(expense) {
-  const categoryId =
-    expense.category ||
-    expense.cat ||
-    expense.category_id ||
-    expense.categoryId ||
-    "other";
-
+  const categoryId = expense.category || expense.cat || "other";
   const category =
     CATEGORIES.find((c) => c.id === categoryId) ||
     CATEGORIES.find(
@@ -302,42 +258,24 @@ function formatExpenseForDashboard(expense) {
     CATEGORIES[7];
 
   const rawDate =
-    expense.date ||
-    expense.expense_date ||
-    expense.created_at ||
-    expense.createdAt ||
-    null;
-
+    expense.date || expense.expense_date || expense.created_at || null;
   let dateLabel = "Recently";
   if (rawDate) {
     const d = new Date(rawDate);
+    const today = new Date();
+    const yest = new Date();
+    yest.setDate(today.getDate() - 1);
     if (!Number.isNaN(d.getTime())) {
-      const today = new Date();
-      const isSameDay =
-        d.getDate() === today.getDate() &&
-        d.getMonth() === today.getMonth() &&
-        d.getFullYear() === today.getFullYear();
-
-      const yesterday = new Date();
-      yesterday.setDate(today.getDate() - 1);
-      const isYesterday =
-        d.getDate() === yesterday.getDate() &&
-        d.getMonth() === yesterday.getMonth() &&
-        d.getFullYear() === yesterday.getFullYear();
-
-      if (isSameDay) {
-        dateLabel = "Today";
-      } else if (isYesterday) {
+      if (d.toDateString() === today.toDateString()) dateLabel = "Today";
+      else if (d.toDateString() === yest.toDateString())
         dateLabel = "Yesterday";
-      } else {
+      else
         dateLabel = d.toLocaleDateString("en-GB", {
           day: "numeric",
           month: "short",
         });
-      }
     }
   }
-
   return {
     id: expense.id,
     desc: expense.description || expense.desc || expense.note || "Expense",
@@ -349,10 +287,10 @@ function formatExpenseForDashboard(expense) {
   };
 }
 
-function SummaryCards({ budget, spent, remaining, safe, daysLeft }) {
+// ── Summary cards — uses sym prop ─────────────────────────────────────────────
+function SummaryCards({ budget, spent, remaining, safe, daysLeft, sym }) {
   const pct =
     budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
-
   return (
     <div className="summary-grid">
       <div className="sum-card hero-card">
@@ -364,45 +302,62 @@ function SummaryCards({ budget, spent, remaining, safe, daysLeft }) {
           <Wallet size={16} color="rgba(255,255,255,0.9)" />
         </div>
         <div className="sum-label">Total Budget</div>
-        <div className="sum-value">₦{fmt(budget)}</div>
+        <div className="sum-value">
+          {sym}
+          {fmt(budget)}
+        </div>
         <div className="sum-change neutral">This month · {pct}% used</div>
       </div>
-
       <div className="sum-card">
         <div className="sum-icon red">
           <ArrowUpRight size={16} color="#E53935" />
         </div>
         <div className="sum-label">Total Spent</div>
-        <div className="sum-value red">₦{fmt(spent)}</div>
+        <div className="sum-value red">
+          {sym}
+          {fmt(spent)}
+        </div>
         <div className="sum-change neutral">Live from your records</div>
       </div>
-
       <div className="sum-card">
         <div className="sum-icon green">
           <PiggyBank size={16} color="#2D6A4F" />
         </div>
         <div className="sum-label">Remaining</div>
-        <div className="sum-value green">₦{fmt(remaining)}</div>
+        <div className="sum-value green">
+          {sym}
+          {fmt(remaining)}
+        </div>
         <div className="sum-change up">
           ✓ {budget > 0 ? Math.round((remaining / budget) * 100) : 0}% left
         </div>
       </div>
-
       <div className="sum-card">
         <div className="sum-icon amber">
           <CalendarDays size={16} color="#D4A017" />
         </div>
         <div className="sum-label">Safe-to-Spend</div>
-        <div className="sum-value amber">₦{fmt(safe)}</div>
+        <div className="sum-value amber">
+          {sym}
+          {fmt(safe)}
+        </div>
         <div className="sum-change neutral">Per day · {daysLeft} days</div>
       </div>
     </div>
   );
 }
 
-function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
+// ── Pace card — uses sym prop ─────────────────────────────────────────────────
+function PaceCard({
+  budget,
+  spent,
+  expected,
+  status,
+  currentDay,
+  totalDays,
+  sym,
+}) {
   const [rendered, setRendered] = useState(false);
-
   useEffect(() => {
     const t = setTimeout(() => setRendered(true), 200);
     return () => clearTimeout(t);
@@ -412,7 +367,6 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
     budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
   const expectedPct =
     budget > 0 ? Math.min(100, Math.round((expected / budget) * 100)) : 0;
-
   const barColor =
     status.key === "over_budget"
       ? "#FF8A80"
@@ -436,32 +390,40 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
           ● {status.label}
         </span>
       </div>
-
       <div className="pace-meta">
         <div className="pace-meta-item">
           <div className="pace-meta-label">Spent</div>
-          <div className="pace-meta-value red">₦{fmt(spent)}</div>
+          <div className="pace-meta-value red">
+            {sym}
+            {fmt(spent)}
+          </div>
         </div>
         <div className="pace-meta-item">
           <div className="pace-meta-label">Expected</div>
-          <div className="pace-meta-value amber">₦{fmt(expected)}</div>
+          <div className="pace-meta-value amber">
+            {sym}
+            {fmt(expected)}
+          </div>
         </div>
         <div className="pace-meta-item">
           <div className="pace-meta-label">Diff.</div>
           <div
             className={`pace-meta-value ${spent <= expected ? "green" : "red"}`}
           >
-            {spent <= expected ? "-" : "+"}₦{fmt(Math.abs(spent - expected))}
+            {spent <= expected ? "-" : "+"}
+            {sym}
+            {fmt(Math.abs(spent - expected))}
           </div>
         </div>
       </div>
-
       <div className="pace-bar-wrap">
         <div className="pace-bar-labels">
-          <span>₦0</span>
-          <span>₦{fmt(budget)}</span>
+          <span>{sym}0</span>
+          <span>
+            {sym}
+            {fmt(budget)}
+          </span>
         </div>
-
         <div className="pace-bar-track">
           <div
             className="pace-bar-expected"
@@ -471,7 +433,7 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
             className="pace-bar-actual"
             style={{
               width: rendered ? `${spentPct}%` : "0%",
-              background: `linear-gradient(90deg, ${barColor}cc, ${barColor})`,
+              background: `linear-gradient(90deg,${barColor}cc,${barColor})`,
             }}
           />
           <div
@@ -482,10 +444,18 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
           </div>
         </div>
       </div>
-
       <p className="pace-bar-caption">
-        You've spent <strong>₦{fmt(spent)}</strong> against an expected{" "}
-        <strong>₦{fmt(expected)}</strong> for day {currentDay}.{" "}
+        You've spent{" "}
+        <strong>
+          {sym}
+          {fmt(spent)}
+        </strong>{" "}
+        against an expected{" "}
+        <strong>
+          {sym}
+          {fmt(expected)}
+        </strong>{" "}
+        for day {currentDay}.{" "}
         {spent <= expected
           ? "You're ahead of pace — great discipline."
           : "Pull back slightly to avoid end-of-month pressure."}
@@ -494,7 +464,8 @@ function PaceCard({ budget, spent, expected, status, currentDay, totalDays }) {
   );
 }
 
-function SafeCard({ amount, daysLeft, totalDays, currentDay }) {
+// ── Safe card — uses sym prop ─────────────────────────────────────────────────
+function SafeCard({ amount, daysLeft, totalDays, currentDay, sym }) {
   const pct = totalDays > 0 ? Math.round((currentDay / totalDays) * 100) : 0;
   const r = 18;
   const circumference = 2 * Math.PI * r;
@@ -504,18 +475,18 @@ function SafeCard({ amount, daysLeft, totalDays, currentDay }) {
     <div className="safe-card">
       <div className="safe-card-bg" />
       <div className="safe-card-bg2" />
-
       <div>
         <div className="safe-label">Safe-to-Spend Today</div>
-        <div className="safe-amount">₦{fmt(amount)}</div>
+        <div className="safe-amount">
+          {sym}
+          {fmt(amount)}
+        </div>
         <div className="safe-period">daily allowance</div>
       </div>
-
       <div className="safe-footer">
         <div className="safe-days">
           <strong>{daysLeft}</strong> days remaining
         </div>
-
         <div className="safe-ring">
           <svg width="48" height="48" viewBox="0 0 48 48">
             <circle
@@ -551,13 +522,12 @@ function AIPanel({ type, insight, onRefresh, loading }) {
   const glowColor = isAnalyst ? "rgba(212,160,23,0.6)" : "rgba(64,145,108,0.6)";
   const dotColor = isAnalyst ? "var(--amber)" : "var(--green-light)";
   const tagColor = isAnalyst ? "var(--amber)" : "var(--green-light)";
-
   return (
     <div className="ai-card">
       <div
         className="ai-card-glow"
         style={{
-          background: `radial-gradient(circle, ${glowColor} 0%, transparent 70%)`,
+          background: `radial-gradient(circle,${glowColor} 0%,transparent 70%)`,
           top: -60,
           right: -60,
         }}
@@ -600,7 +570,8 @@ function AIPanel({ type, insight, onRefresh, loading }) {
   );
 }
 
-function NLEntry({ onAdd }) {
+// ── Natural language entry — uses sym prop ────────────────────────────────────
+function NLEntry({ onAdd, sym }) {
   const [val, setVal] = useState("");
   const [loading, setLoading] = useState(false);
   const [parsed, setParsed] = useState(null);
@@ -617,9 +588,7 @@ function NLEntry({ onAdd }) {
 
   const parse = () => {
     if (!val.trim()) return;
-
     setLoading(true);
-
     setTimeout(() => {
       const amount = val.match(/\d[\d,]*/)?.[0]?.replace(/,/g, "") ?? "0";
       const cats = {
@@ -633,23 +602,15 @@ function NLEntry({ onAdd }) {
         data: "data",
         airtime: "data",
       };
-
       const cat =
         Object.entries(cats).find(([k]) =>
           val.toLowerCase().includes(k),
         )?.[1] ?? "other";
-
       const desc = val
         .replace(/\d[\d,]*/g, "")
         .replace(/spent|on|for|at/gi, "")
         .trim();
-
-      setParsed({
-        amount: parseInt(amount, 10),
-        cat,
-        desc: desc || val,
-      });
-
+      setParsed({ amount: parseInt(amount, 10), cat, desc: desc || val });
       setLoading(false);
     }, 900);
   };
@@ -708,8 +669,12 @@ function NLEntry({ onAdd }) {
       {parsed && (
         <div className="nl-parsed">
           <div className="nl-parsed-text">
-            Log <span>₦{fmt(parsed.amount)}</span> for{" "}
-            <span>{parsed.desc}</span> under{" "}
+            Log{" "}
+            <span>
+              {sym}
+              {fmt(parsed.amount)}
+            </span>{" "}
+            for <span>{parsed.desc}</span> under{" "}
             <span>
               {CATEGORIES.find((c) => c.id === parsed.cat)?.label || "Other"}
             </span>
@@ -724,7 +689,8 @@ function NLEntry({ onAdd }) {
   );
 }
 
-function QuickAdd({ onAdd }) {
+// ── Quick add — uses sym prop ─────────────────────────────────────────────────
+function QuickAdd({ onAdd, sym }) {
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
   const [cat, setCat] = useState("food");
@@ -737,12 +703,9 @@ function QuickAdd({ onAdd }) {
     setCat("food");
     setDate("");
   };
-
   const submit = async () => {
     if (!desc.trim() || !amount) return;
-
     setLoading(true);
-
     try {
       await onAdd?.({
         desc,
@@ -750,7 +713,6 @@ function QuickAdd({ onAdd }) {
         cat,
         date: date || new Date().toISOString(),
       });
-
       reset();
     } finally {
       setLoading(false);
@@ -779,7 +741,8 @@ function QuickAdd({ onAdd }) {
         <div>
           <label className="field-label">Amount</label>
           <div className="amount-wrap">
-            <span className="amount-sym">₦</span>
+            {/* ✅ Dynamic currency symbol */}
+            <span className="amount-sym">{sym}</span>
             <input
               className="field-input"
               type="text"
@@ -836,7 +799,8 @@ function QuickAdd({ onAdd }) {
   );
 }
 
-function RecentExpenses({ expenses, onDelete }) {
+// ── Recent expenses — uses sym prop ───────────────────────────────────────────
+function RecentExpenses({ expenses, onDelete, sym }) {
   if (!expenses.length) {
     return (
       <div className="recent-card">
@@ -855,7 +819,6 @@ function RecentExpenses({ expenses, onDelete }) {
       </div>
     );
   }
-
   return (
     <div className="recent-card">
       <div className="recent-header">
@@ -887,10 +850,12 @@ function RecentExpenses({ expenses, onDelete }) {
                 <Trash2 size={12} />
               </button>
             </div>
+            {/* ✅ Dynamic currency symbol */}
             <div
               className={`expense-amount${e.amount >= 10000 ? " large" : ""}`}
             >
-              −₦{fmt(e.amount)}
+              −{sym}
+              {fmt(e.amount)}
             </div>
           </div>
         ))}
@@ -904,7 +869,6 @@ function Toast({ msg, onDone }) {
     const t = setTimeout(onDone, 2800);
     return () => clearTimeout(t);
   }, [onDone]);
-
   return (
     <div className="toast">
       <span style={{ color: "#52B788" }}>✓</span> {msg}
@@ -912,6 +876,7 @@ function Toast({ msg, onDone }) {
   );
 }
 
+// ── Main dashboard ────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const { displayName } = useAuth();
   const {
@@ -928,10 +893,18 @@ export default function Dashboard() {
     daysLeft,
     addExpense,
     deleteExpense,
+    sym, // ✅ currency symbol from BudgetProvider
   } = useBudget();
 
-  const [analystIdx, setAnalystIdx] = useState(0);
-  const [coachIdx, setCoachIdx] = useState(0);
+  // Fallback symbol in case BudgetProvider hasn't loaded yet
+  const currSym = sym || "₦";
+
+  const [analystInsight] = useState(
+    "Your AI spending analysis will appear here once you've logged some expenses.",
+  );
+  const [coachTip] = useState(
+    "Log your first expense to activate your AI savings coach.",
+  );
   const [aiLoading, setAiLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -946,16 +919,9 @@ export default function Dashboard() {
     year: "numeric",
   });
 
-  const refreshAI = (type) => {
+  const refreshAI = () => {
     setAiLoading(true);
-    setTimeout(() => {
-      if (type === "analyst") {
-        setAnalystIdx((i) => (i + 1) % AI_INSIGHTS.length);
-      } else {
-        setCoachIdx((i) => (i + 1) % AI_TIPS.length);
-      }
-      setAiLoading(false);
-    }, 900);
+    setTimeout(() => setAiLoading(false), 900);
   };
 
   const handleAddExpense = async (data) => {
@@ -974,11 +940,10 @@ export default function Dashboard() {
         description: data.desc ?? data.description ?? "Expense",
         amount,
         category: cat.id,
-        date: data.date || new Date().toISOString(),
+        date: data.date || new Date().toISOString().split("T")[0],
         notes: data.note || "",
       });
-
-      setToast(`₦${fmt(amount)} logged under ${cat.label}`);
+      setToast(`${currSym}${fmt(amount)} logged under ${cat.label}`);
     } catch (error) {
       console.error("Add expense error:", error);
       setToast(error?.message || "Could not save expense");
@@ -990,7 +955,6 @@ export default function Dashboard() {
       await deleteExpense(id);
       setToast("Expense deleted");
     } catch (error) {
-      console.error("Delete expense error:", error);
       setToast(error?.message || "Could not delete expense");
     }
   };
@@ -1011,17 +975,29 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* ✅ sym passed to all components */}
         <SummaryCards
-          budget={Number(totalBudget || activeBudget?.amount || 0)}
+          budget={Number(
+            totalBudget ||
+              activeBudget?.total_amount ||
+              activeBudget?.amount ||
+              0,
+          )}
           spent={Number(totalSpent || 0)}
           remaining={Number(remaining || 0)}
           safe={Number(safeToSpend || 0)}
           daysLeft={Number(daysLeft || 0)}
+          sym={currSym}
         />
 
         <div className="two-col">
           <PaceCard
-            budget={Number(totalBudget || activeBudget?.amount || 0)}
+            budget={Number(
+              totalBudget ||
+                activeBudget?.total_amount ||
+                activeBudget?.amount ||
+                0,
+            )}
             spent={Number(totalSpent || 0)}
             expected={Number(expectedSpend || 0)}
             status={paceStatus || defaultPaceStatus(0, 0)}
@@ -1034,6 +1010,7 @@ export default function Dashboard() {
                   0,
                 ).getDate(),
             )}
+            sym={currSym}
           />
           <SafeCard
             amount={Number(safeToSpend || 0)}
@@ -1047,32 +1024,34 @@ export default function Dashboard() {
                 ).getDate(),
             )}
             currentDay={Number(currentDay || todayDate.getDate())}
+            sym={currSym}
           />
         </div>
 
         <div className="ai-grid">
           <AIPanel
             type="analyst"
-            insight={AI_INSIGHTS[analystIdx]}
+            insight={analystInsight}
             loading={aiLoading}
-            onRefresh={() => refreshAI("analyst")}
+            onRefresh={refreshAI}
           />
           <AIPanel
             type="coach"
-            insight={AI_TIPS[coachIdx]}
+            insight={coachTip}
             loading={aiLoading}
-            onRefresh={() => refreshAI("coach")}
+            onRefresh={refreshAI}
           />
         </div>
 
-        <NLEntry onAdd={handleAddExpense} />
+        <NLEntry onAdd={handleAddExpense} sym={currSym} />
 
         <div className="two-col">
           <RecentExpenses
             expenses={normalizedExpenses}
             onDelete={handleDeleteExpense}
+            sym={currSym}
           />
-          <QuickAdd onAdd={handleAddExpense} />
+          <QuickAdd onAdd={handleAddExpense} sym={currSym} />
         </div>
       </div>
     </>

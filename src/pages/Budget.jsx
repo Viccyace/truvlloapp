@@ -340,7 +340,7 @@ function BudgetModal({ budget, onSave, onClose }) {
             className={`prefix-wrap${errors.amount ? " error" : ""}`}
             style={errors.amount ? { borderColor: "var(--red)" } : {}}
           >
-            <span className="prefix-sym">₦</span>
+            <span className="prefix-sym">{sym}</span>
             <input
               className="field-input"
               type="text"
@@ -482,7 +482,7 @@ function RecurringModal({ onSave, onClose }) {
               className="prefix-wrap"
               style={errors.amount ? { borderColor: "var(--red)" } : {}}
             >
-              <span className="prefix-sym">₦</span>
+              <span className="prefix-sym">{sym}</span>
               <input
                 className="field-input"
                 type="text"
@@ -568,7 +568,7 @@ function RecurringModal({ onSave, onClose }) {
   );
 }
 
-function CapRow({ cap, onUpdate, onDelete }) {
+function CapRow({ cap, onUpdate, onDelete, sym = "₦" }) {
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(String(cap.limit || 0));
   const c =
@@ -603,7 +603,9 @@ function CapRow({ cap, onUpdate, onDelete }) {
           <div>
             <div className="cap-name">{c.label}</div>
             <div className="cap-spent-of">
-              ₦{fmt(spent)} of ₦{fmt(limit)}
+              {sym}
+              {fmt(spent)} of {sym}
+              {fmt(limit)}
             </div>
           </div>
         </div>
@@ -612,10 +614,11 @@ function CapRow({ cap, onUpdate, onDelete }) {
           <div className="cap-remaining">
             {rawPct >= 100 ? (
               <span style={{ color: "var(--red)" }}>
-                ₦{fmt(spent - limit)} over
+                {sym}
+                {fmt(spent - limit)} over
               </span>
             ) : (
-              `₦${fmt(remaining)} left`
+              `${sym}${fmt(remaining)} left`
             )}
           </div>
         </div>
@@ -629,7 +632,7 @@ function CapRow({ cap, onUpdate, onDelete }) {
       {editing ? (
         <div className="cap-edit-row">
           <div className="cap-input-wrap">
-            <span className="cap-prefix">₦</span>
+            <span className="cap-prefix">{sym}</span>
             <input
               className="cap-input"
               type="text"
@@ -707,7 +710,9 @@ export default function BudgetPage() {
     deleteCategoryCap,
     addRecurring,
     deleteRecurring,
+    sym: budgetSym,
   } = useBudget();
+  const sym = budgetSym || "₦";
 
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState(null);
@@ -920,16 +925,23 @@ export default function BudgetPage() {
             <div className="hero-stats">
               <div className="hero-stat">
                 <div className="hero-stat-label">Total Budget</div>
-                <div className="hero-stat-val">₦{fmt(budgetAmount)}</div>
+                <div className="hero-stat-val">
+                  {sym}
+                  {fmt(budgetAmount)}
+                </div>
               </div>
               <div className="hero-stat">
                 <div className="hero-stat-label">Spent</div>
-                <div className="hero-stat-val amber">₦{fmt(spentAmount)}</div>
+                <div className="hero-stat-val amber">
+                  {sym}
+                  {fmt(spentAmount)}
+                </div>
               </div>
               <div className="hero-stat">
                 <div className="hero-stat-label">Remaining</div>
                 <div className="hero-stat-val muted">
-                  ₦{fmt(remainingAmount)}
+                  {sym}
+                  {fmt(remainingAmount)}
                 </div>
               </div>
               <div className="hero-stat">
@@ -939,9 +951,12 @@ export default function BudgetPage() {
             </div>
 
             <div className="hero-bar-label">
-              <span>₦0</span>
+              <span>{sym}0</span>
               <span>{spentPct}% used</span>
-              <span>₦{fmt(budgetAmount)}</span>
+              <span>
+                {sym}
+                {fmt(budgetAmount)}
+              </span>
             </div>
             <div className="hero-bar-track">
               <div
@@ -978,6 +993,7 @@ export default function BudgetPage() {
                           cap={cap}
                           onUpdate={updateCap}
                           onDelete={removeCap}
+                          sym={sym}
                         />
                       </div>
                     ))}
@@ -998,6 +1014,7 @@ export default function BudgetPage() {
                               cap={cap}
                               onUpdate={() => {}}
                               onDelete={() => {}}
+                              sym={sym}
                             />
                           </div>
                         ))}
@@ -1015,7 +1032,7 @@ export default function BudgetPage() {
                           className="gate-upgrade-btn"
                           onClick={() => navigate("/upgrade")}
                         >
-                          Upgrade — ₦6,500/mo
+                          Upgrade to Premium
                         </button>
                       </div>
                     </div>
@@ -1030,7 +1047,8 @@ export default function BudgetPage() {
                 <div>
                   <div className="section-title">Recurring Expenses</div>
                   <div className="section-sub">
-                    ₦{fmt(totalRecurring)}/mo in fixed costs
+                    {sym}
+                    {fmt(totalRecurring)}/mo in fixed costs
                   </div>
                 </div>
                 <span className="pro-tag">✦ Premium</span>
@@ -1054,7 +1072,10 @@ export default function BudgetPage() {
                               <div className="rec-meta">Next: {r.next}</div>
                             </div>
                             <div className="rec-right">
-                              <div className="rec-amount">₦{fmt(r.amount)}</div>
+                              <div className="rec-amount">
+                                {sym}
+                                {fmt(r.amount)}
+                              </div>
                               <div className="rec-freq-pill">
                                 {String(r.freq).replace(/^./, (m) =>
                                   m.toUpperCase(),
@@ -1097,7 +1118,8 @@ export default function BudgetPage() {
                               </div>
                               <div className="rec-right">
                                 <div className="rec-amount">
-                                  ₦{fmt(r.amount)}
+                                  {sym}
+                                  {fmt(r.amount)}
                                 </div>
                               </div>
                             </div>
@@ -1117,7 +1139,7 @@ export default function BudgetPage() {
                           className="gate-upgrade-btn"
                           onClick={() => navigate("/upgrade")}
                         >
-                          Upgrade — ₦6,500/mo
+                          Upgrade to Premium
                         </button>
                       </div>
                     </div>
@@ -1185,7 +1207,8 @@ export default function BudgetPage() {
                         </div>
                         <div className="budget-item-right">
                           <div className="budget-item-amount">
-                            ₦{fmt(b.total_amount || b.amount || 0)}
+                            {sym}
+                            {fmt(b.total_amount || b.amount || 0)}
                           </div>
                           <div
                             className="budget-item-pct"
@@ -1198,7 +1221,8 @@ export default function BudgetPage() {
                                     : "var(--ink-subtle)",
                             }}
                           >
-                            ₦{fmt(b.spent || 0)} spent
+                            {sym}
+                            {fmt(b.spent || 0)} spent
                           </div>
                         </div>
                         {isActive ? (

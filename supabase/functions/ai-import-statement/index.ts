@@ -1,170 +1,206 @@
-// supabase/functions/ai-import-statement/index.ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import Anthropic from "npm:@anthropic-ai/sdk";
+import {
+  checkRateLimit,
+  logUsage,
+  getUserFromJWT,
+  rateLimitResponse,
+} from "../_shared/rateLimit.ts";
 
-const CORS = {
+const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+const FEATURE = "bank_import";
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS")
+    return new Response("ok", { headers: corsHeaders });
 
   try {
-    const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!ANTHROPIC_KEY) throw new Error("ANTHROPIC_API_KEY not set");
+    // ── Auth ──────────────────────────────────────────────────────────────────
+    const authHeader = req.headers.get("Authorization");
+    const userId = await getUserFromJWT(authHeader);
+    if (!userId)
+      return new Response(
+        JSON.stringify({ error: "Unauthorized. Please log in again." }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
 
-    const formData = await req.formData();
-    const file = formData.get("file") as File;
-    const currency = (formData.get("currency") as string) || "NGN";
+    // ── Rate limit check ──────────────────────────────────────────────────────
+    const limitCheck = await checkRateLimit(userId, FEATURE, authHeader!);
+    if (!limitCheck.allowed) return rateLimitResponse(limitCheck);
 
-    if (!file) throw new Error("No file provided");
+    // ── Parse form ────────────────────────────────────────────────────────────
+    const form = await req.formData();
+    const file = form.get("file") as File | null;
+    const currency = (form.get("currency") as string) || "NGN";
+    const budgetId = (form.get("budget_id") as string) || null;
 
-    const fileName = file.name.toLowerCase();
-    const isPDF = fileName.endsWith(".pdf");
-    const isCSV =
-      fileName.endsWith(".csv") ||
-      fileName.endsWith(".xlsx") ||
-      fileName.endsWith(".txt");
+    if (!file)
+      return new Response(JSON.stringify({ error: "No file provided" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
 
-    if (!isPDF && !isCSV) {
-      throw new Error(
-        "Unsupported file type. Please upload a PDF or CSV bank statement.",
+    const name = file.name.toLowerCase();
+    const isPDF = name.endsWith(".pdf");
+    if (
+      !isPDF &&
+      !name.endsWith(".csv") &&
+      !name.endsWith(".xlsx") &&
+      !name.endsWith(".xls")
+    ) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "Unsupported file type. Upload a PDF, CSV, or Excel bank statement.",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    const PROMPT = `Extract all transactions from this bank statement.
-Return ONLY a JSON array with NO markdown, NO backticks, NO explanation — just the raw JSON array.
-
-Each transaction object must have exactly these fields:
-- id: unique string like "txn_1", "txn_2" etc
-- date: ISO date string YYYY-MM-DD
-- description: the merchant name or transaction description
-- amount: positive number (no currency symbols)
-- type: exactly "debit" or "credit"
-- category: exactly one of: food, transport, bills, shopping, health, airtime, entertainment, other
-
-Currency context: ${currency}
-
-Example output:
-[{"id":"txn_1","date":"2026-03-01","description":"Shoprite Supermarket","amount":5200,"type":"debit","category":"food"},{"id":"txn_2","date":"2026-03-02","description":"Bolt Technologies","amount":1800,"type":"debit","category":"transport"}]`;
-
-    let jsonText = "";
+    // ── Build Claude message ──────────────────────────────────────────────────
+    const anthropic = new Anthropic({
+      apiKey: Deno.env.get("ANTHROPIC_API_KEY"),
+    });
+    let messageContent: Anthropic.MessageParam["content"];
 
     if (isPDF) {
-      // Send PDF as base64 document to Claude
-      const arrayBuffer = await file.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
-      let binary = "";
-      for (let i = 0; i < bytes.byteLength; i++)
-        binary += String.fromCharCode(bytes[i]);
-      const base64 = btoa(binary);
-
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "x-api-key": ANTHROPIC_KEY,
-          "anthropic-version": "2023-06-01",
-          "content-type": "application/json",
+      const base64 = btoa(
+        String.fromCharCode(...new Uint8Array(await file.arrayBuffer())),
+      );
+      messageContent = [
+        {
+          type: "document",
+          source: {
+            type: "base64",
+            media_type: "application/pdf",
+            data: base64,
+          },
         },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 4096,
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "document",
-                  source: {
-                    type: "base64",
-                    media_type: "application/pdf",
-                    data: base64,
-                  },
-                },
-                { type: "text", text: PROMPT },
-              ],
-            },
-          ],
-        }),
-      });
-
-      if (!res.ok) {
-        const body = await res.text();
-        throw new Error(
-          `AI service error: ${res.status} — ${body.slice(0, 200)}`,
-        );
-      }
-
-      const data = await res.json();
-      jsonText = data.content?.[0]?.text ?? "";
+        { type: "text", text: buildPrompt(currency) },
+      ];
     } else {
-      // CSV/TXT — read as text
-      const csvText = await file.text();
-
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "x-api-key": ANTHROPIC_KEY,
-          "anthropic-version": "2023-06-01",
-          "content-type": "application/json",
+      messageContent = [
+        {
+          type: "text",
+          text: `Bank statement:\n\n${await file.text()}\n\n${buildPrompt(currency)}`,
         },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 4096,
-          messages: [
-            {
-              role: "user",
-              content: `${PROMPT}\n\nBank statement content:\n${csvText.slice(0, 10000)}`,
-            },
-          ],
+      ];
+    }
+
+    // ── Call Haiku ────────────────────────────────────────────────────────────
+    const response = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 4096,
+      messages: [{ role: "user", content: messageContent }],
+    });
+
+    const rawText = response.content
+      .filter((b) => b.type === "text")
+      .map((b) => (b as { type: "text"; text: string }).text)
+      .join("");
+    const jsonMatch = rawText.match(/\[[\s\S]*\]/);
+
+    if (!jsonMatch)
+      return new Response(
+        JSON.stringify({
+          error:
+            "No transactions found in this file. Make sure it is a real bank statement.",
         }),
-      });
+        {
+          status: 422,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
 
-      if (!res.ok) {
-        const body = await res.text();
-        throw new Error(
-          `AI service error: ${res.status} — ${body.slice(0, 200)}`,
-        );
-      }
-
-      const data = await res.json();
-      jsonText = data.content?.[0]?.text ?? "";
+    interface Transaction {
+      date?: string;
+      description?: string;
+      desc?: string;
+      amount: number;
+      type?: string;
+      category?: string;
     }
-
-    // Strip markdown if Claude added any
-    const clean = jsonText
-      .replace(/```json\s*/gi, "")
-      .replace(/```\s*/g, "")
-      .trim();
-
-    let transactions;
+    let transactions: Transaction[];
     try {
-      transactions = JSON.parse(clean);
+      transactions = JSON.parse(jsonMatch[0]);
     } catch {
-      throw new Error(
-        "Could not parse transactions from this statement. Try a different file format.",
+      return new Response(
+        JSON.stringify({
+          error: "Failed to parse AI response. Please try again.",
+        }),
+        {
+          status: 422,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    if (!Array.isArray(transactions) || transactions.length === 0) {
-      throw new Error(
-        "No transactions found. Make sure this is a bank statement with transaction data.",
-      );
-    }
+    const cleaned = transactions
+      .filter((t) => t.amount && t.amount > 0)
+      .map((t, i) => ({
+        id: `txn_${i}_${Date.now()}`,
+        date: t.date || new Date().toISOString().split("T")[0],
+        description: t.description || t.desc || "Transaction",
+        amount: Math.abs(Number(t.amount)),
+        type: t.type || "debit",
+        category: t.category || inferCategory(t.description || ""),
+        budget_id: budgetId,
+      }));
 
-    return new Response(
-      JSON.stringify({ transactions, count: transactions.length }),
-      { status: 200, headers: { ...CORS, "Content-Type": "application/json" } },
-    );
-  } catch (err) {
-    console.error("[ai-import-statement]", err);
+    // ── Log usage after success ───────────────────────────────────────────────
+    await logUsage(userId, FEATURE);
+
     return new Response(
       JSON.stringify({
-        error: (err as Error).message || "Failed to parse statement",
+        transactions: cleaned,
+        total: cleaned.length,
+        usage: {
+          monthly_count: (limitCheck.monthly_count ?? 0) + 1,
+          monthly_limit: limitCheck.monthly_limit,
+        },
       }),
-      { status: 500, headers: { ...CORS, "Content-Type": "application/json" } },
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    const friendly = msg.includes("credit balance")
+      ? "API credits exhausted. Please contact support."
+      : `AI service error — ${msg}`;
+    return new Response(JSON.stringify({ error: friendly }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
+
+function buildPrompt(currency: string): string {
+  return `Parse this bank statement. Return ONLY a JSON array, no markdown, no explanation.
+Each object: { date: "YYYY-MM-DD", description: "clean name", amount: number (positive), type: "debit"|"credit", category: "food"|"transport"|"bills"|"shopping"|"health"|"airtime"|"entertainment"|"other" }
+Currency: ${currency}. Skip balance rows and headers. Return array now:`;
+}
+
+function inferCategory(desc: string): string {
+  const d = desc.toLowerCase();
+  if (/uber|bolt|fuel|petrol|bus|transport|ride/.test(d)) return "transport";
+  if (/shoprite|spar|grocery|food|restaurant|eat|lunch/.test(d)) return "food";
+  if (/mtn|airtel|glo|airtime|data|dstv|electricity|nepa/.test(d))
+    return "bills";
+  if (/netflix|spotify|showmax|gaming|prime/.test(d)) return "entertainment";
+  if (/hospital|pharmacy|clinic|medical|health/.test(d)) return "health";
+  if (/jumia|konga|shop|store|mall|fashion/.test(d)) return "shopping";
+  return "other";
+}

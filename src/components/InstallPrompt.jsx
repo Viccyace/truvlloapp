@@ -25,55 +25,55 @@ const styles = `
   }
 
   .prompt-sheet {
-    background:#FFFFFF; border-radius:24px 24px 0 0;
-    width:100%; max-width:480px; padding:28px 24px 32px;
+    background:#FFFFFF; border-radius:20px 20px 0 0;
+    width:100%; max-width:480px; padding:20px 20px 28px;
     animation:slideUpPrompt 0.35s cubic-bezier(0.34,1.2,0.64,1);
     position:relative;
   }
 
   .prompt-handle {
-    width:40px; height:4px; background:rgba(10,10,10,0.1);
-    border-radius:100px; margin:0 auto 20px;
+    width:36px; height:3px; background:rgba(10,10,10,0.1);
+    border-radius:100px; margin:0 auto 14px;
   }
 
   .prompt-icon {
-    width:56px; height:56px; border-radius:16px; margin:0 auto 16px;
+    width:44px; height:44px; border-radius:12px; margin:0 auto 12px;
     background:linear-gradient(135deg,#1B4332,#40916C);
     display:flex; align-items:center; justify-content:center;
-    font-size:1.6rem;
+    font-size:1.2rem;
   }
 
   .prompt-title {
-    font-family:'Playfair Display',serif; font-size:1.25rem; font-weight:800;
-    color:#0A0A0A; text-align:center; margin-bottom:8px; letter-spacing:-0.01em;
+    font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:800;
+    color:#0A0A0A; text-align:center; margin-bottom:6px; letter-spacing:-0.01em;
   }
 
   .prompt-desc {
-    font-size:0.875rem; color:#6B6B6B; text-align:center;
-    line-height:1.6; margin-bottom:24px;
+    font-size:0.82rem; color:#6B6B6B; text-align:center;
+    line-height:1.5; margin-bottom:16px;
   }
 
   .prompt-bullets {
-    display:flex; flex-direction:column; gap:10px; margin-bottom:24px;
+    display:flex; flex-direction:column; gap:8px; margin-bottom:16px;
   }
 
   .prompt-bullet {
-    display:flex; align-items:center; gap:12px;
-    background:#F5F3EE; border-radius:12px; padding:10px 14px;
+    display:flex; align-items:center; gap:10px;
+    background:#F5F3EE; border-radius:10px; padding:8px 12px;
   }
 
   .prompt-bullet-icon {
-    font-size:1.1rem; flex-shrink:0;
-    width:32px; height:32px; border-radius:8px;
+    font-size:0.95rem; flex-shrink:0;
+    width:28px; height:28px; border-radius:7px;
     background:#D8F3DC; display:flex; align-items:center; justify-content:center;
   }
 
   .prompt-bullet-text {
-    font-size:0.82rem; font-weight:600; color:#3A3A3A; line-height:1.4;
+    font-size:0.78rem; font-weight:600; color:#3A3A3A; line-height:1.3;
   }
 
   .prompt-btn-primary {
-    width:100%; padding:14px; border-radius:14px; border:none;
+    width:100%; padding:12px; border-radius:12px; border:none;
     background:linear-gradient(135deg,#1B4332,#40916C);
     color:#FFFFFF; font-family:'Plus Jakarta Sans',sans-serif;
     font-size:0.95rem; font-weight:700; cursor:pointer;
@@ -84,7 +84,7 @@ const styles = `
   .prompt-btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(27,67,50,0.4); }
 
   .prompt-btn-ghost {
-    width:100%; padding:12px; border-radius:14px;
+    width:100%; padding:10px; border-radius:12px;
     border:1.5px solid rgba(10,10,10,0.1); background:transparent;
     color:#6B6B6B; font-family:'Plus Jakarta Sans',sans-serif;
     font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s;
@@ -144,7 +144,20 @@ export default function InstallPrompt() {
 
   // ── Decide which prompt to show after 30s ─────────────────────────────────
   useEffect(() => {
-    if (!user) return; // only show to logged-in users
+    // Only show to logged-in users AND only on app pages (not landing/auth)
+    const appRoutes = [
+      "/dashboard",
+      "/expenses",
+      "/budget",
+      "/insights",
+      "/settings",
+      "/upgrade",
+    ];
+    const isAppPage = appRoutes.some((r) =>
+      window.location.pathname.startsWith(r),
+    );
+
+    if (!user || !isAppPage) return;
 
     const timer = setTimeout(() => {
       const notifPermission = Notification.permission;
@@ -164,7 +177,7 @@ export default function InstallPrompt() {
       if (installEvent && !wasDismissedRecently(INSTALL_DISMISSED_KEY, 14)) {
         setShowInstall(true);
       }
-    }, 30000); // 30 seconds after mount
+    }, 45000); // 45 seconds — give user time to settle in
 
     return () => clearTimeout(timer);
   }, [user, installEvent]);

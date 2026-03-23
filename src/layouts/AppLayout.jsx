@@ -317,6 +317,7 @@ export default function AppLayout() {
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [searchVal, setSearchVal] = useState("");
   const [signingOut, setSigningOut] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   const activePage = location.pathname.replace("/", "") || "dashboard";
   const meta = PAGE_META[activePage] || PAGE_META.dashboard;
@@ -338,6 +339,7 @@ export default function AppLayout() {
     if (signingOut) return;
     try {
       setSigningOut(true);
+      setConfirmLogout(false);
       const { error } = await signOut();
       if (error) {
         console.error("Sign out error:", error);
@@ -354,6 +356,99 @@ export default function AppLayout() {
   return (
     <>
       <style>{FONTS + styles}</style>
+
+      {/* ── Logout confirmation modal ─────────────────────────────── */}
+      {confirmLogout && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+          onClick={() => setConfirmLogout(false)}
+        >
+          <div
+            style={{
+              background: "#FAF8F3",
+              borderRadius: 20,
+              padding: 32,
+              width: "100%",
+              maxWidth: 380,
+              boxShadow: "0 24px 64px rgba(0,0,0,0.2)",
+              textAlign: "center",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ fontSize: "2.5rem", marginBottom: 14 }}>👋</div>
+            <div
+              style={{
+                fontFamily: "'Playfair Display',serif",
+                fontSize: "1.2rem",
+                fontWeight: 800,
+                color: "#0A0A0A",
+                marginBottom: 8,
+              }}
+            >
+              Sign out?
+            </div>
+            <div
+              style={{
+                fontSize: "0.875rem",
+                color: "#6B6B6B",
+                lineHeight: 1.6,
+                marginBottom: 24,
+              }}
+            >
+              You'll be signed out of Truvllo on this device. Your data is safe.
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                type="button"
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  border: "1.5px solid rgba(10,10,10,0.1)",
+                  borderRadius: 11,
+                  background: "transparent",
+                  fontFamily: "'Plus Jakarta Sans',sans-serif",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  color: "#3A3A3A",
+                  cursor: "pointer",
+                }}
+                onClick={() => setConfirmLogout(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  background: "#E53935",
+                  color: "#FFFFFF",
+                  border: "none",
+                  borderRadius: 11,
+                  fontFamily: "'Plus Jakarta Sans',sans-serif",
+                  fontSize: "0.9rem",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  opacity: signingOut ? 0.65 : 1,
+                }}
+                onClick={handleSignOut}
+                disabled={signingOut}
+              >
+                {signingOut ? "Signing out..." : "Sign out"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div
         className={`drawer-overlay${drawerOpen ? " open" : ""}`}
@@ -403,7 +498,7 @@ export default function AppLayout() {
           </div>
           <button
             className="signout-btn"
-            onClick={handleSignOut}
+            onClick={() => setConfirmLogout(true)}
             disabled={signingOut}
           >
             <LogOut size={15} />
@@ -473,7 +568,7 @@ export default function AppLayout() {
             </div>
             <button
               className="signout-btn"
-              onClick={handleSignOut}
+              onClick={() => setConfirmLogout(true)}
               disabled={signingOut}
             >
               <LogOut size={15} />

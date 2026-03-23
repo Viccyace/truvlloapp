@@ -352,7 +352,7 @@ function BarChart({ data, sym = "₦" }) {
 }
 
 // ── Category breakdown bars ───────────────────────────────────────────────────
-function BudgetBreakdown({ data }) {
+function BudgetBreakdown({ data, sym = "₦" }) {
   const total = data.reduce((s, d) => s + d.amount, 0);
   const [animated, setAnimated] = useState(false);
   useEffect(() => {
@@ -817,7 +817,7 @@ export default function InsightsPage() {
             <div className="chart-body">
               {isPremium ? (
                 categoryData.length > 0 ? (
-                  <BudgetBreakdown data={categoryData} />
+                  <BudgetBreakdown data={categoryData} sym={sym} />
                 ) : (
                   emptyChart
                 )
@@ -825,7 +825,10 @@ export default function InsightsPage() {
                 <div className="gate-wrap" style={{ minHeight: 260 }}>
                   <div className="gate-blur">
                     {categoryData.length > 0 && (
-                      <BudgetBreakdown data={categoryData.slice(0, 3)} />
+                      <BudgetBreakdown
+                        data={categoryData.slice(0, 3)}
+                        sym={sym}
+                      />
                     )}
                   </div>
                   <div className="gate-overlay">

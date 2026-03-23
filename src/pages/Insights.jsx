@@ -403,7 +403,7 @@ function BudgetBreakdown({ data }) {
 }
 
 // ── Month-over-month ──────────────────────────────────────────────────────────
-function MoMChart({ data }) {
+function MoMChart({ data, sym = "₦" }) {
   const maxVal = Math.max(...data.map((d) => d.amount), 1);
   const [animated, setAnimated] = useState(false);
   useEffect(() => {
@@ -481,11 +481,14 @@ export default function InsightsPage() {
     expenses = [],
     allBudgets = [],
     activeBudget,
-
     totalBudget = 0,
     daysLeft = 0,
     spendByDay = [],
+    sym: budgetSym,
   } = useBudget();
+
+  // ✅ sym must be declared BEFORE any useMemo that references it
+  const sym = budgetSym || "₦";
 
   // ── Category breakdown from real expenses ──────────────────────────────────
   const categoryData = useMemo(() => {
@@ -599,6 +602,7 @@ export default function InsightsPage() {
     daysLeft,
     daysTracked,
     avgDaily,
+    sym,
   ]);
 
   const emptyChart = (
@@ -852,7 +856,11 @@ export default function InsightsPage() {
               </div>
             </div>
             <div className="chart-body">
-              {momData.length > 0 ? <MoMChart data={momData} /> : emptyChart}
+              {momData.length > 0 ? (
+                <MoMChart data={momData} sym={sym} />
+              ) : (
+                emptyChart
+              )}
             </div>
           </div>
         </div>

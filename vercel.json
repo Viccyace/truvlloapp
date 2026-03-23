@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/((?!api/|_next|favicon\\.ico|favicon\\.svg|favicon\\.png|apple-touch-icon\\.png|og-image\\.png|icons|sw\\.js|workbox-.*\\.js|manifest\\.webmanifest).*)",
+      "source": "/((?!api/|sw\\.js|manifest\\.webmanifest|workbox-.*\\.js|_next|favicon\\.ico|favicon\\.svg|favicon\\.png|apple-touch-icon\\.png|og-image\\.png|icons/).*)",
       "destination": "/index.html"
     }
   ],
@@ -13,7 +13,18 @@
           "key": "Cache-Control",
           "value": "public, max-age=0, must-revalidate"
         },
-        { "key": "Service-Worker-Allowed", "value": "/" }
+        { "key": "Service-Worker-Allowed", "value": "/" },
+        { "key": "Content-Type", "value": "application/javascript" }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        { "key": "Content-Type", "value": "application/manifest+json" }
       ]
     },
     {

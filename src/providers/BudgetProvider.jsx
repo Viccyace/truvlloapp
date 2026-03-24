@@ -13,6 +13,30 @@ import { useAuth } from "./AuthProvider";
 
 const BudgetContext = createContext(null);
 
+// ── In-memory cache — stops hammering DB on tab focus/refocus ─────────────────
+// Each user gets their own cache keyed by userId
+// TTL: 60 seconds — stale data after that triggers a background refresh
+const CACHE_TTL_MS = 60_000;
+const _cache = new Map(); // userId → { data, timestamp }
+
+function getCached(userId) {
+  const entry = _cache.get(userId);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+    _cache.delete(userId);
+    return null;
+  }
+  return entry.data;
+}
+
+function setCached(userId, data) {
+  _cache.set(userId, { data, timestamp: Date.now() });
+}
+
+function invalidateCache(userId) {
+  _cache.delete(userId);
+}
+
 export function useBudget() {
   const ctx = useContext(BudgetContext);
   if (!ctx) throw new Error("useBudget must be used inside <BudgetProvider>");
@@ -155,8 +179,26 @@ export function BudgetProvider({ children }) {
 
   const realtimeRef = useRef(null);
 
-  const fetchAll = useCallback(async (userId) => {
+  const fetchAll = useCallback(async (userId, { force = false } = {}) => {
     if (!userId) return;
+
+    // ── Serve from cache if fresh (skip DB hit) ───────────────────────────
+    if (!force) {
+      const cached = getCached(userId);
+      if (cached) {
+        setAllBudgets(cached.budgets);
+        setActiveBudget(
+          cached.budgets.find((b) => b.is_active) ?? cached.budgets[0] ?? null,
+        );
+        setExpenses(cached.expenses);
+        setCategoryCaps(cached.caps);
+        setRecurring(cached.recurring);
+        setLastFetchedUid(userId);
+        setLoading(false);
+        return; // ← no DB hit
+      }
+    }
+
     setLoading(true);
     setError(null);
 
@@ -184,6 +226,9 @@ export function BudgetProvider({ children }) {
       const exps = expensesRes.data ?? [];
       const caps = capsRes.data ?? [];
       const rec = recurringRes.data ?? [];
+
+      // ── Write to cache ────────────────────────────────────────────────────
+      setCached(userId, { budgets, expenses: exps, caps, recurring: rec });
 
       setAllBudgets(budgets);
       setActiveBudget(budgets.find((b) => b.is_active) ?? budgets[0] ?? null);
@@ -250,14 +295,7 @@ export function BudgetProvider({ children }) {
         ...expenseData,
         user_id: user.id,
         budget_id: activeBudget.id,
-        expense_date:
-          expenseData.date ??
-          expenseData.expense_date ??
-          new Date().toISOString().split("T")[0],
-        date:
-          expenseData.date ??
-          expenseData.expense_date ??
-          new Date().toISOString().split("T")[0],
+        date: expenseData.date ?? new Date().toISOString().split("T")[0],
       };
       const tempId = `temp_${Date.now()}`;
       const optimistic = { ...newExpense, id: tempId };
@@ -272,6 +310,7 @@ export function BudgetProvider({ children }) {
         setExpenses((prev) => prev.filter((e) => e.id !== tempId));
         return { error };
       }
+      invalidateCache(user.id);
       setExpenses((prev) => prev.map((e) => (e.id === tempId ? data : e)));
       return { data };
     },
@@ -313,6 +352,7 @@ export function BudgetProvider({ children }) {
         if (snapshot) setExpenses((prev) => [snapshot, ...prev]);
         return { error };
       }
+      invalidateCache(user.id);
       return { error: null };
     },
     [user?.id, expenses],

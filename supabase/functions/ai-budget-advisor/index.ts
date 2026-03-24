@@ -1,17 +1,19 @@
 import { corsHeaders } from "../_shared/cors.ts";
-import { requireAuth } from "../_shared/auth.ts";
+import { requireAuth, logUsage } from "../_shared/auth.ts";
 import { callClaude, parseJSON, fmtCurrency } from "../_shared/claude.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS")
+    return new Response("ok", { headers: corsHeaders });
 
   try {
-    await requireAuth(req);
+    const { user, supabase } = await requireAuth(req, "budget_advisor");
     const { income, goal, currency = "NGN", dependents = 0 } = await req.json();
 
     if (!income || income <= 0) {
       return new Response(JSON.stringify({ error: "income is required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -45,7 +47,11 @@ Suggest a realistic monthly budget breakdown.`,
       json: true,
     });
 
-    const parsed = parseJSON<{ breakdown: unknown[]; savings_amount: number; advice: string }>(raw);
+    const parsed = parseJSON<{
+      breakdown: unknown[];
+      savings_amount: number;
+      advice: string;
+    }>(raw);
 
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -53,7 +59,10 @@ Suggest a realistic monthly budget breakdown.`,
   } catch (err) {
     if (err instanceof Response) return err;
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
+
+logUsage("budget_advisor");

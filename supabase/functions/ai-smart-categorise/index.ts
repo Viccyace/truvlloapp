@@ -1,20 +1,34 @@
 import { corsHeaders } from "../_shared/cors.ts";
-import { requireAuth } from "../_shared/auth.ts";
+import { requireAuth, logUsage } from "../_shared/auth.ts";
 import { callClaude, parseJSON } from "../_shared/claude.ts";
 
-const VALID = ["food","transport","bills","shopping","health","airtime","entertainment","other"];
+const VALID = [
+  "food",
+  "transport",
+  "bills",
+  "shopping",
+  "health",
+  "airtime",
+  "entertainment",
+  "other",
+];
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS")
+    return new Response("ok", { headers: corsHeaders });
 
   try {
-    await requireAuth(req);
+    const { user, supabase } = await requireAuth(req, "smart_categorise");
     const { description } = await req.json();
 
     if (!description?.trim()) {
       return new Response(
-        JSON.stringify({ category: "other", confidence: 0.5, alternatives: [] }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          category: "other",
+          confidence: 0.5,
+          alternatives: [],
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -37,19 +51,31 @@ Return ONLY JSON: { category, confidence (0-1), alternatives (2 other possible c
       json: true,
     });
 
-    const parsed = parseJSON<{ category: string; confidence: number; alternatives: string[] }>(raw);
+    const parsed = parseJSON<{
+      category: string;
+      confidence: number;
+      alternatives: string[];
+    }>(raw);
 
-    return new Response(JSON.stringify({
-      category:     VALID.includes(parsed.category) ? parsed.category : "other",
-      confidence:   Math.min(1, Math.max(0, Number(parsed.confidence ?? 0.8))),
-      alternatives: (parsed.alternatives ?? []).filter((a: string) => VALID.includes(a)).slice(0, 2),
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        category: VALID.includes(parsed.category) ? parsed.category : "other",
+        confidence: Math.min(1, Math.max(0, Number(parsed.confidence ?? 0.8))),
+        alternatives: (parsed.alternatives ?? [])
+          .filter((a: string) => VALID.includes(a))
+          .slice(0, 2),
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   } catch (err) {
     if (err instanceof Response) return err;
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
+
+logUsage("smart_categorise");

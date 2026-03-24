@@ -1,22 +1,30 @@
 import { corsHeaders } from "../_shared/cors.ts";
-import { requireAuth } from "../_shared/auth.ts";
+import { requireAuth, logUsage } from "../_shared/auth.ts";
 import { callClaude, parseJSON } from "../_shared/claude.ts";
 
 const VALID_CATEGORIES = [
-  "food", "transport", "bills", "shopping",
-  "health", "airtime", "entertainment", "other",
+  "food",
+  "transport",
+  "bills",
+  "shopping",
+  "health",
+  "airtime",
+  "entertainment",
+  "other",
 ];
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS")
+    return new Response("ok", { headers: corsHeaders });
 
   try {
-    await requireAuth(req);
+    const { user, supabase } = await requireAuth(req, "nl_entry");
     const { text, currency = "NGN" } = await req.json();
 
     if (!text?.trim()) {
       return new Response(JSON.stringify({ error: "text is required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -43,25 +51,33 @@ Return ONLY JSON: { description, amount, category, date, confidence }`,
 
     const parsed = parseJSON<{
       description: string;
-      amount:      number;
-      category:    string;
-      date:        string;
-      confidence:  number;
+      amount: number;
+      category: string;
+      date: string;
+      confidence: number;
     }>(raw);
 
-    return new Response(JSON.stringify({
-      description: String(parsed.description ?? text).slice(0, 200),
-      amount:      Math.max(0, Number(parsed.amount ?? 0)),
-      category:    VALID_CATEGORIES.includes(parsed.category) ? parsed.category : "other",
-      date:        /^\d{4}-\d{2}-\d{2}$/.test(parsed.date) ? parsed.date : today,
-      confidence:  Math.min(1, Math.max(0, Number(parsed.confidence ?? 0.8))),
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        description: String(parsed.description ?? text).slice(0, 200),
+        amount: Math.max(0, Number(parsed.amount ?? 0)),
+        category: VALID_CATEGORIES.includes(parsed.category)
+          ? parsed.category
+          : "other",
+        date: /^\d{4}-\d{2}-\d{2}$/.test(parsed.date) ? parsed.date : today,
+        confidence: Math.min(1, Math.max(0, Number(parsed.confidence ?? 0.8))),
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   } catch (err) {
     if (err instanceof Response) return err;
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
+
+logUsage("nl_entry");

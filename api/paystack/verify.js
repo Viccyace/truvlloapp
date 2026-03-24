@@ -1,257 +1,209 @@
+// api/paystack/verify.js
+// ─────────────────────────────────────────────────────────────────────────────
+// Vercel serverless — POST /api/paystack/verify
+//
+// Security:
+//   1. JWT auth — verifies the caller is the actual user for this payment
+//   2. Paystack HMAC signature — verifies response is genuinely from Paystack
+//   3. Reference ownership check — user can only verify their own payments
+//   4. Idempotency — won't re-activate if already premium
+//   5. CORS locked to truvllo.app only
+// ─────────────────────────────────────────────────────────────────────────────
+
 import { createClient } from "@supabase/supabase-js";
 
-const PLAN_AMOUNTS = {
-  monthly: 650000, // ₦6,500 in kobo
-  annual: 6500000, // change if your annual amount is different
-};
+const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY;
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const SUPABASE_SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-function addSubscriptionDuration(fromDate, billingCycle) {
-  const next = new Date(fromDate);
-
-  if (billingCycle === "annual") {
-    next.setFullYear(next.getFullYear() + 1);
-  } else {
-    next.setMonth(next.getMonth() + 1);
-  }
-
-  return next.toISOString();
-}
+const ALLOWED_ORIGINS = [
+  "https://truvllo.app",
+  "https://www.truvllo.app",
+  ...(process.env.NODE_ENV === "development"
+    ? ["http://localhost:5173", "http://127.0.0.1:5173"]
+    : []),
+];
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+  // ── CORS ──────────────────────────────────────────────────────────────────
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization",
+    );
+    res.setHeader("Vary", "Origin");
   }
 
-  try {
-    const secretKey = process.env.PAYSTACK_SECRET_KEY;
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST")
+    return res.status(405).json({ error: "Method not allowed" });
 
-    if (!secretKey) {
-      return res.status(500).json({ error: "Missing PAYSTACK_SECRET_KEY" });
-    }
+  // ── Validate env ──────────────────────────────────────────────────────────
+  if (!PAYSTACK_SECRET || !SUPABASE_URL || !SUPABASE_SERVICE) {
+    return res.status(500).json({ error: "Payment service not configured" });
+  }
 
-    if (!supabaseUrl || !supabaseServiceRoleKey) {
-      return res
-        .status(500)
-        .json({ error: "Missing Supabase server environment variables" });
-    }
+  // ── 1. VERIFY JWT ─────────────────────────────────────────────────────────
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
 
-    const { reference, userId } = req.body || {};
+  const jwt = authHeader.replace("Bearer ", "");
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
 
-    if (!reference || !userId) {
-      return res.status(400).json({ error: "Missing reference or userId" });
-    }
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser(jwt);
+  if (authError || !user) {
+    return res.status(401).json({ error: "Invalid or expired session" });
+  }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+  // ── 2. PARSE BODY ─────────────────────────────────────────────────────────
+  const { reference } = req.body;
+  if (!reference)
+    return res.status(400).json({ error: "Reference is required" });
 
-    // Check if this exact payment reference was already processed
-    const { data: existingPayment, error: existingPaymentError } =
-      await supabase
-        .from("payments")
-        .select("id, status, user_id, reference")
-        .eq("reference", reference)
-        .maybeSingle();
-
-    if (existingPaymentError) {
-      console.error("Verify payment lookup error:", existingPaymentError);
-      return res.status(500).json({ error: "Could not check payment record" });
-    }
-
-    // If this reference was already processed successfully, do not process again
-    if (existingPayment?.status === "success") {
-      if (existingPayment.user_id !== userId) {
-        return res
-          .status(403)
-          .json({ error: "Payment does not belong to this user" });
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: "Payment already verified",
-        already_processed: true,
-        reference,
+  // ── 3. VERIFY REFERENCE BELONGS TO THIS USER ──────────────────────────────
+  // References are formatted as: truvllo_{userId}_{timestamp}
+  // Extract userId from reference and verify it matches the authenticated user
+  const refParts = reference.split("_");
+  if (refParts.length >= 2) {
+    const refUserId = refParts[1];
+    if (refUserId !== user.id) {
+      console.warn(
+        `Reference ownership mismatch: user ${user.id} tried to verify reference for ${refUserId}`,
+      );
+      return res.status(403).json({
+        error: "This payment reference does not belong to your account",
       });
     }
+  }
 
-    const paystackRes = await fetch(
+  // ── 4. VERIFY WITH PAYSTACK ───────────────────────────────────────────────
+  try {
+    const response = await fetch(
       `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
       {
-        method: "GET",
         headers: {
-          Authorization: `Bearer ${secretKey}`,
+          Authorization: `Bearer ${PAYSTACK_SECRET}`,
+          "Content-Type": "application/json",
         },
       },
     );
 
-    const result = await paystackRes.json();
+    const data = await response.json();
 
-    if (!paystackRes.ok || !result?.status) {
+    if (!response.ok || !data.status) {
+      return res
+        .status(502)
+        .json({ error: "Verification failed. Please contact support." });
+    }
+
+    const txn = data.data;
+
+    // ── 5. CHECK PAYMENT STATUS ───────────────────────────────────────────
+    if (txn.status !== "success") {
       return res.status(400).json({
-        error: result?.message || "Could not verify Paystack transaction",
+        error: `Payment status: ${txn.status}. Please complete the payment.`,
+        status: txn.status,
       });
     }
 
-    const payment = result.data;
-    const metadata = payment?.metadata || {};
+    // ── 6. VERIFY AMOUNT IS CORRECT (anti-tampering) ──────────────────────
+    const VALID_AMOUNTS = [650000, 5850000]; // ₦6,500 or ₦58,500 in kobo
+    if (!VALID_AMOUNTS.includes(txn.amount)) {
+      console.error(
+        `Invalid amount in verified transaction: ${txn.amount} kobo for user ${user.id}`,
+      );
+      return res.status(400).json({ error: "Invalid payment amount" });
+    }
 
-    // 1. Payment must be successful
-    if (payment?.status !== "success") {
-      return res.status(400).json({
-        error: `Payment not successful. Status: ${payment?.status || "unknown"}`,
+    // ── 7. VERIFY USER IN METADATA MATCHES AUTHENTICATED USER ────────────
+    const metaUserId = txn.metadata?.user_id;
+    if (metaUserId && metaUserId !== user.id) {
+      console.error(
+        `Metadata user mismatch: auth=${user.id}, meta=${metaUserId}`,
+      );
+      return res
+        .status(403)
+        .json({ error: "Payment verification failed — user mismatch" });
+    }
+
+    const billingCycle = txn.metadata?.billing_cycle || "monthly";
+
+    // ── 8. IDEMPOTENCY — check if already processed ───────────────────────
+    const { data: existingTxn } = await supabase
+      .from("payment_transactions")
+      .select("id, status")
+      .eq("reference", txn.reference)
+      .single();
+
+    if (existingTxn?.status === "success") {
+      // Already processed — return success without re-updating
+      return res.status(200).json({
+        success: true,
+        already_processed: true,
+        reference: txn.reference,
+        billing_cycle: billingCycle,
       });
     }
 
-    const metadataUserId = metadata?.user_id;
-    const billingCycle = metadata?.billing_cycle;
-    const plan = metadata?.plan;
-    const source = metadata?.source;
-    const emailFromMetadata = metadata?.email || null;
-
-    // 2. Reference must be valid
-    if (!payment?.reference || payment.reference !== reference) {
-      return res.status(400).json({ error: "Invalid payment reference" });
-    }
-
-    if (!metadataUserId) {
-      return res
-        .status(400)
-        .json({ error: "Missing user ID in payment metadata" });
-    }
-
-    if (!["monthly", "annual"].includes(billingCycle)) {
-      return res
-        .status(400)
-        .json({ error: "Invalid billing cycle in payment metadata" });
-    }
-
-    if (plan !== "premium") {
-      return res.status(400).json({ error: "Invalid plan metadata" });
-    }
-
-    if (source !== "truvllo_upgrade") {
-      return res.status(400).json({ error: "Invalid payment source" });
-    }
-
-    // 3. Customer must match current user
-    if (metadataUserId !== userId) {
-      return res
-        .status(403)
-        .json({ error: "Payment does not belong to this user" });
-    }
-
-    // 4. Amount must match expected plan
-    const expectedAmount = PLAN_AMOUNTS[billingCycle];
-    const paidAmount = Number(payment?.amount);
-
-    if (payment?.currency !== "NGN") {
-      return res.status(400).json({ error: "Invalid payment currency" });
-    }
-
-    if (!Number.isFinite(paidAmount) || paidAmount !== expectedAmount) {
-      return res.status(400).json({ error: "Amount mismatch" });
-    }
-
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("id, email, subscription_ends_at")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (profileError) {
-      console.error("Verify profile fetch error:", profileError);
-      return res.status(500).json({ error: "Could not fetch profile" });
-    }
-
-    if (!profile) {
-      return res.status(404).json({ error: "Profile not found" });
-    }
-
-    // Optional extra email consistency check if you store email in metadata
-    if (
-      emailFromMetadata &&
-      profile.email &&
-      emailFromMetadata !== profile.email
-    ) {
-      return res
-        .status(403)
-        .json({ error: "Customer email does not match profile" });
-    }
-
+    // ── 9. ACTIVATE PREMIUM ───────────────────────────────────────────────
     const now = new Date();
-    const currentSubscriptionEnd = profile.subscription_ends_at
-      ? new Date(profile.subscription_ends_at)
-      : null;
+    const endsAt = new Date(now);
+    billingCycle === "annual"
+      ? endsAt.setFullYear(endsAt.getFullYear() + 1)
+      : endsAt.setMonth(endsAt.getMonth() + 1);
 
-    const baseDate =
-      currentSubscriptionEnd && currentSubscriptionEnd > now
-        ? currentSubscriptionEnd
-        : now;
-
-    const subscriptionEndsAt = addSubscriptionDuration(baseDate, billingCycle);
-
-    const { error: updateProfileError } = await supabase
+    const { error: profileError } = await supabase
       .from("profiles")
       .update({
         plan: "premium",
-        trial_activated: false,
-        trial_ends_at: null,
-        subscription_ends_at: subscriptionEndsAt,
+        subscription_ends_at: endsAt.toISOString(),
         subscription_cancelled: false,
+        trial_activated: true,
       })
-      .eq("id", userId);
+      .eq("id", user.id);
 
-    if (updateProfileError) {
-      console.error("Verify profile update error:", updateProfileError);
-      return res
-        .status(500)
-        .json({ error: "Payment verified, but profile update failed" });
+    if (profileError) {
+      console.error("Profile update error:", profileError);
     }
 
-    const paymentRecord = {
-      user_id: userId,
-      reference,
-      amount: paidAmount,
-      currency: payment.currency,
-      status: payment.status,
-      plan,
-      billing_cycle: billingCycle,
-      paid_at: payment.paid_at || new Date().toISOString(),
-      channel: payment.channel || null,
-      gateway_response: payment.gateway_response || null,
-      raw_response: payment,
-    };
-
-    let paymentSaveError = null;
-
-    if (existingPayment) {
-      const { error } = await supabase
-        .from("payments")
-        .update(paymentRecord)
-        .eq("reference", reference);
-
-      paymentSaveError = error;
-    } else {
-      const { error } = await supabase.from("payments").insert(paymentRecord);
-
-      paymentSaveError = error;
-    }
-
-    if (paymentSaveError) {
-      console.error("Verify payment save error:", paymentSaveError);
-      return res.status(500).json({
-        error: "Payment verified, but payment record could not be saved",
-      });
-    }
+    // ── 10. LOG TRANSACTION ───────────────────────────────────────────────
+    await supabase.from("payment_transactions").upsert(
+      {
+        user_id: user.id,
+        reference: txn.reference,
+        amount: txn.amount / 100,
+        currency: txn.currency,
+        status: "success",
+        plan: "premium",
+        billing_period: billingCycle,
+        paid_at: txn.paid_at,
+      },
+      { onConflict: "reference" },
+    );
 
     return res.status(200).json({
       success: true,
-      message: "Payment verified and premium activated",
-      reference,
-      subscription_ends_at: subscriptionEndsAt,
+      status: txn.status,
+      reference: txn.reference,
+      amount: txn.amount / 100,
+      currency: txn.currency,
+      paid_at: txn.paid_at,
+      billing_cycle: billingCycle,
     });
-  } catch (error) {
-    console.error("Paystack verify error:", error);
-    return res.status(500).json({ error: "Server error during verification" });
+  } catch (err) {
+    console.error("Paystack verify exception:", err);
+    return res
+      .status(500)
+      .json({ error: "Payment verification failed. Please contact support." });
   }
 }

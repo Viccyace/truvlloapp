@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useState } from "react";
 import DOMPurify from "dompurify";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 import { useAuth } from "../providers/AuthProvider";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
@@ -349,8 +350,7 @@ export default function UpgradePage() {
   const trxref = searchParams.get("trxref");
   const paymentReference = reference || trxref;
 
-  const monthlyAmountKobo = 6500 * 100;
-  const annualAmountKobo = 58500 * 100;
+  // Amounts are now determined server-side — not used in client
   const price = billing === "monthly" ? "6,500" : "4,875";
   const annualTotal = billing === "annual" ? "58,500" : null;
 
@@ -359,9 +359,17 @@ export default function UpgradePage() {
       if (!paymentReference || verifying) return;
       setVerifying(true);
       try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const token = session?.access_token;
+
         const res = await fetch("/api/paystack/verify", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : "",
+          },
           body: JSON.stringify({ reference: paymentReference }),
         });
         const result = await res.json();
@@ -392,14 +400,22 @@ export default function UpgradePage() {
     }
     setLoading(true);
     try {
+      // Get JWT from Supabase session
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("You must be logged in to upgrade.");
+
       const res = await fetch("/api/paystack/initialize", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          email: user?.email || profile?.email,
-          userId: user?.id || profile?.id,
           billingCycle: billing,
-          amount: billing === "monthly" ? monthlyAmountKobo : annualAmountKobo,
+          // amount is determined server-side — not sent from client
         }),
       });
       const result = await res.json();

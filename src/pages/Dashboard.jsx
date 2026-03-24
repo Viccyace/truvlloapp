@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import DOMPurify from "dompurify";
 import {
   Wallet,
   ArrowUpRight,
@@ -549,7 +550,14 @@ function AIPanel({ type, insight, onRefresh, loading }) {
             <div className="ai-loading-dot" />
           </div>
         ) : (
-          <span dangerouslySetInnerHTML={{ __html: insight }} />
+          <span
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(insight, {
+                ALLOWED_TAGS: ["strong", "em", "br"],
+                ALLOWED_ATTR: [],
+              }),
+            }}
+          />
         )}
       </div>
       <div className="ai-card-footer">

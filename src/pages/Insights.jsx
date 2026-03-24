@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import DOMPurify from "dompurify";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 import { useBudget } from "../providers/BudgetProvider";
@@ -892,7 +893,12 @@ export default function InsightsPage() {
                 <div className="insight-val">{ins.val}</div>
                 <div
                   className="insight-desc"
-                  dangerouslySetInnerHTML={{ __html: ins.desc }}
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(ins.desc, {
+                      ALLOWED_TAGS: ["strong", "em", "br"],
+                      ALLOWED_ATTR: [],
+                    }),
+                  }}
                 />
               </div>
             ))}

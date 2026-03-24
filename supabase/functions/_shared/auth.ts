@@ -50,11 +50,19 @@ const PLAN_LIMITS: Record<
 
 // ── requireAuth ───────────────────────────────────────────────────────────────
 export async function requireAuth(req: Request, feature?: string) {
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Content-Type": "application/json",
+  };
+
   const jwt = req.headers.get("Authorization")?.replace("Bearer ", "");
   if (!jwt)
     throw new Response(JSON.stringify({ error: "Authentication required" }), {
       status: 401,
-      headers: { "Content-Type": "application/json" },
+      headers: corsHeaders,
     });
 
   const supabase = createClient(
@@ -72,7 +80,7 @@ export async function requireAuth(req: Request, feature?: string) {
       JSON.stringify({
         error: "Invalid or expired session. Please log in again.",
       }),
-      { status: 401, headers: { "Content-Type": "application/json" } },
+      { status: 401, headers: corsHeaders },
     );
 
   // ── Rate limit check ──────────────────────────────────────────────────────
@@ -85,7 +93,7 @@ export async function requireAuth(req: Request, feature?: string) {
           upgrade: limitResult.upgrade ?? false,
           limits: limitResult.limits,
         }),
-        { status: 429, headers: { "Content-Type": "application/json" } },
+        { status: 429, headers: corsHeaders },
       );
     }
   }
@@ -95,7 +103,8 @@ export async function requireAuth(req: Request, feature?: string) {
 
 // ── checkRateLimit ────────────────────────────────────────────────────────────
 async function checkRateLimit(
-  supabase: ReturnType<typeof createClient>,
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
   userId: string,
   feature: string,
 ): Promise<{
@@ -180,7 +189,8 @@ async function checkRateLimit(
 
 // ── logUsage — call AFTER successful Claude call ──────────────────────────────
 export async function logUsage(
-  supabase: ReturnType<typeof createClient>,
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
   userId: string,
   feature: string,
 ): Promise<void> {

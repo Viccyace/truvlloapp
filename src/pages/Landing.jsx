@@ -418,8 +418,8 @@ const styles = `
     .hero-headline { font-size: 2.2rem; margin-bottom: 18px; }
     .hero-headline em { display: block; }
     .hero-sub { font-size: 0.95rem; margin-bottom: 28px; max-width: 100%; }
-    .hero-btns { flex-direction: column; gap: 10px; }
-    .btn-primary, .btn-outline { width: 100%; text-align: center; padding: 14px 20px; font-size: 0.9rem; }
+    .hero-btns { flex-direction: row; gap: 10px; flex-wrap: nowrap; }
+    .btn-primary, .btn-outline { flex: 1; text-align: center; padding: 13px 12px; font-size: 0.85rem; }
     .hero-right { display: none; }
 
     /* STATS STRIP */
@@ -477,8 +477,8 @@ const styles = `
     .cta-banner-inner { grid-template-columns: 1fr; gap: 0; }
     .cta-headline { font-size: 2rem; margin-bottom: 14px; }
     .cta-sub { font-size: 0.9rem; margin-bottom: 24px; }
-    .cta-btns { flex-direction: column; gap: 10px; }
-    .cta-btn-primary, .cta-btn-outline { width: 100%; text-align: center; padding: 14px 20px; font-size: 0.9rem; }
+    .cta-btns { flex-direction: row; gap: 10px; flex-wrap: nowrap; }
+    .cta-btn-primary, .cta-btn-outline { flex: 1; text-align: center; padding: 13px 12px; font-size: 0.85rem; }
     .cta-phone-slot { display: none; }
     .cta-users { margin-top: 20px; }
     .cta-users-text { font-size: 0.75rem; }
@@ -892,7 +892,27 @@ export default function Landing() {
             </button>
           </div>
           {/* Business */}
-          <div className="pricing-card">
+          <div
+            className="pricing-card"
+            style={{ opacity: 0.75, position: "relative" }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                background: "var(--amber-light)",
+                color: "var(--ink)",
+                fontSize: "0.65rem",
+                fontWeight: 800,
+                padding: "3px 10px",
+                borderRadius: "100px",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+              }}
+            >
+              Coming Soon
+            </div>
             <div className="pricing-plan">Business</div>
             <div className="pricing-price" style={{ fontSize: "2rem" }}>
               Custom
@@ -918,9 +938,10 @@ export default function Landing() {
             </ul>
             <button
               className="pricing-btn"
-              onClick={() => navigate("/contact")}
+              disabled
+              style={{ opacity: 0.5, cursor: "not-allowed" }}
             >
-              Get started
+              Coming soon
             </button>
           </div>
         </div>
@@ -1003,7 +1024,7 @@ export default function Landing() {
             </p>
             <div className="cta-btns">
               <button className="cta-btn-primary" onClick={goToAuth}>
-                Download the App
+                Open an Account
               </button>
               <button
                 className="cta-btn-outline"
@@ -1011,6 +1032,89 @@ export default function Landing() {
               >
                 Learn More
               </button>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                flexWrap: "wrap",
+                marginTop: 20,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: 10,
+                  padding: "10px 16px",
+                  cursor: "default",
+                }}
+              >
+                <span style={{ fontSize: "1.4rem" }}>🍎</span>
+                <div>
+                  <div
+                    style={{
+                      fontSize: "0.6rem",
+                      color: "rgba(255,255,255,0.45)",
+                      fontWeight: 600,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Coming Soon
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "0.85rem",
+                      color: "rgba(255,255,255,0.85)",
+                      fontWeight: 700,
+                      fontFamily: "'Playfair Display',serif",
+                    }}
+                  >
+                    App Store
+                  </div>
+                </div>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: 10,
+                  padding: "10px 16px",
+                  cursor: "default",
+                }}
+              >
+                <span style={{ fontSize: "1.4rem" }}>▶️</span>
+                <div>
+                  <div
+                    style={{
+                      fontSize: "0.6rem",
+                      color: "rgba(255,255,255,0.45)",
+                      fontWeight: 600,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Coming Soon
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "0.85rem",
+                      color: "rgba(255,255,255,0.85)",
+                      fontWeight: 700,
+                      fontFamily: "'Playfair Display',serif",
+                    }}
+                  >
+                    Google Play
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="cta-users">
               <div className="cta-avatars">

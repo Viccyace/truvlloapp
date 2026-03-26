@@ -683,7 +683,7 @@ export default function Landing() {
           <div className="hero-left">
             <div className="hero-eyebrow">
               <span className="hero-eyebrow-dot" />
-              AI Budget Intelligence
+              AI-Powered Budget Intelligence
             </div>
             <h1 className="hero-headline">
               Your Money.
@@ -691,9 +691,9 @@ export default function Landing() {
               Every Day.
             </h1>
             <p className="hero-sub">
-              Truvllo is a smart budgeting app that thinks with you. Track
-              spending, get daily safe-to-spend limits, and let AI coach you to
-              save more. Free to start.
+              Truvllo is a budgeting app that thinks with you. Track spending,
+              get daily safe-to-spend limits, and let AI coach you to save more.
+              Free to start.
             </p>
             <div className="hero-btns">
               <button className="btn-primary" onClick={goToAuth}>
@@ -728,7 +728,7 @@ export default function Landing() {
         <div className="stats-inner">
           <div className="stat-item">
             <div className="stat-val">
-              2<span>K+</span>
+              10<span>K+</span>
             </div>
             <div className="stat-label">Active users</div>
           </div>
@@ -1016,7 +1016,7 @@ export default function Landing() {
           <div>
             <h2 className="cta-headline">
               Join people who
-              <em>moved </em> <em>smarter.</em>
+              <em>moved smarter.</em>
             </h2>
             <p className="cta-sub">
               Start your free account today. No credit card. No tricks. Full AI
@@ -1148,7 +1148,7 @@ export default function Landing() {
                 )}
               </div>
               <div className="cta-users-text">
-                Join 2,000+ users already budgeting smarter
+                Join 10,000+ users already budgeting smarter
               </div>
             </div>
           </div>
@@ -1173,7 +1173,7 @@ export default function Landing() {
               Truvllo
             </div>
             <p className="footer-brand-desc">
-              The Smart budgeting app that thinks with you. Take control of your
+              The AI budgeting app that thinks with you. Take control of your
               money, wherever you are in Africa.
             </p>
           </div>
@@ -1248,7 +1248,7 @@ export default function Landing() {
         </div>
         <div className="footer-bottom">
           <span className="footer-copy">
-            © {new Date().getFullYear()} Truvllo. All rights reserved.
+            © 2026 Truvllo Inc. All Rights Reserved.
           </span>
           <span className="footer-copy">Powered by Paystack</span>
         </div>

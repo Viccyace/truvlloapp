@@ -17,6 +17,7 @@ import {
 } from "lucide-react"; // eslint-disable-line no-unused-vars
 import { useAuth } from "../providers/AuthProvider";
 import { useBudget } from "../providers/BudgetProvider";
+import InstallPrompt from "../components/InstallPrompt";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
@@ -110,7 +111,6 @@ const styles = `
   .trial-banner-text strong { color:var(--white); font-weight:700; }
   .trial-banner-cta { background:var(--amber); color:var(--ink); border:none; border-radius:100px; padding:5px 16px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.78rem; font-weight:800; cursor:pointer; white-space:nowrap; }
 
-  /* ── Quick Add Modal ──────────────────────────────────────────────────────── */
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:80; display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s ease; }
   .modal-sheet { background:var(--white); border-radius:24px 24px 0 0; padding:28px 24px 40px; width:100%; max-width:480px; animation:slideInLeft 0.3s ease; }
   .modal-handle { width:40px; height:4px; border-radius:100px; background:var(--border); margin:0 auto 20px; }
@@ -209,7 +209,6 @@ const PAGE_META = {
   upgrade: { title: "Upgrade", breadcrumb: "Unlock Premium features" },
 };
 
-// ── QuickAddModal — now actually saves expenses ───────────────────────────────
 function QuickAddModal({ onClose, onSaved }) {
   const { addExpense } = useBudget();
   const [desc, setDesc] = useState("");
@@ -356,8 +355,8 @@ export default function AppLayout() {
   return (
     <>
       <style>{FONTS + styles}</style>
+      <InstallPrompt />
 
-      {/* ── Logout confirmation modal ─────────────────────────────── */}
       {confirmLogout && (
         <div
           style={{
@@ -511,8 +510,6 @@ export default function AppLayout() {
         <QuickAddModal
           onClose={() => setQuickAddOpen(false)}
           onSaved={() => {
-            // If already on expenses page it'll update via realtime
-            // If elsewhere, navigate there so user sees the new expense
             if (!location.pathname.includes("expenses")) goTo("/expenses");
           }}
         />

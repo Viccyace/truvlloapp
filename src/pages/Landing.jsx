@@ -681,17 +681,17 @@ export default function Landing() {
       <section className="hero">
         <div className="hero-inner">
           <div className="hero-left">
-            <div className="hero-eyebrow">
+            {/* <div className="hero-eyebrow">
               <span className="hero-eyebrow-dot" />
-              AI-Powered Budget Intelligence
-            </div>
+              Smart Budget Intelligence
+            </div> */}
             <h1 className="hero-headline">
               Your Money.
               <em>Smarter Choices.</em>
               Every Day.
             </h1>
             <p className="hero-sub">
-              Truvllo is the AI budgeting app that thinks with you. Track
+              Truvllo is a smart budgeting app that thinks with you. Track
               spending, get daily safe-to-spend limits, and let AI coach you to
               save more. Free to start.
             </p>
@@ -728,7 +728,7 @@ export default function Landing() {
         <div className="stats-inner">
           <div className="stat-item">
             <div className="stat-val">
-              10<span>K+</span>
+              2<span>K+</span>
             </div>
             <div className="stat-label">Active users</div>
           </div>
@@ -1016,7 +1016,7 @@ export default function Landing() {
           <div>
             <h2 className="cta-headline">
               Join people who
-              <em>moved smarter.</em>
+              <em>moved </em> <em>smarter.</em>
             </h2>
             <p className="cta-sub">
               Start your free account today. No credit card. No tricks. Full AI
@@ -1148,7 +1148,7 @@ export default function Landing() {
                 )}
               </div>
               <div className="cta-users-text">
-                Join 10,000+ users already budgeting smarter
+                Join 2,000+ users already budgeting smarter
               </div>
             </div>
           </div>
@@ -1173,46 +1173,82 @@ export default function Landing() {
               Truvllo
             </div>
             <p className="footer-brand-desc">
-              The AI budgeting app that thinks with you. Take control of your
+              The Smart budgeting app that thinks with you. Take control of your
               money, wherever you are in Africa.
             </p>
           </div>
           <div className="footer-col">
             <div className="footer-col-title">Product</div>
-            <a onClick={() => scrollTo("features")}>Features</a>
-            <a onClick={() => scrollTo("pricing")}>Pricing</a>
-            <a onClick={() => scrollTo("how")}>How it works</a>
-            <a onClick={() => navigate("/blog")}>Blog</a>
+            <a
+              style={{ cursor: "pointer" }}
+              onClick={() => scrollTo("features")}
+            >
+              Features
+            </a>
+            <a
+              style={{ cursor: "pointer" }}
+              onClick={() => scrollTo("pricing")}
+            >
+              Pricing
+            </a>
+            <a style={{ cursor: "pointer" }} onClick={() => scrollTo("how")}>
+              How it works
+            </a>
+            <a style={{ cursor: "pointer" }} onClick={() => navigate("/blog")}>
+              Blog
+            </a>
           </div>
           <div className="footer-col">
             <div className="footer-col-title">Company</div>
-            <a onClick={() => navigate("/about")}>About</a>
-            <a onClick={() => navigate("/careers")}>Careers</a>
-            <a onClick={() => navigate("/contact")}>Contact</a>
+            <a style={{ cursor: "pointer" }} onClick={() => navigate("/about")}>
+              About
+            </a>
+            <a style={{ cursor: "pointer" }} onClick={() => navigate("/blog")}>
+              Blog
+            </a>
+            <a
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/careers")}
+            >
+              Careers
+            </a>
+            <a
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/contact")}
+            >
+              Contact
+            </a>
           </div>
           <div className="footer-col">
             <div className="footer-col-title">Connect</div>
             <a
-              href="https://twitter.com/truvllo"
+              href="https://twitter.com/truvlloapp"
               target="_blank"
               rel="noreferrer"
             >
-              Twitter
+              Twitter / X
             </a>
             <a
-              href="https://instagram.com/truvllo"
+              href="https://instagram.com/truvlloapp"
               target="_blank"
               rel="noreferrer"
             >
               Instagram
             </a>
-            <a onClick={() => navigate("/privacy")}>Privacy Policy</a>
-            <a onClick={() => navigate("/terms")}>Terms</a>
+            <a
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/privacy")}
+            >
+              Privacy Policy
+            </a>
+            <a style={{ cursor: "pointer" }} onClick={() => navigate("/terms")}>
+              Terms of Service
+            </a>
           </div>
         </div>
         <div className="footer-bottom">
           <span className="footer-copy">
-            © 2026 Truvllo Inc. All Rights Reserved.
+            © {new Date().getFullYear()} Truvllo. All rights reserved.
           </span>
           <span className="footer-copy">Powered by Paystack</span>
         </div>

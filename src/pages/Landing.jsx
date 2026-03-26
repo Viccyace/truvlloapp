@@ -1038,81 +1038,98 @@ export default function Landing() {
                 display: "flex",
                 gap: 12,
                 flexWrap: "wrap",
-                marginTop: 20,
+                marginTop: 24,
+                alignItems: "center",
               }}
             >
+              {/* Apple App Store badge */}
               <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  background: "rgba(255,255,255,0.08)",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  borderRadius: 10,
-                  padding: "10px 16px",
-                  cursor: "default",
-                }}
+                style={{ position: "relative", cursor: "default" }}
+                title="Coming Soon to App Store"
               >
-                <span style={{ fontSize: "1.4rem" }}>🍎</span>
-                <div>
-                  <div
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -8,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    background: "var(--amber)",
+                    color: "var(--ink)",
+                    fontSize: "0.58rem",
+                    fontWeight: 800,
+                    padding: "2px 8px",
+                    borderRadius: "100px",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    whiteSpace: "nowrap",
+                    zIndex: 1,
+                  }}
+                >
+                  Coming Soon
+                </div>
+                <div
+                  style={{
+                    background: "#FFFFFF",
+                    borderRadius: 10,
+                    padding: "8px 16px",
+                    opacity: 0.9,
+                    filter: "grayscale(0.1)",
+                  }}
+                >
+                  <img
+                    src="/apple_store.png"
+                    alt="Download on App Store"
                     style={{
-                      fontSize: "0.6rem",
-                      color: "rgba(255,255,255,0.45)",
-                      fontWeight: 600,
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
+                      height: 36,
+                      display: "block",
+                      objectFit: "contain",
                     }}
-                  >
-                    Coming Soon
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "0.85rem",
-                      color: "rgba(255,255,255,0.85)",
-                      fontWeight: 700,
-                      fontFamily: "'Playfair Display',serif",
-                    }}
-                  >
-                    App Store
-                  </div>
+                  />
                 </div>
               </div>
+              {/* Google Play Store badge */}
               <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  background: "rgba(255,255,255,0.08)",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  borderRadius: 10,
-                  padding: "10px 16px",
-                  cursor: "default",
-                }}
+                style={{ position: "relative", cursor: "default" }}
+                title="Coming Soon to Google Play"
               >
-                <span style={{ fontSize: "1.4rem" }}>▶️</span>
-                <div>
-                  <div
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -8,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    background: "var(--amber)",
+                    color: "var(--ink)",
+                    fontSize: "0.58rem",
+                    fontWeight: 800,
+                    padding: "2px 8px",
+                    borderRadius: "100px",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    whiteSpace: "nowrap",
+                    zIndex: 1,
+                  }}
+                >
+                  Coming Soon
+                </div>
+                <div
+                  style={{
+                    background: "#FFFFFF",
+                    borderRadius: 10,
+                    padding: "8px 16px",
+                    opacity: 0.9,
+                    filter: "grayscale(0.1)",
+                  }}
+                >
+                  <img
+                    src="/google_play_store.png"
+                    alt="Get it on Google Play"
                     style={{
-                      fontSize: "0.6rem",
-                      color: "rgba(255,255,255,0.45)",
-                      fontWeight: 600,
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
+                      height: 36,
+                      display: "block",
+                      objectFit: "contain",
                     }}
-                  >
-                    Coming Soon
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "0.85rem",
-                      color: "rgba(255,255,255,0.85)",
-                      fontWeight: 700,
-                      fontFamily: "'Playfair Display',serif",
-                    }}
-                  >
-                    Google Play
-                  </div>
+                  />
                 </div>
               </div>
             </div>

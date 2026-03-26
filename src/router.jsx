@@ -11,6 +11,7 @@ import Upgrade from "./pages/Upgrade";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { useAuth } from "./providers/AuthProvider";
+import AuthCallback from "./pages/AuthCallback";
 
 function LoadingScreen() {
   return <div style={{ padding: 24 }}>Loading...</div>;
@@ -84,6 +85,7 @@ export const router = createBrowserRouter([
           { path: "/insights", element: <Insights /> },
           { path: "/upgrade", element: <Upgrade /> },
           { path: "/settings", element: <Settings /> },
+          { path: "/auth/callback", element: <AuthCallback /> },
         ],
       },
     ],

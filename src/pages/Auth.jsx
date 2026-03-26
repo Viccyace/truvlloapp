@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../providers/AuthProvider";
+import { supabase } from "../lib/supabase";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
@@ -17,6 +17,7 @@ const styles = `
 
   .auth-root { display: flex; min-height: 100vh; }
 
+  /* LEFT PANEL */
   .auth-left {
     width: 44%; background: var(--ink);
     display: flex; flex-direction: column; justify-content: space-between;
@@ -43,16 +44,19 @@ const styles = `
   .auth-testimonial-name { font-size: 0.85rem; font-weight: 700; color: var(--white); }
   .auth-testimonial-role { font-size: 0.75rem; color: rgba(255,255,255,0.35); }
 
+  /* RIGHT PANEL */
   .auth-right { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 5%; background: var(--cream); min-height: 100vh; overflow-y: auto; }
   .auth-right-inner { width: 100%; max-width: 420px; }
   .auth-mobile-logo { display: none; align-items: center; justify-content: center; gap: 8px; font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-bottom: 36px; cursor: pointer; }
   .auth-mobile-logo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
   @media (max-width: 860px) { .auth-mobile-logo { display: flex; } }
 
+  /* TABS */
   .auth-tabs { display: flex; background: var(--cream-dark); border-radius: 14px; padding: 4px; margin-bottom: 36px; gap: 4px; }
   .auth-tab { flex: 1; border: none; border-radius: 10px; padding: 11px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.22s; background: transparent; color: var(--ink-subtle); }
   .auth-tab.active { background: var(--white); color: var(--ink); box-shadow: 0 2px 10px rgba(0,0,0,0.09); }
 
+  /* FORM */
   .auth-form-title { font-family: 'Playfair Display', serif; font-size: 1.9rem; font-weight: 800; color: var(--ink); margin-bottom: 6px; letter-spacing: -0.015em; }
   .auth-form-sub { font-size: 0.9rem; color: var(--ink-subtle); margin-bottom: 28px; line-height: 1.5; }
   .form-row { display: flex; gap: 14px; }
@@ -67,6 +71,9 @@ const styles = `
   .password-wrap { position: relative; }
   .password-toggle { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--ink-subtle); font-size: 0.8rem; font-weight: 600; padding: 4px; }
   .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+  .checkbox-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .checkbox-wrap input { width: 16px; height: 16px; accent-color: var(--green-light); cursor: pointer; }
+  .checkbox-label { font-size: 0.85rem; color: var(--ink-muted); }
   .forgot-link { font-size: 0.85rem; color: var(--green-mid); font-weight: 600; text-decoration: none; cursor: pointer; }
   .forgot-link:hover { color: var(--green-deep); }
   .submit-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--green-deep), var(--green-light)); color: var(--white); border: none; border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.25s; margin-bottom: 20px; box-shadow: 0 6px 24px rgba(27,67,50,0.25); display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -77,6 +84,8 @@ const styles = `
   .social-btn { width: 100%; padding: 13px; background: var(--white); color: var(--ink); border: 1.5px solid var(--border); border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
   .social-btn:hover { border-color: rgba(10,10,10,0.25); background: var(--cream-dark); }
   .google-icon { width: 18px; height: 18px; }
+  .terms-text { font-size: 0.78rem; color: var(--ink-subtle); text-align: center; line-height: 1.6; margin-top: 8px; }
+  .terms-text a { color: var(--green-mid); font-weight: 600; text-decoration: none; }
   .switch-text { text-align: center; font-size: 0.875rem; color: var(--ink-subtle); margin-top: 24px; }
   .switch-text a { color: var(--green-mid); font-weight: 700; text-decoration: none; cursor: pointer; }
   .trial-callout { background: var(--green-pale); border-radius: 12px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; border: 1px solid rgba(27,67,50,0.12); }
@@ -90,8 +99,10 @@ const styles = `
   .success-icon { font-size: 3rem; margin-bottom: 16px; }
   .success-title { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
   .success-sub { font-size: 0.9rem; color: var(--ink-subtle); line-height: 1.65; }
+  .reset-sent { background: var(--green-pale); border-radius: 12px; padding: 16px; text-align: center; font-size: 0.875rem; color: var(--green-deep); line-height: 1.6; font-weight: 500; margin-bottom: 16px; }
 `;
 
+// ── Google SVG icon ───────────────────────────────────────────────────────────
 const GoogleIcon = () => (
   <svg
     className="google-icon"
@@ -117,9 +128,9 @@ const GoogleIcon = () => (
   </svg>
 );
 
+// ── Login Form ────────────────────────────────────────────────────────────────
 function LoginForm({ onSwitch }) {
-  const { signIn, signInWithGoogle, sendPasswordReset } = useAuth();
-
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -127,14 +138,14 @@ function LoginForm({ onSwitch }) {
   const [errors, setErrors] = useState({});
   const [globalError, setGlobalError] = useState("");
   const [resetSent, setResetSent] = useState(false);
+  const [resetMode, _setResetMode] = useState(false);
 
   const validate = () => {
     const e = {};
     if (!email) e.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(email)) {
+    else if (!/\S+@\S+\.\S+/.test(email))
       e.email = "Enter a valid email address";
-    }
-    if (!password) e.password = "Password is required";
+    if (!resetMode && !password) e.password = "Password is required";
     return e;
   };
 
@@ -144,22 +155,20 @@ function LoginForm({ onSwitch }) {
       setErrors(e);
       return;
     }
-
     setErrors({});
     setGlobalError("");
     setLoading(true);
-
     try {
-      const { error } = await signIn({ email, password });
-
-      if (error) {
-        setGlobalError(
-          error.message || "Invalid email or password. Please try again.",
-        );
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      navigate("/dashboard");
     } catch (err) {
-      console.error("Login error:", err);
-      setGlobalError(err?.message || "Could not sign you in.");
+      setGlobalError(
+        err.message || "Invalid email or password. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -170,35 +179,29 @@ function LoginForm({ onSwitch }) {
       setErrors({ email: "Enter your email first" });
       return;
     }
-
     setLoading(true);
-    setGlobalError("");
-
     try {
-      const { error } = await sendPasswordReset(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
+      });
       if (error) throw error;
       setResetSent(true);
     } catch (err) {
-      setGlobalError(err?.message || "Could not send reset email.");
+      setGlobalError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogle = async () => {
-    setGlobalError("");
-    setLoading(true);
-
-    try {
-      const { error } = await signInWithGoogle();
-      if (error) {
-        setGlobalError(error.message || "Google sign-in failed.");
-      }
-    } catch (err) {
-      setGlobalError(err?.message || "Google sign-in failed.");
-    } finally {
-      setLoading(false);
-    }
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: { access_type: "offline", prompt: "consent" },
+      },
+    });
+    if (error) alert("Google sign-in failed: " + error.message);
   };
 
   if (resetSent) {
@@ -281,7 +284,7 @@ function LoginForm({ onSwitch }) {
       </button>
 
       <div className="divider">or continue with</div>
-      <button className="social-btn" onClick={handleGoogle} disabled={loading}>
+      <button className="social-btn" onClick={handleGoogle}>
         <GoogleIcon /> Continue with Google
       </button>
 
@@ -292,9 +295,8 @@ function LoginForm({ onSwitch }) {
   );
 }
 
+// ── Signup Form ───────────────────────────────────────────────────────────────
 function SignupForm({ onSwitch }) {
-  const { signUp, signInWithGoogle } = useAuth();
-
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -313,22 +315,17 @@ function SignupForm({ onSwitch }) {
     if (!firstName.trim()) e.firstName = "First name is required";
     if (!lastName.trim()) e.lastName = "Last name is required";
     if (!email) e.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(email)) {
+    else if (!/\S+@\S+\.\S+/.test(email))
       e.email = "Enter a valid email address";
-    }
     if (!password) e.password = "Password is required";
-    else if (password.length < 8) {
+    else if (password.length < 8)
       e.password = "Password must be at least 8 characters";
-    }
     if (!confirmPassword) e.confirmPassword = "Please confirm your password";
-    else if (password !== confirmPassword) {
+    else if (password !== confirmPassword)
       e.confirmPassword = "Passwords don't match";
-    }
     if (!agreeTerms) e.terms = "You must agree to the terms to continue";
     return e;
   };
-
-  const clearErr = (key) => setErrors((x) => ({ ...x, [key]: "" }));
 
   const handleSignup = async () => {
     const e = validate();
@@ -336,18 +333,24 @@ function SignupForm({ onSwitch }) {
       setErrors(e);
       return;
     }
-
     setErrors({});
     setGlobalError("");
     setLoading(true);
 
     try {
-      const { error } = await signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        firstName,
-        lastName,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            full_name: `${firstName} ${lastName}`,
+          },
+        },
       });
+
+      console.log("Supabase signup:", data, error);
 
       if (error) {
         if (error.message?.includes("already registered")) {
@@ -359,31 +362,44 @@ function SignupForm({ onSwitch }) {
             error.message || "Something went wrong. Please try again.",
           );
         }
+        setLoading(false);
         return;
       }
 
+      if (!data?.user) {
+        setGlobalError("Signup failed. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      // Fire welcome email — don't await, don't block
+      fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-welcome`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ email, first_name: firstName }),
+      }).catch(console.error);
+
+      setLoading(false);
       setSubmitted(true);
     } catch (err) {
-      setGlobalError(err?.message || "Something went wrong. Please try again.");
-    } finally {
+      console.error("Signup error:", err);
+      setGlobalError(err.message || "Something went wrong. Please try again.");
       setLoading(false);
     }
   };
 
   const handleGoogle = async () => {
-    setGlobalError("");
-    setLoading(true);
-
-    try {
-      const { error } = await signInWithGoogle();
-      if (error) {
-        setGlobalError(error.message || "Google sign-in failed.");
-      }
-    } catch (err) {
-      setGlobalError(err?.message || "Google sign-in failed.");
-    } finally {
-      setLoading(false);
-    }
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: { access_type: "offline", prompt: "consent" },
+      },
+    });
+    if (error) alert("Google sign-in failed: " + error.message);
   };
 
   if (submitted) {
@@ -392,12 +408,14 @@ function SignupForm({ onSwitch }) {
         <div className="success-icon">🎉</div>
         <div className="success-title">Account created!</div>
         <p className="success-sub">
-          Welcome to Truvllo, {firstName}! Your account is ready. Continue to
-          sign in.
+          Welcome to Truvllo, {firstName}! Your account is ready. Check your
+          email for a confirmation link, then log in to get started.
         </p>
       </div>
     );
   }
+
+  const clearErr = (key) => setErrors((x) => ({ ...x, [key]: "" }));
 
   return (
     <>
@@ -538,7 +556,6 @@ function SignupForm({ onSwitch }) {
             <a
               href="/terms"
               target="_blank"
-              rel="noreferrer"
               style={{ color: "var(--green-mid)", fontWeight: 600 }}
             >
               Terms of Service
@@ -547,7 +564,6 @@ function SignupForm({ onSwitch }) {
             <a
               href="/privacy"
               target="_blank"
-              rel="noreferrer"
               style={{ color: "var(--green-mid)", fontWeight: 600 }}
             >
               Privacy Policy
@@ -565,6 +581,11 @@ function SignupForm({ onSwitch }) {
         {loading ? <div className="spinner" /> : "Create my free account"}
       </button>
 
+      <div className="divider">or sign up with</div>
+      <button className="social-btn" onClick={handleGoogle}>
+        <GoogleIcon /> Continue with Google
+      </button>
+
       <div className="switch-text">
         Already have an account? <a onClick={onSwitch}>Sign in</a>
       </div>
@@ -572,9 +593,9 @@ function SignupForm({ onSwitch }) {
   );
 }
 
+// ── Left Panel ────────────────────────────────────────────────────────────────
 function LeftPanel({ mode }) {
   const navigate = useNavigate();
-
   return (
     <div className="auth-left">
       <div className="auth-left-bg left-blob-1" />
@@ -639,6 +660,7 @@ function LeftPanel({ mode }) {
   );
 }
 
+// ── Root ──────────────────────────────────────────────────────────────────────
 export default function AuthPages() {
   const navigate = useNavigate();
   const [mode, setMode] = useState("login");

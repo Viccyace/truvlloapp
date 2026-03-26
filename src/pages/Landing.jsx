@@ -681,10 +681,12 @@ export default function Landing() {
       <section className="hero">
         <div className="hero-inner">
           <div className="hero-left">
-            {/* <div className="hero-eyebrow">
-              <span className="hero-eyebrow-dot" />
-              Smart Budget Intelligence
-            </div> */}
+            {
+              <div className="hero-eyebrow">
+                <span className="hero-eyebrow-dot" />
+                Smart Budget Intelligence
+              </div>
+            }
             <h1 className="hero-headline">
               Your Money.
               <em>Smarter Choices.</em>

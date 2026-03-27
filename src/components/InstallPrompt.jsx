@@ -3,7 +3,7 @@
 // 1. PWA "Add to Home Screen" install prompt
 // 2. Push notification permission request
 //
-// Shows after user has been on the app for 30 seconds (not intrusive)
+// Shows after user has been on the app for 45 seconds
 // Remembers dismissals in localStorage so it doesn't spam
 
 import { useState, useEffect, useCallback } from "react";
@@ -97,7 +97,6 @@ const styles = `
     margin-top:6px; line-height:1.4;
   }
 
-  /* Toast for after permission granted */
   .notif-toast {
     position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
     z-index:400; background:#1B4332; color:#FFFFFF;
@@ -108,7 +107,6 @@ const styles = `
   }
 `;
 
-// ── Storage helpers ────────────────────────────────────────────────────────────
 const INSTALL_DISMISSED_KEY = "truvllo_install_dismissed";
 const NOTIF_DISMISSED_KEY = "truvllo_notif_dismissed";
 const NOTIF_ASKED_KEY = "truvllo_notif_asked";
@@ -123,7 +121,12 @@ function dismiss(key) {
   localStorage.setItem(key, String(Date.now()));
 }
 
-// ── Main component ─────────────────────────────────────────────────────────────
+function getNotificationAPI() {
+  if (typeof window === "undefined") return null;
+  if (!("Notification" in window)) return null;
+  return window.Notification;
+}
+
 export default function InstallPrompt() {
   const { user } = useAuth();
   const location = useLocation();
@@ -134,20 +137,17 @@ export default function InstallPrompt() {
   const [toast, setToast] = useState(null);
   const [notifGranted, setNotifGranted] = useState(false);
 
-  // ── Capture the beforeinstallprompt event ─────────────────────────────────
   useEffect(() => {
     const handler = (e) => {
       e.preventDefault();
       setInstallEvent(e);
     };
+
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  // ── Decide which prompt to show after 30s ─────────────────────────────────
   useEffect(() => {
-    // Only show to logged-in users AND only on app pages (not landing/auth)
-    // Only show on core app pages — never on landing, auth, or onboarding
     const appRoutes = [
       "/dashboard",
       "/expenses",
@@ -156,15 +156,15 @@ export default function InstallPrompt() {
       "/settings",
       "/upgrade",
     ];
-    const isAppPage = appRoutes.some((r) => location.pathname.startsWith(r));
 
+    const isAppPage = appRoutes.some((r) => location.pathname.startsWith(r));
     if (!user || !isAppPage) return;
 
     const timer = setTimeout(() => {
-      const notifPermission = Notification.permission;
+      const NotificationAPI = getNotificationAPI();
+      const notifPermission = NotificationAPI?.permission ?? "unsupported";
       const alreadyAsked = localStorage.getItem(NOTIF_ASKED_KEY);
 
-      // Priority 1: notification permission (if not asked yet and not blocked)
       if (
         notifPermission === "default" &&
         !alreadyAsked &&
@@ -174,56 +174,64 @@ export default function InstallPrompt() {
         return;
       }
 
-      // Priority 2: install prompt (if available and not dismissed recently)
       if (installEvent && !wasDismissedRecently(INSTALL_DISMISSED_KEY, 14)) {
         setShowInstall(true);
       }
-    }, 45000); // 45 seconds — give user time to settle in
+    }, 45000);
 
     return () => clearTimeout(timer);
   }, [user, installEvent, location.pathname]);
 
-  // ── Also show notification prompt after install prompt is dismissed ────────
   useEffect(() => {
     if (!showInstall && notifGranted === false) {
-      // check if we should now show notif prompt
-      const notifPermission = Notification.permission;
+      const NotificationAPI = getNotificationAPI();
+      const notifPermission = NotificationAPI?.permission ?? "unsupported";
       const alreadyAsked = localStorage.getItem(NOTIF_ASKED_KEY);
+
       if (
         notifPermission === "default" &&
         !alreadyAsked &&
         !wasDismissedRecently(NOTIF_DISMISSED_KEY, 3)
       ) {
-        setTimeout(() => setShowNotif(true), 500);
+        const timer = setTimeout(() => setShowNotif(true), 500);
+        return () => clearTimeout(timer);
       }
     }
   }, [showInstall, notifGranted]);
 
-  // ── Notification permission request ───────────────────────────────────────
   const requestNotifPermission = useCallback(async () => {
     localStorage.setItem(NOTIF_ASKED_KEY, "1");
     setShowNotif(false);
 
+    const NotificationAPI = getNotificationAPI();
+    if (!NotificationAPI) {
+      console.log(
+        "[Notif] Notifications are not supported on this device/browser.",
+      );
+      return;
+    }
+
     try {
-      const permission = await Notification.requestPermission();
+      const permission = await NotificationAPI.requestPermission();
 
       if (permission === "granted") {
         setNotifGranted(true);
         setToast("🔔 Notifications enabled! We'll keep you updated.");
         setTimeout(() => setToast(null), 4000);
 
-        // Register push subscription if SW is active
-        const reg = await navigator.serviceWorker.ready;
-        const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+        if ("serviceWorker" in navigator) {
+          const reg = await navigator.serviceWorker.ready;
+          const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
-        if (vapidKey && reg.pushManager) {
-          try {
-            await reg.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(vapidKey),
-            });
-          } catch (e) {
-            console.warn("[Push] Subscription failed:", e);
+          if (vapidKey && reg.pushManager) {
+            try {
+              await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(vapidKey),
+              });
+            } catch (e) {
+              console.warn("[Push] Subscription failed:", e);
+            }
           }
         }
       } else {
@@ -234,16 +242,18 @@ export default function InstallPrompt() {
     }
   }, []);
 
-  // ── PWA install ───────────────────────────────────────────────────────────
   const handleInstall = useCallback(async () => {
     if (!installEvent) return;
+
     setShowInstall(false);
     installEvent.prompt();
+
     const { outcome } = await installEvent.userChoice;
     if (outcome === "accepted") {
       setToast("✅ Truvllo added to your home screen!");
       setTimeout(() => setToast(null), 4000);
     }
+
     setInstallEvent(null);
   }, [installEvent]);
 
@@ -264,10 +274,8 @@ export default function InstallPrompt() {
     <>
       <style>{styles}</style>
 
-      {/* ── Toast ─────────────────────────────────────────────────────────── */}
       {toast && <div className="notif-toast">{toast}</div>}
 
-      {/* ── Notification permission prompt ────────────────────────────────── */}
       {showNotif && (
         <div className="prompt-overlay" onClick={dismissNotif}>
           <div className="prompt-sheet" onClick={(e) => e.stopPropagation()}>
@@ -315,7 +323,6 @@ export default function InstallPrompt() {
         </div>
       )}
 
-      {/* ── PWA install prompt ─────────────────────────────────────────────── */}
       {showInstall && (
         <div className="prompt-overlay" onClick={dismissInstall}>
           <div className="prompt-sheet" onClick={(e) => e.stopPropagation()}>
@@ -364,7 +371,6 @@ export default function InstallPrompt() {
   );
 }
 
-// ── VAPID key helper ───────────────────────────────────────────────────────────
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");

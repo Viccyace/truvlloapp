@@ -13,6 +13,14 @@ import NotFound from "./pages/NotFound";
 import { useAuth } from "./providers/AuthProvider";
 import AuthCallback from "./pages/AuthCallback";
 
+// Public pages
+import Blog from "./pages/Blog";
+import About from "./pages/About";
+import Careers from "./pages/Careers";
+import Contact from "./pages/Contact";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+
 function LoadingScreen() {
   return <div style={{ padding: 24 }}>Loading...</div>;
 }
@@ -23,13 +31,10 @@ function ProtectedRoute() {
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/auth" replace />;
 
-  // ── New user: redirect to onboarding if not completed ─────────────────────
-  // Check both column names since DB has both onboarding_complete and onboarding_completed
   const onboardingDone =
     profile?.onboarding_complete === true ||
     profile?.onboarding_completed === true;
 
-  // Only redirect if profile is loaded and onboarding is not done
   if (profile && !onboardingDone) {
     return <Navigate to="/onboarding" replace />;
   }
@@ -46,7 +51,6 @@ function PublicRoute() {
   return <Outlet />;
 }
 
-// Onboarding route — accessible to logged-in users regardless of onboarding status
 function OnboardingRoute() {
   const { user, loading } = useAuth();
 
@@ -57,22 +61,27 @@ function OnboardingRoute() {
 }
 
 export const router = createBrowserRouter([
-  // Landing — accessible to everyone
   { path: "/", element: <Landing /> },
 
-  // Auth — redirect to dashboard if already logged in
+  { path: "/blog", element: <Blog /> },
+  { path: "/about", element: <About /> },
+  { path: "/careers", element: <Careers /> },
+  { path: "/contact", element: <Contact /> },
+  { path: "/privacy-policy", element: <PrivacyPolicy /> },
+  { path: "/terms-of-service", element: <TermsOfService /> },
+
+  { path: "/auth/callback", element: <AuthCallback /> },
+
   {
     element: <PublicRoute />,
     children: [{ path: "/auth", element: <Auth /> }],
   },
 
-  // Onboarding — needs login but doesn't require onboarding to be complete
   {
     element: <OnboardingRoute />,
     children: [{ path: "/onboarding", element: <Onboarding /> }],
   },
 
-  // Protected app pages — requires login AND completed onboarding
   {
     element: <ProtectedRoute />,
     children: [
@@ -85,7 +94,6 @@ export const router = createBrowserRouter([
           { path: "/insights", element: <Insights /> },
           { path: "/upgrade", element: <Upgrade /> },
           { path: "/settings", element: <Settings /> },
-          { path: "/auth/callback", element: <AuthCallback /> },
         ],
       },
     ],

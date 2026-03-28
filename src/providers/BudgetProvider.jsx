@@ -524,7 +524,7 @@ export function BudgetProvider({ children }) {
   // ── Derived calculations ────────────────────────────────────────────────────
   const derived = useMemo(() => {
     const budgetExpenses = activeBudget
-      ? expenses.filter((e) => e.budget_id === activeBudget.id)
+      ? expenses.filter((e) => e.budget_id === activeBudget.id || !e.budget_id)
       : expenses;
 
     const totalSpent = budgetExpenses.reduce(
@@ -572,6 +572,13 @@ export function BudgetProvider({ children }) {
         .reduce((sum, e) => sum + e.amount, 0),
     }));
 
+    // Calculate spent per budget for allBudgets display
+    const budgetSpentMap = expenses.reduce((acc, e) => {
+      const bid = e.budget_id || activeBudget?.id;
+      if (bid) acc[bid] = (acc[bid] ?? 0) + (e.amount ?? 0);
+      return acc;
+    }, {});
+
     return {
       budgetExpenses,
       totalSpent,
@@ -589,6 +596,7 @@ export function BudgetProvider({ children }) {
       categoryProgress,
       recentExpenses,
       spendByDay,
+      budgetSpentMap,
       hasExpenses: budgetExpenses.length > 0,
     };
   }, [activeBudget, expenses, categoryCaps]);

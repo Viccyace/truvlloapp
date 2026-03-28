@@ -297,55 +297,71 @@ function Step2({ data, onChange, onNext, onBack }) {
             background:
               "linear-gradient(135deg,var(--green-deep),var(--green-mid))",
             borderRadius: 18,
-            padding: "22px 24px",
+            padding: "20px 22px",
             marginTop: 24,
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            flexDirection: "column",
+            gap: 12,
           }}
         >
-          <div>
-            <div
-              style={{
-                fontSize: "0.72rem",
-                color: "rgba(255,255,255,0.55)",
-                marginBottom: 4,
-              }}
-            >
-              Your budget
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: "0.7rem",
+                  color: "rgba(255,255,255,0.55)",
+                  marginBottom: 4,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                Your budget
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontSize: "1.6rem",
+                  color: "#fff",
+                  fontWeight: 900,
+                  lineHeight: 1,
+                }}
+              >
+                {sym}
+                {parseInt(data.monthlyBudget || 0).toLocaleString()}
+              </div>
             </div>
-            <div
-              style={{
-                fontFamily: "'Playfair Display', serif",
-                fontSize: "1.7rem",
-                color: "#fff",
-                fontWeight: 900,
-              }}
-            >
-              {sym}
-              {data.monthlyBudget}
-            </div>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            <div
-              style={{
-                fontSize: "0.7rem",
-                color: "rgba(255,255,255,0.5)",
-                marginBottom: 4,
-              }}
-            >
-              Daily allowance
-            </div>
-            <div
-              style={{
-                fontFamily: "'Playfair Display', serif",
-                fontSize: "1.1rem",
-                color: "rgba(255,255,255,0.9)",
-                fontWeight: 700,
-              }}
-            >
-              {sym}
-              {parseInt(dailyBudget || 0, 10).toLocaleString()}/day
+            <div style={{ textAlign: "right" }}>
+              <div
+                style={{
+                  fontSize: "0.7rem",
+                  color: "rgba(255,255,255,0.5)",
+                  marginBottom: 4,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                Daily allowance
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontSize: "1.2rem",
+                  color: "rgba(255,255,255,0.9)",
+                  fontWeight: 700,
+                  lineHeight: 1,
+                }}
+              >
+                {sym}
+                {parseInt(dailyBudget || 0, 10).toLocaleString()}/day
+              </div>
             </div>
           </div>
         </div>

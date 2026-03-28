@@ -17,7 +17,6 @@ const styles = `
 
   .auth-root { display: flex; min-height: 100vh; }
 
-  /* LEFT PANEL */
   .auth-left {
     width: 44%; background: var(--ink);
     display: flex; flex-direction: column; justify-content: space-between;
@@ -44,19 +43,16 @@ const styles = `
   .auth-testimonial-name { font-size: 0.85rem; font-weight: 700; color: var(--white); }
   .auth-testimonial-role { font-size: 0.75rem; color: rgba(255,255,255,0.35); }
 
-  /* RIGHT PANEL */
   .auth-right { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 5%; background: var(--cream); min-height: 100vh; overflow-y: auto; }
   .auth-right-inner { width: 100%; max-width: 420px; }
   .auth-mobile-logo { display: none; align-items: center; justify-content: center; gap: 8px; font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-bottom: 36px; cursor: pointer; }
   .auth-mobile-logo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
   @media (max-width: 860px) { .auth-mobile-logo { display: flex; } }
 
-  /* TABS */
   .auth-tabs { display: flex; background: var(--cream-dark); border-radius: 14px; padding: 4px; margin-bottom: 36px; gap: 4px; }
   .auth-tab { flex: 1; border: none; border-radius: 10px; padding: 11px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.22s; background: transparent; color: var(--ink-subtle); }
   .auth-tab.active { background: var(--white); color: var(--ink); box-shadow: 0 2px 10px rgba(0,0,0,0.09); }
 
-  /* FORM */
   .auth-form-title { font-family: 'Playfair Display', serif; font-size: 1.9rem; font-weight: 800; color: var(--ink); margin-bottom: 6px; letter-spacing: -0.015em; }
   .auth-form-sub { font-size: 0.9rem; color: var(--ink-subtle); margin-bottom: 28px; line-height: 1.5; }
   .form-row { display: flex; gap: 14px; }
@@ -84,8 +80,6 @@ const styles = `
   .social-btn { width: 100%; padding: 13px; background: var(--white); color: var(--ink); border: 1.5px solid var(--border); border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
   .social-btn:hover { border-color: rgba(10,10,10,0.25); background: var(--cream-dark); }
   .google-icon { width: 18px; height: 18px; }
-  .terms-text { font-size: 0.78rem; color: var(--ink-subtle); text-align: center; line-height: 1.6; margin-top: 8px; }
-  .terms-text a { color: var(--green-mid); font-weight: 600; text-decoration: none; }
   .switch-text { text-align: center; font-size: 0.875rem; color: var(--ink-subtle); margin-top: 24px; }
   .switch-text a { color: var(--green-mid); font-weight: 700; text-decoration: none; cursor: pointer; }
   .trial-callout { background: var(--green-pale); border-radius: 12px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; border: 1px solid rgba(27,67,50,0.12); }
@@ -99,7 +93,6 @@ const styles = `
   .success-icon { font-size: 3rem; margin-bottom: 16px; }
   .success-title { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
   .success-sub { font-size: 0.9rem; color: var(--ink-subtle); line-height: 1.65; }
-  .reset-sent { background: var(--green-pale); border-radius: 12px; padding: 16px; text-align: center; font-size: 0.875rem; color: var(--green-deep); line-height: 1.6; font-weight: 500; margin-bottom: 16px; }
 `;
 
 // ── Google SVG icon ───────────────────────────────────────────────────────────
@@ -128,6 +121,19 @@ const GoogleIcon = () => (
   </svg>
 );
 
+// ── Shared Google OAuth handler ───────────────────────────────────────────────
+async function signInWithGoogle() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+      queryParams: { access_type: "offline", prompt: "select_account" },
+      scopes: "email profile",
+    },
+  });
+  if (error) alert("Google sign-in failed: " + error.message);
+}
+
 // ── Login Form ────────────────────────────────────────────────────────────────
 function LoginForm({ onSwitch }) {
   const navigate = useNavigate();
@@ -138,14 +144,13 @@ function LoginForm({ onSwitch }) {
   const [errors, setErrors] = useState({});
   const [globalError, setGlobalError] = useState("");
   const [resetSent, setResetSent] = useState(false);
-  const [resetMode, _setResetMode] = useState(false);
 
   const validate = () => {
     const e = {};
     if (!email) e.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(email))
       e.email = "Enter a valid email address";
-    if (!resetMode && !password) e.password = "Password is required";
+    if (!password) e.password = "Password is required";
     return e;
   };
 
@@ -191,17 +196,6 @@ function LoginForm({ onSwitch }) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: { access_type: "offline", prompt: "consent" },
-      },
-    });
-    if (error) alert("Google sign-in failed: " + error.message);
   };
 
   if (resetSent) {
@@ -284,7 +278,7 @@ function LoginForm({ onSwitch }) {
       </button>
 
       <div className="divider">or continue with</div>
-      <button className="social-btn" onClick={handleGoogle}>
+      <button className="social-btn" onClick={signInWithGoogle}>
         <GoogleIcon /> Continue with Google
       </button>
 
@@ -336,7 +330,6 @@ function SignupForm({ onSwitch }) {
     setErrors({});
     setGlobalError("");
     setLoading(true);
-
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -349,8 +342,6 @@ function SignupForm({ onSwitch }) {
           },
         },
       });
-
-      console.log("Supabase signup:", data, error);
 
       if (error) {
         if (error.message?.includes("already registered")) {
@@ -385,21 +376,9 @@ function SignupForm({ onSwitch }) {
       setLoading(false);
       setSubmitted(true);
     } catch (err) {
-      console.error("Signup error:", err);
       setGlobalError(err.message || "Something went wrong. Please try again.");
       setLoading(false);
     }
-  };
-
-  const handleGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: { access_type: "offline", prompt: "consent" },
-      },
-    });
-    if (error) alert("Google sign-in failed: " + error.message);
   };
 
   if (submitted) {
@@ -582,7 +561,7 @@ function SignupForm({ onSwitch }) {
       </button>
 
       <div className="divider">or sign up with</div>
-      <button className="social-btn" onClick={handleGoogle}>
+      <button className="social-btn" onClick={signInWithGoogle}>
         <GoogleIcon /> Continue with Google
       </button>
 

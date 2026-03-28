@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { supabase } from "../lib/supabase";
 import {
   X,
   Upload,
@@ -223,20 +224,38 @@ export default function BankImport({
       form.append("currency", currency);
       form.append("budget_id", budgetId ?? "");
 
+      // Get real user JWT — not anon key
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Your session expired. Please log in again.");
+
       const res = await fetch(
         `${SUPABASE_URL}/functions/v1/ai-import-statement`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-            apikey: SUPABASE_KEY,
-          },
+          headers: { Authorization: `Bearer ${token}`, apikey: SUPABASE_KEY },
           body: form,
         },
       );
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to parse statement");
+      if (!res.ok) {
+        // Extract clean message from nested Anthropic/Supabase error
+        const raw = data.error || data.message || "";
+        const nested = typeof raw === "object" ? raw : {};
+        const msg =
+          nested?.error?.message ||
+          nested?.message ||
+          (typeof raw === "string" && raw.includes("credit balance")
+            ? "Anthropic API credits exhausted. Top up at console.anthropic.com/settings/billing."
+            : null) ||
+          (typeof raw === "string" && raw.length < 200
+            ? raw
+            : "AI parser returned an error. Please try again.");
+        throw new Error(msg);
+      }
       if (!data.transactions?.length)
         throw new Error(
           "No transactions found in this file. Make sure it's a bank statement.",
@@ -374,7 +393,10 @@ export default function BankImport({
 
                 {file ? (
                   <div className="file-selected">
-                    <div className="file-icon" style={{ flexShrink: 0 }}>
+                    <div
+                      className="file-icon"
+                      style={{ flexShrink: 0, minWidth: 40 }}
+                    >
                       {file.name.endsWith(".pdf") ? (
                         <FileText size={18} />
                       ) : (

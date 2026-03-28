@@ -1017,12 +1017,21 @@ export default function ExpensesPage() {
                 </div>
               );
             })}
-            <div className="rec-add-card" onClick={() => setShowGate(true)}>
+            <div
+              className="rec-add-card"
+              onClick={() => {
+                if (!isPremium) {
+                  setShowGate(true);
+                } else {
+                  navigate("/budget");
+                }
+              }}
+            >
               <Plus size={16} /> Add recurring
             </div>
           </div>
 
-          {(!isPremium || showGate) && (
+          {showGate && (
             <div className="premium-gate">
               <button className="gate-close" onClick={() => setShowGate(false)}>
                 <X size={10} />

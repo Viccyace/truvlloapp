@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import DOMPurify from "dompurify";
 import {
   Wallet,
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useBudget } from "../providers/BudgetProvider";
+import { useAI } from "../hooks/useAI";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
@@ -198,14 +199,14 @@ const styles = `
 `;
 
 const CATEGORIES = [
-  { id: "food", icon: "🍔", label: "Food", bg: "#FFF3E0" },
-  { id: "transport", icon: "🚗", label: "Transport", bg: "#E8F5E9" },
-  { id: "bills", icon: "🏠", label: "Bills", bg: "#FCE4EC" },
-  { id: "shop", icon: "🛍️", label: "Shopping", bg: "#F3E5F5" },
-  { id: "health", icon: "💊", label: "Health", bg: "#E0F7FA" },
-  { id: "data", icon: "📱", label: "Airtime", bg: "#E3F2FD" },
-  { id: "fun", icon: "🎬", label: "Entertain.", bg: "#F9FBE7" },
-  { id: "other", icon: "💼", label: "Other", bg: "#F5F5F5" },
+  { id: "food", icon: "ðŸ”", label: "Food", bg: "#FFF3E0" },
+  { id: "transport", icon: "ðŸš—", label: "Transport", bg: "#E8F5E9" },
+  { id: "bills", icon: "ðŸ ", label: "Bills", bg: "#FCE4EC" },
+  { id: "shop", icon: "ðŸ›ï¸", label: "Shopping", bg: "#F3E5F5" },
+  { id: "health", icon: "ðŸ’Š", label: "Health", bg: "#E0F7FA" },
+  { id: "data", icon: "ðŸ“±", label: "Airtime", bg: "#E3F2FD" },
+  { id: "fun", icon: "ðŸŽ¬", label: "Entertain.", bg: "#F9FBE7" },
+  { id: "other", icon: "ðŸ’¼", label: "Other", bg: "#F5F5F5" },
 ];
 
 const NL_EXAMPLES = [
@@ -288,7 +289,7 @@ function formatExpenseForDashboard(expense) {
   };
 }
 
-// ── Summary cards — uses sym prop ─────────────────────────────────────────────
+// â”€â”€ Summary cards â€” uses sym prop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SummaryCards({ budget, spent, remaining, safe, daysLeft, sym }) {
   const pct =
     budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
@@ -307,7 +308,7 @@ function SummaryCards({ budget, spent, remaining, safe, daysLeft, sym }) {
           {sym}
           {fmt(budget)}
         </div>
-        <div className="sum-change neutral">This month · {pct}% used</div>
+        <div className="sum-change neutral">This month Â· {pct}% used</div>
       </div>
       <div className="sum-card">
         <div className="sum-icon red">
@@ -330,7 +331,7 @@ function SummaryCards({ budget, spent, remaining, safe, daysLeft, sym }) {
           {fmt(remaining)}
         </div>
         <div className="sum-change up">
-          ✓ {budget > 0 ? Math.round((remaining / budget) * 100) : 0}% left
+          âœ“ {budget > 0 ? Math.round((remaining / budget) * 100) : 0}% left
         </div>
       </div>
       <div className="sum-card">
@@ -342,13 +343,13 @@ function SummaryCards({ budget, spent, remaining, safe, daysLeft, sym }) {
           {sym}
           {fmt(safe)}
         </div>
-        <div className="sum-change neutral">Per day · {daysLeft} days</div>
+        <div className="sum-change neutral">Per day Â· {daysLeft} days</div>
       </div>
     </div>
   );
 }
 
-// ── Pace card — uses sym prop ─────────────────────────────────────────────────
+// â”€â”€ Pace card â€” uses sym prop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PaceCard({
   budget,
   spent,
@@ -388,7 +389,7 @@ function PaceCard({
           className="status-pill"
           style={{ background: status.bg, color: status.color }}
         >
-          ● {status.label}
+          â— {status.label}
         </span>
       </div>
       <div className="pace-meta">
@@ -458,14 +459,14 @@ function PaceCard({
         </strong>{" "}
         for day {currentDay}.{" "}
         {spent <= expected
-          ? "You're ahead of pace — great discipline."
+          ? "You're ahead of pace â€” great discipline."
           : "Pull back slightly to avoid end-of-month pressure."}
       </p>
     </div>
   );
 }
 
-// ── Safe card — uses sym prop ─────────────────────────────────────────────────
+// â”€â”€ Safe card â€” uses sym prop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SafeCard({ amount, daysLeft, totalDays, currentDay, sym }) {
   const pct = totalDays > 0 ? Math.round((currentDay / totalDays) * 100) : 0;
   const r = 18;
@@ -536,7 +537,7 @@ function AIPanel({ type, insight, onRefresh, loading }) {
       <div className="ai-tag">
         <div className="ai-dot" style={{ background: dotColor }} />
         <span className="ai-tag-text" style={{ color: tagColor }}>
-          {isAnalyst ? "🔍 AI Spending Analyst" : "🎯 AI Savings Coach"}
+          {isAnalyst ? "ðŸ” AI Spending Analyst" : "ðŸŽ¯ AI Savings Coach"}
         </span>
       </div>
       <div className="ai-card-title">
@@ -578,7 +579,7 @@ function AIPanel({ type, insight, onRefresh, loading }) {
   );
 }
 
-// ── Natural language entry — uses sym prop ────────────────────────────────────
+// â”€â”€ Natural language entry â€” uses sym prop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function NLEntry({ onAdd, sym }) {
   const [val, setVal] = useState("");
   const [loading, setLoading] = useState(false);
@@ -638,7 +639,7 @@ function NLEntry({ onAdd, sym }) {
         <div>
           <div className="nl-title">Natural Language Entry</div>
           <div className="nl-sub">
-            Just type what you spent — AI parses it instantly
+            Just type what you spent â€” AI parses it instantly
           </div>
         </div>
       </div>
@@ -697,7 +698,7 @@ function NLEntry({ onAdd, sym }) {
   );
 }
 
-// ── Quick add — uses sym prop ─────────────────────────────────────────────────
+// â”€â”€ Quick add â€” uses sym prop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function QuickAdd({ onAdd, sym }) {
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
@@ -749,7 +750,7 @@ function QuickAdd({ onAdd, sym }) {
         <div>
           <label className="field-label">Amount</label>
           <div className="amount-wrap">
-            {/* ✅ Dynamic currency symbol */}
+            {/* âœ… Dynamic currency symbol */}
             <span className="amount-sym">{sym}</span>
             <input
               className="field-input"
@@ -807,7 +808,7 @@ function QuickAdd({ onAdd, sym }) {
   );
 }
 
-// ── Recent expenses — uses sym prop ───────────────────────────────────────────
+// â”€â”€ Recent expenses â€” uses sym prop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function RecentExpenses({ expenses, onDelete, sym }) {
   if (!expenses.length) {
     return (
@@ -818,7 +819,7 @@ function RecentExpenses({ expenses, onDelete, sym }) {
           </div>
         </div>
         <div className="empty-state">
-          <div className="empty-icon">🧾</div>
+          <div className="empty-icon">ðŸ§¾</div>
           <div className="empty-title">No expenses yet</div>
           <p className="empty-sub">
             Log your first expense above to start tracking.
@@ -844,7 +845,7 @@ function RecentExpenses({ expenses, onDelete, sym }) {
             <div className="expense-info">
               <div className="expense-desc">{e.desc}</div>
               <div className="expense-meta">
-                {e.catName} · {e.date}
+                {e.catName} Â· {e.date}
               </div>
             </div>
             <div className="expense-row-actions">
@@ -858,11 +859,11 @@ function RecentExpenses({ expenses, onDelete, sym }) {
                 <Trash2 size={12} />
               </button>
             </div>
-            {/* ✅ Dynamic currency symbol */}
+            {/* âœ… Dynamic currency symbol */}
             <div
               className={`expense-amount${e.amount >= 10000 ? " large" : ""}`}
             >
-              −{sym}
+              âˆ’{sym}
               {fmt(e.amount)}
             </div>
           </div>
@@ -879,12 +880,12 @@ function Toast({ msg, onDone }) {
   }, [onDone]);
   return (
     <div className="toast">
-      <span style={{ color: "#52B788" }}>✓</span> {msg}
+      <span style={{ color: "#52B788" }}>âœ“</span> {msg}
     </div>
   );
 }
 
-// ── Main dashboard ────────────────────────────────────────────────────────────
+// â”€â”€ Main dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function Dashboard() {
   const { displayName } = useAuth();
   const {
@@ -902,11 +903,11 @@ export default function Dashboard() {
     daysLeft,
     addExpense,
     deleteExpense,
-    sym, // ✅ currency symbol from BudgetProvider
+    sym, // âœ… currency symbol from BudgetProvider
   } = useBudget();
 
   // Fallback symbol in case BudgetProvider hasn't loaded yet
-  const currSym = sym || "₦";
+  const currSym = sym || "â‚¦";
 
   const [analystInsight, setAnalystInsight] = useState(
     "Your AI spending analysis will appear here once you've logged some expenses.",
@@ -1002,11 +1003,11 @@ export default function Dashboard() {
             Welcome back, <em>{displayName || "there"}</em>
           </div>
           <div className="greeting-sub">
-            Here's where your money stands — {today}
+            Here's where your money stands â€” {today}
           </div>
         </div>
 
-        {/* ✅ sym passed to all components */}
+        {/* âœ… sym passed to all components */}
         <SummaryCards
           budget={Number(
             totalBudget ||
@@ -1088,3 +1089,4 @@ export default function Dashboard() {
     </>
   );
 }
+

@@ -252,7 +252,7 @@ function calcEndDate(period, startDate) {
   return s.toISOString().split("T")[0];
 }
 
-function BudgetModal({ budget, onSave, onClose }) {
+function BudgetModal({ budget, onSave, onClose, sym = "₦" }) {
   const isEdit = !!budget?.id;
   const [name, setName] = useState(budget?.name ?? "");
   const [amount, setAmount] = useState(
@@ -956,15 +956,19 @@ export default function BudgetPage() {
       <style>{FONTS + styles}</style>
 
       {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
-
       {modal === "new_budget" && (
-        <BudgetModal onSave={saveBudget} onClose={() => setModal(null)} />
+        <BudgetModal
+          onSave={saveBudget}
+          onClose={() => setModal(null)}
+          sym={sym}
+        />
       )}
       {modal === "edit_budget" && currentBudget && (
         <BudgetModal
           budget={currentBudget}
           onSave={saveBudget}
           onClose={() => setModal(null)}
+          sym={sym}
         />
       )}
       {modal === "new_recurring" && (

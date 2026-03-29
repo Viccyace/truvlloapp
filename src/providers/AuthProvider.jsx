@@ -52,6 +52,7 @@ function buildBaseProfile(
   const lastName = authUser?.user_metadata?.last_name ?? "";
   const fullName =
     authUser?.user_metadata?.full_name ||
+    authUser?.user_metadata?.name ||
     `${firstName} ${lastName}`.trim() ||
     authUser?.email ||
     "";
@@ -310,7 +311,9 @@ export function AuthProvider({ children }) {
     return await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: { access_type: "offline", prompt: "select_account" },
+        scopes: "email profile",
       },
     });
   }, []);

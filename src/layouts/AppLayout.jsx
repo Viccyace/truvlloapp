@@ -692,20 +692,6 @@ export default function AppLayout() {
             onClick={() => setShowNotifPanel((v) => !v)}
           >
             <Bell size={22} />
-            {unreadCount > 0 && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: 6,
-                  right: 10,
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: "var(--amber)",
-                  border: "1.5px solid #fff",
-                }}
-              />
-            )}
             <span className="bottom-nav-label">Alerts</span>
           </div>
         </nav>
@@ -717,4 +703,3 @@ export default function AppLayout() {
     </>
   );
 }
-

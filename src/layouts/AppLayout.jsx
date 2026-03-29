@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -110,7 +110,7 @@ const styles = `
   .trial-banner-text strong { color:var(--white); font-weight:700; }
   .trial-banner-cta { background:var(--amber); color:var(--ink); border:none; border-radius:100px; padding:5px 16px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.78rem; font-weight:800; cursor:pointer; white-space:nowrap; }
 
-  /* ── Quick Add Modal ──────────────────────────────────────────────────────── */
+  /* â”€â”€ Quick Add Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:80; display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s ease; }
   .modal-sheet { background:var(--white); border-radius:24px 24px 0 0; padding:28px 24px 40px; width:100%; max-width:480px; animation:slideInLeft 0.3s ease; }
   .modal-handle { width:40px; height:4px; border-radius:100px; background:var(--border); margin:0 auto 20px; }
@@ -201,7 +201,7 @@ const BOTTOM_NAV = [
 ];
 
 const PAGE_META = {
-  dashboard: { title: "Dashboard", breadcrumb: "Good morning 👋" },
+  dashboard: { title: "Dashboard", breadcrumb: "Good morning ðŸ‘‹" },
   expenses: { title: "Expenses", breadcrumb: "Track & manage your spending" },
   budget: { title: "Budget", breadcrumb: "Manage your active budget" },
   insights: { title: "Insights", breadcrumb: "Deep-dive into your patterns" },
@@ -209,7 +209,7 @@ const PAGE_META = {
   upgrade: { title: "Upgrade", breadcrumb: "Unlock Premium features" },
 };
 
-// ── QuickAddModal — now actually saves expenses ───────────────────────────────
+// â”€â”€ QuickAddModal â€” now actually saves expenses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function QuickAddModal({ onClose, onSaved }) {
   const { addExpense } = useBudget();
   const [desc, setDesc] = useState("");
@@ -257,7 +257,7 @@ function QuickAddModal({ onClose, onSaved }) {
 
         <div className="modal-row">
           <div>
-            <label className="modal-label">Amount (₦)</label>
+            <label className="modal-label">Amount (â‚¦)</label>
             <input
               className="modal-input"
               type="text"
@@ -364,7 +364,7 @@ export default function AppLayout() {
     <>
       <style>{FONTS + styles}</style>
 
-      {/* ── Logout confirmation modal ─────────────────────────────── */}
+      {/* â”€â”€ Logout confirmation modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {confirmLogout && (
         <div
           style={{
@@ -391,7 +391,7 @@ export default function AppLayout() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ fontSize: "2.5rem", marginBottom: 14 }}>👋</div>
+            <div style={{ fontSize: "2.5rem", marginBottom: 14 }}>ðŸ‘‹</div>
             <div
               style={{
                 fontFamily: "'Playfair Display',serif",
@@ -550,7 +550,7 @@ export default function AppLayout() {
           {isTrialing && (
             <div className="sidebar-upgrade">
               <div className="upgrade-title">
-                Trial Active — {trialDaysLeft} days left
+                Trial Active â€” {trialDaysLeft} days left
               </div>
               <div className="upgrade-sub">
                 Upgrade to keep AI features after your trial.
@@ -582,10 +582,10 @@ export default function AppLayout() {
                         : "rgba(255,255,255,0.45)",
                   }}
                 >
-                  ✦ {isPremium ? "Premium" : isTrialing ? "Trial" : "Free"}
+                  âœ¦ {isPremium ? "Premium" : isTrialing ? "Trial" : "Free"}
                 </div>
               </div>
-              <span className="profile-chevron">⋯</span>
+              <span className="profile-chevron">â‹¯</span>
             </div>
             <button
               className="signout-btn"
@@ -602,7 +602,7 @@ export default function AppLayout() {
           {isTrialing && (
             <div className="trial-banner">
               <div className="trial-banner-text">
-                🎁 <strong>{trialDaysLeft} days left</strong> on your free
+                ðŸŽ <strong>{trialDaysLeft} days left</strong> on your free
                 Premium trial
               </div>
               <button
@@ -621,7 +621,7 @@ export default function AppLayout() {
             </div>
             <div className="topbar-right">
               <div className="topbar-search">
-                <span className="search-icon">🔍</span>
+                <span className="search-icon">ðŸ”</span>
                 <input
                   placeholder="Search expenses..."
                   value={searchVal}
@@ -717,3 +717,4 @@ export default function AppLayout() {
     </>
   );
 }
+

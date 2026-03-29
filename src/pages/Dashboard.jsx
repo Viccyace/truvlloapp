@@ -889,6 +889,7 @@ export default function Dashboard() {
   const { displayName } = useAuth();
   const {
     activeBudget,
+    expenses,
     recentExpenses,
     totalBudget,
     totalSpent,
@@ -907,13 +908,14 @@ export default function Dashboard() {
   // Fallback symbol in case BudgetProvider hasn't loaded yet
   const currSym = sym || "₦";
 
-  const [analystInsight] = useState(
+  const [analystInsight, setAnalystInsight] = useState(
     "Your AI spending analysis will appear here once you've logged some expenses.",
   );
-  const [coachTip] = useState(
+  const [coachTip, setCoachTip] = useState(
     "Log your first expense to activate your AI savings coach.",
   );
   const [aiLoading, setAiLoading] = useState(false);
+  const { getSpendingInsight, getSavingsTip } = useAI();
   const [toast, setToast] = useState(null);
 
   const normalizedExpenses = Array.isArray(recentExpenses)
@@ -927,10 +929,31 @@ export default function Dashboard() {
     year: "numeric",
   });
 
-  const refreshAI = () => {
+  const refreshAI = useCallback(async () => {
+    if (!expenses?.length || !activeBudget) return;
     setAiLoading(true);
-    setTimeout(() => setAiLoading(false), 900);
-  };
+    try {
+      const [insightRes, tipRes] = await Promise.all([
+        getSpendingInsight(expenses, activeBudget, currency),
+        getSavingsTip(expenses, activeBudget, currency),
+      ]);
+      if (insightRes?.insight) setAnalystInsight(insightRes.insight);
+      if (tipRes?.tip) setCoachTip(tipRes.tip);
+    } catch (err) {
+      console.error("[Dashboard] AI refresh error:", err);
+    } finally {
+      setAiLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBudget, expenses, getSpendingInsight, getSavingsTip]);
+
+  // Auto-load AI insights when expenses are available
+  useEffect(() => {
+    if (expenses?.length > 0 && activeBudget) {
+      refreshAI();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBudget?.id, expenses?.length]);
 
   const handleAddExpense = async (data) => {
     const amount = Number(data.amount ?? 0);

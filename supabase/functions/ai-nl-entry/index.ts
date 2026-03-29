@@ -80,4 +80,3 @@ Return ONLY JSON: { description, amount, category, date, confidence }`,
   }
 });
 
-logUsage("nl_entry");

@@ -65,4 +65,3 @@ Suggest a realistic monthly budget breakdown.`,
   }
 });
 
-logUsage("budget_advisor");

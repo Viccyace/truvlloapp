@@ -69,4 +69,3 @@ Explain overspend and suggest cuts.`,
   }
 });
 
-logUsage("overspend_explainer");

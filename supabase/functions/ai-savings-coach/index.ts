@@ -54,4 +54,3 @@ Give one specific savings tip.`,
   }
 });
 
-logUsage("savings_coach");

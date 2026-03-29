@@ -78,4 +78,3 @@ Return ONLY JSON: { category, confidence (0-1), alternatives (2 other possible c
   }
 });
 
-logUsage("smart_categorise");

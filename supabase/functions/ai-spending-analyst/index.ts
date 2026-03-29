@@ -58,4 +58,3 @@ Write a 2-3 sentence spending insight.`,
   }
 });
 
-logUsage("spending_analyst");

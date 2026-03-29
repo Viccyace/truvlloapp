@@ -61,27 +61,37 @@ function OnboardingRoute() {
 }
 
 export const router = createBrowserRouter([
+  // ── Landing ──────────────────────────────────────────────────────────────
   { path: "/", element: <Landing /> },
 
+  // ── Public marketing pages ────────────────────────────────────────────────
   { path: "/blog", element: <Blog /> },
   { path: "/about", element: <About /> },
   { path: "/careers", element: <Careers /> },
   { path: "/contact", element: <Contact /> },
-  { path: "/privacy-policy", element: <PrivacyPolicy /> },
-  { path: "/terms-of-service", element: <TermsOfService /> },
 
+  // ── Legal — canonical URLs + short aliases (both work) ───────────────────
+  { path: "/privacy-policy", element: <PrivacyPolicy /> },
+  { path: "/privacy", element: <PrivacyPolicy /> }, // alias for Auth.jsx + Google Console
+  { path: "/terms-of-service", element: <TermsOfService /> },
+  { path: "/terms", element: <TermsOfService /> }, // alias for Auth.jsx + Google Console
+
+  // ── Auth callback (Google OAuth redirect) ─────────────────────────────────
   { path: "/auth/callback", element: <AuthCallback /> },
 
+  // ── Auth (public only — redirects logged-in users to dashboard) ──────────
   {
     element: <PublicRoute />,
     children: [{ path: "/auth", element: <Auth /> }],
   },
 
+  // ── Onboarding ────────────────────────────────────────────────────────────
   {
     element: <OnboardingRoute />,
     children: [{ path: "/onboarding", element: <Onboarding /> }],
   },
 
+  // ── Protected app routes ──────────────────────────────────────────────────
   {
     element: <ProtectedRoute />,
     children: [
@@ -99,5 +109,6 @@ export const router = createBrowserRouter([
     ],
   },
 
+  // ── 404 ───────────────────────────────────────────────────────────────────
   { path: "*", element: <NotFound /> },
 ]);

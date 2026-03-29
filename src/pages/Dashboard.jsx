@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef, useCallback } from "react";
 import DOMPurify from "dompurify";
 import {
   Wallet,
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useBudget } from "../providers/BudgetProvider";
+import { useAI } from "../hooks/useAI";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
@@ -899,6 +900,7 @@ export default function Dashboard() {
     totalDays,
     currentDay,
     daysLeft,
+    expenses,
     addExpense,
     deleteExpense,
     sym, // ✅ currency symbol from BudgetProvider
@@ -907,13 +909,14 @@ export default function Dashboard() {
   // Fallback symbol in case BudgetProvider hasn't loaded yet
   const currSym = sym || "₦";
 
-  const [analystInsight] = useState(
+  const [analystInsight, setAnalystInsight] = useState(
     "Your AI spending analysis will appear here once you've logged some expenses.",
   );
-  const [coachTip] = useState(
+  const [coachTip, setCoachTip] = useState(
     "Log your first expense to activate your AI savings coach.",
   );
   const [aiLoading, setAiLoading] = useState(false);
+  const { getSpendingInsight, getSavingsTip } = useAI();
   const [toast, setToast] = useState(null);
 
   const normalizedExpenses = Array.isArray(recentExpenses)
@@ -927,10 +930,23 @@ export default function Dashboard() {
     year: "numeric",
   });
 
-  const refreshAI = () => {
+  const refreshAI = useCallback(async () => {
+    if (!expenses?.length || !activeBudget) return;
     setAiLoading(true);
-    setTimeout(() => setAiLoading(false), 900);
-  };
+    try {
+      const [insightRes, tipRes] = await Promise.all([
+        getSpendingInsight(expenses, activeBudget, sym),
+        getSavingsTip(expenses, activeBudget, sym),
+      ]);
+      if (insightRes?.insight) setAnalystInsight(insightRes.insight);
+      if (tipRes?.tip) setCoachTip(tipRes.tip);
+    } catch (err) {
+      console.error("[AI]", err);
+    } finally {
+      setAiLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBudget?.id, expenses?.length]);
 
   const handleAddExpense = async (data) => {
     const amount = Number(data.amount ?? 0);

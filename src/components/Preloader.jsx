@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Preloader.jsx  —  src/components/Preloader.jsx
  * ─────────────────────────────────────────────────────────────────────────────
  * Shows a branded splash screen ONLY on the very first visit of a session.
@@ -243,3 +243,4 @@ export default function Preloader({ onDone }) {
     </>
   );
 }
+

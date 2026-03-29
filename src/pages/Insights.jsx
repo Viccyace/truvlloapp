@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+﻿import { useState, useEffect, useMemo } from "react";
 import DOMPurify from "dompurify";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
@@ -908,3 +908,4 @@ export default function InsightsPage() {
     </>
   );
 }
+

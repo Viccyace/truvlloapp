@@ -1,4 +1,4 @@
-// src/pages/AuthCallback.jsx
+﻿// src/pages/AuthCallback.jsx
 // Handles the redirect back from Google OAuth
 // Checks if user needs onboarding or goes straight to dashboard
 
@@ -71,3 +71,4 @@ export default function AuthCallback() {
     </div>
   );
 }
+

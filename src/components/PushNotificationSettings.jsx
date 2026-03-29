@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Bell, BellOff, Clock, Check, Smartphone } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
@@ -406,3 +406,4 @@ function urlBase64ToUint8Array(base64String) {
   const rawData = window.atob(base64);
   return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
 }
+

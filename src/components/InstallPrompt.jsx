@@ -1,4 +1,4 @@
-// src/components/InstallPrompt.jsx
+﻿// src/components/InstallPrompt.jsx
 // Handles two things:
 // 1. PWA "Add to Home Screen" install prompt
 // 2. Push notification permission request
@@ -377,3 +377,4 @@ function urlBase64ToUint8Array(base64String) {
   const rawData = window.atob(base64);
   return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
 }
+

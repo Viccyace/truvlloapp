@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+﻿import { useState, useEffect, useMemo } from "react";
 /* eslint-disable no-unused-vars -- sub-components are used in JSX */
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
@@ -991,3 +991,4 @@ export default function SettingsPage() {
     </>
   );
 }
+

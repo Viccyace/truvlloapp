@@ -165,6 +165,100 @@ function calcEndDate(period, startDate) {
   return s.toISOString().split("T")[0];
 }
 
+// ── Auto-notification checker ─────────────────────────────────────────────────
+async function checkAndInsertNotifications(supabase, userId) {
+  // Get fresh derived data
+  const [budgetsRes, expensesRes, capsRes] = await Promise.all([
+    supabase
+      .from("budgets")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .single(),
+    supabase
+      .from("expenses")
+      .select("*")
+      .eq("user_id", userId)
+      .order("date", { ascending: false }),
+    supabase.from("category_caps").select("*").eq("user_id", userId),
+  ]);
+
+  const budget = budgetsRes.data;
+  const expenses = expensesRes.data ?? [];
+  const caps = capsRes.data ?? [];
+
+  if (!budget || !expenses.length) return;
+
+  const totalBudget = Number(budget.total_amount || budget.amount || 0);
+  const totalSpent = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+  const pctSpent =
+    totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
+
+  const notifications = [];
+
+  // 1. Budget pace alert — over 80% spent
+  if (pctSpent >= 80 && pctSpent < 100) {
+    notifications.push({
+      user_id: userId,
+      type: "pace_alert",
+      title: "Budget running low",
+      body: `You've used ${pctSpent}% of your budget. Slow down to stay on track.`,
+    });
+  }
+
+  // 2. Budget exceeded
+  if (pctSpent >= 100) {
+    notifications.push({
+      user_id: userId,
+      type: "pace_alert",
+      title: "Budget exceeded",
+      body: `You've gone over your budget by ${Math.round(totalSpent - totalBudget).toLocaleString()}.`,
+    });
+  }
+
+  // 3. Category cap alerts
+  for (const cap of caps) {
+    const capSpent = expenses
+      .filter((e) => e.category === cap.category)
+      .reduce((s, e) => s + Number(e.amount || 0), 0);
+    const capPct = cap.limit > 0 ? Math.round((capSpent / cap.limit) * 100) : 0;
+
+    if (capPct >= 90 && capPct < 100) {
+      notifications.push({
+        user_id: userId,
+        type: "cap_alert",
+        title: `${cap.category} cap almost reached`,
+        body: `${capSpent.toLocaleString()} of ${cap.limit.toLocaleString()} ${cap.category} budget used.`,
+      });
+    } else if (capPct >= 100) {
+      notifications.push({
+        user_id: userId,
+        type: "cap_alert",
+        title: `${cap.category} cap exceeded`,
+        body: `You're over your ${cap.category} cap by ${Math.round(capSpent - cap.limit).toLocaleString()}.`,
+      });
+    }
+  }
+
+  if (!notifications.length) return;
+
+  // De-duplicate — don't insert if same type+title exists in last 24hrs
+  const since = new Date(Date.now() - 86_400_000).toISOString();
+  for (const notif of notifications) {
+    const { count } = await supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("type", notif.type)
+      .eq("title", notif.title)
+      .gte("created_at", since);
+
+    if ((count ?? 0) === 0) {
+      await supabase.from("notifications").insert(notif);
+    }
+  }
+}
+
 export function BudgetProvider({ children }) {
   const { user, isLoggedIn, currency } = useAuth();
 
@@ -312,6 +406,8 @@ export function BudgetProvider({ children }) {
       }
       invalidateCache(user.id);
       setExpenses((prev) => prev.map((e) => (e.id === tempId ? data : e)));
+      // Check notifications after adding expense (non-blocking)
+      checkAndInsertNotifications(supabase, user.id).catch(() => {});
       return { data };
     },
     [user?.id, activeBudget?.id],

@@ -14,7 +14,7 @@ import {
   Plus,
   X,
   LogOut,
-} from "lucide-react"; // eslint-disable-line no-unused-vars
+} from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useBudget } from "../providers/BudgetProvider";
 
@@ -38,7 +38,6 @@ const styles = `
   @keyframes spin { to{transform:rotate(360deg)} }
 
   .shell-root { display:flex; min-height:100vh; overflow-x:hidden; max-width:100vw; }
-
   .sidebar { width:var(--sidebar-w); flex-shrink:0; background:var(--ink); height:100vh; position:fixed; top:0; left:0; z-index:50; display:flex; flex-direction:column; overflow:hidden; }
   .sidebar-bg { position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none; width:300px; height:300px; top:-80px; right:-80px; background:radial-gradient(circle,rgba(64,145,108,0.18) 0%,transparent 70%); }
   .sidebar-logo { padding:28px 24px 20px; display:flex; align-items:center; gap:8px; font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:700; color:var(--white); border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
@@ -59,19 +58,16 @@ const styles = `
   .profile-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--green-mid),var(--green-light)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:var(--white); flex-shrink:0; }
   .profile-name { font-size:0.875rem; font-weight:700; color:var(--white); }
   .profile-chevron { margin-left:auto; color:rgba(255,255,255,0.3); font-size:0.7rem; }
-  .premium-pill { display:inline-flex; align-items:center; gap:4px; background:var(--amber-pale); color:var(--amber); font-size:0.65rem; font-weight:800; padding:2px 8px; border-radius:100px; border:1px solid rgba(212,160,23,0.25); margin-top:2px; }
+  .premium-pill { display:inline-flex; align-items:center; gap:4px; font-size:0.65rem; font-weight:800; padding:2px 8px; border-radius:100px; border:1px solid rgba(212,160,23,0.25); margin-top:2px; }
   .sidebar-upgrade { margin:0 12px 12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px; }
   .upgrade-title { font-size:0.82rem; font-weight:700; color:var(--white); margin-bottom:4px; }
   .upgrade-sub { font-size:0.75rem; color:rgba(255,255,255,0.4); line-height:1.5; margin-bottom:12px; }
   .upgrade-btn { width:100%; padding:9px; border-radius:8px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s; }
   .upgrade-btn:hover { opacity:0.9; }
-
   .signout-btn { width:100%; margin-top:12px; padding:10px 12px; border-radius:10px; border:none; background:var(--danger-bg); color:#F8C9C4; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.84rem; font-weight:700; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
   .signout-btn:hover { background:rgba(192,57,43,0.18); color:#FFD6D1; }
   .signout-btn:disabled { opacity:0.65; cursor:not-allowed; }
-
   .main-content { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; overflow-x:hidden; max-width:100%; }
-
   .desktop-topbar { height:var(--topbar-h); background:var(--cream); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 32px; position:sticky; top:0; z-index:40; flex-shrink:0; }
   .topbar-page-title { font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:700; color:var(--ink); }
   .topbar-breadcrumb { font-size:0.78rem; color:var(--ink-subtle); margin-top:1px; }
@@ -80,7 +76,6 @@ const styles = `
   .topbar-icon-btn:hover { border-color:rgba(10,10,10,0.2); background:var(--cream-dark); }
   .notif-dot { position:absolute; top:6px; right:6px; width:7px; height:7px; border-radius:50%; background:var(--amber); border:1.5px solid var(--white); }
   .topbar-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--green-mid),var(--green-light)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:var(--white); cursor:pointer; }
-
   .mobile-topbar { display:none; height:var(--topbar-h); background:var(--cream); border-bottom:1px solid var(--border); align-items:center; justify-content:space-between; padding:0 20px; position:sticky; top:0; z-index:40; flex-shrink:0; }
   .mobile-back-btn { width:36px; height:36px; border-radius:10px; border:1.5px solid var(--border); background:var(--white); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.9rem; color:var(--ink-muted); }
   .mobile-logo { font-family:'Playfair Display',serif; font-size:1.25rem; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px; }
@@ -88,29 +83,21 @@ const styles = `
   .mobile-topbar-right { display:flex; align-items:center; gap:8px; }
   .mobile-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--green-mid),var(--green-light)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem; color:var(--white); cursor:pointer; }
   .mobile-menu-btn { width:34px; height:34px; border-radius:10px; border:1.5px solid var(--border); background:var(--white); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.85rem; color:var(--ink-muted); }
-
   .page-content { flex:1; padding:32px; padding-bottom:40px; animation:fadeUp 0.3s ease; overflow-x:hidden; }
-
   .bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; height:var(--bottomnav-h); background:var(--white); border-top:1px solid var(--border); z-index:50; align-items:center; justify-content:space-around; padding:0 8px; padding-bottom:env(safe-area-inset-bottom); box-shadow:0 -4px 24px rgba(0,0,0,0.06); }
   .bottom-nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 16px; border-radius:12px; cursor:pointer; transition:all 0.18s; flex:1; max-width:72px; }
   .bottom-nav-item.active { background:var(--green-pale); }
-  .bottom-nav-icon { font-size:1.25rem; transition:transform 0.18s; }
-  .bottom-nav-item.active .bottom-nav-icon { transform:scale(1.15); }
   .bottom-nav-label { font-size:0.65rem; font-weight:700; color:var(--ink-subtle); transition:color 0.18s; }
   .bottom-nav-item.active .bottom-nav-label { color:var(--green-deep); }
-
   .drawer-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:60; animation:fadeIn 0.2s ease; }
   .drawer-overlay.open { display:block; }
   .drawer { position:fixed; top:0; left:0; bottom:0; width:280px; background:var(--ink); z-index:70; transform:translateX(-100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; overflow:hidden; }
   .drawer.open { transform:translateX(0); }
   .drawer-close { position:absolute; top:20px; right:16px; width:32px; height:32px; border-radius:8px; border:none; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.6); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-
   .trial-banner { background:linear-gradient(90deg,var(--green-deep),var(--green-mid)); padding:10px 32px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; flex-wrap:wrap; gap:8px; }
   .trial-banner-text { font-size:0.82rem; color:rgba(255,255,255,0.85); font-weight:500; }
   .trial-banner-text strong { color:var(--white); font-weight:700; }
   .trial-banner-cta { background:var(--amber); color:var(--ink); border:none; border-radius:100px; padding:5px 16px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.78rem; font-weight:800; cursor:pointer; white-space:nowrap; }
-
-  /* â”€â”€ Quick Add Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:80; display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s ease; }
   .modal-sheet { background:var(--white); border-radius:24px 24px 0 0; padding:28px 24px 40px; width:100%; max-width:480px; animation:slideInLeft 0.3s ease; }
   .modal-handle { width:40px; height:4px; border-radius:100px; background:var(--border); margin:0 auto 20px; }
@@ -128,15 +115,12 @@ const styles = `
   .modal-submit { flex:1; padding:14px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
   .modal-submit:disabled { opacity:0.6; cursor:not-allowed; }
   .spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,0.35); border-top-color:var(--white); border-radius:50%; animation:spin 0.7s linear infinite; }
-
   .fab { display:none; position:fixed; bottom:calc(var(--bottomnav-h) + 16px); right:20px; width:52px; height:52px; border-radius:50%; z-index:45; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-size:1.5rem; border:none; cursor:pointer; box-shadow:0 6px 24px rgba(27,67,50,0.4); transition:all 0.2s; align-items:center; justify-content:center; }
-
   .topbar-search { display:flex; align-items:center; gap:8px; background:var(--cream-dark); border:1.5px solid var(--border); border-radius:10px; padding:0 14px; height:36px; }
   .topbar-search:focus-within { border-color:var(--green-light); background:var(--white); }
   .topbar-search input { border:none; background:transparent; outline:none; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.85rem; color:var(--ink); width:160px; }
   .topbar-search input::placeholder { color:rgba(10,10,10,0.35); }
   .search-icon { color:var(--ink-subtle); font-size:0.85rem; }
-
   @media (max-width: 900px) {
     .sidebar { display:none; }
     .main-content { margin-left:0; }
@@ -201,7 +185,7 @@ const BOTTOM_NAV = [
 ];
 
 const PAGE_META = {
-  dashboard: { title: "Dashboard", breadcrumb: "Good morning ðŸ‘‹" },
+  dashboard: { title: "Dashboard", breadcrumb: "Good morning 👋" },
   expenses: { title: "Expenses", breadcrumb: "Track & manage your spending" },
   budget: { title: "Budget", breadcrumb: "Manage your active budget" },
   insights: { title: "Insights", breadcrumb: "Deep-dive into your patterns" },
@@ -209,7 +193,6 @@ const PAGE_META = {
   upgrade: { title: "Upgrade", breadcrumb: "Unlock Premium features" },
 };
 
-// â”€â”€ QuickAddModal â€” now actually saves expenses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function QuickAddModal({ onClose, onSaved }) {
   const { addExpense } = useBudget();
   const [desc, setDesc] = useState("");
@@ -242,7 +225,6 @@ function QuickAddModal({ onClose, onSaved }) {
       <div className="modal-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="modal-handle" />
         <div className="modal-title">Quick add expense</div>
-
         <div className="modal-field">
           <label className="modal-label">Description</label>
           <input
@@ -254,10 +236,9 @@ function QuickAddModal({ onClose, onSaved }) {
             autoFocus
           />
         </div>
-
         <div className="modal-row">
           <div>
-            <label className="modal-label">Amount (â‚¦)</label>
+            <label className="modal-label">Amount (&#8358;)</label>
             <input
               className="modal-input"
               type="text"
@@ -277,7 +258,6 @@ function QuickAddModal({ onClose, onSaved }) {
             />
           </div>
         </div>
-
         <div className="modal-cat-grid">
           {QUICK_CATEGORIES.map((c) => (
             <button
@@ -289,7 +269,6 @@ function QuickAddModal({ onClose, onSaved }) {
             </button>
           ))}
         </div>
-
         <div className="modal-actions">
           <button className="modal-cancel" onClick={onClose}>
             Cancel
@@ -322,6 +301,7 @@ export default function AppLayout() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [searchVal, setSearchVal] = useState("");
   const [signingOut, setSigningOut] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
@@ -364,7 +344,7 @@ export default function AppLayout() {
     <>
       <style>{FONTS + styles}</style>
 
-      {/* â”€â”€ Logout confirmation modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* Logout confirmation */}
       {confirmLogout && (
         <div
           style={{
@@ -391,7 +371,7 @@ export default function AppLayout() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ fontSize: "2.5rem", marginBottom: 14 }}>ðŸ‘‹</div>
+            <div style={{ fontSize: "2.5rem", marginBottom: 14 }}>👋</div>
             <div
               style={{
                 fontFamily: "'Playfair Display',serif",
@@ -457,6 +437,52 @@ export default function AppLayout() {
         </div>
       )}
 
+      {/* Notification panel */}
+      {showNotifPanel && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 90 }}
+          onClick={() => setShowNotifPanel(false)}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 70,
+              right: 16,
+              width: 320,
+              background: "#fff",
+              borderRadius: 16,
+              boxShadow: "0 8px 40px rgba(0,0,0,0.15)",
+              border: "1.5px solid rgba(10,10,10,0.08)",
+              padding: 20,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                fontFamily: "'Playfair Display',serif",
+                fontSize: "1rem",
+                fontWeight: 800,
+                marginBottom: 16,
+                color: "#0A0A0A",
+              }}
+            >
+              Notifications
+            </div>
+            <div
+              style={{
+                textAlign: "center",
+                padding: "24px 0",
+                color: "#6B6B6B",
+                fontSize: "0.875rem",
+              }}
+            >
+              <div style={{ fontSize: "1.5rem", marginBottom: 8 }}>🔔</div>
+              No notifications yet
+            </div>
+          </div>
+        </div>
+      )}
+
       <div
         className={`drawer-overlay${drawerOpen ? " open" : ""}`}
         onClick={() => setDrawerOpen(false)}
@@ -488,21 +514,25 @@ export default function AppLayout() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="sidebar-upgrade">
-            <div className="upgrade-title">
-              {trialDaysLeft} days left on trial
+          {isTrialing && (
+            <div className="sidebar-upgrade">
+              <div className="upgrade-title">
+                {trialDaysLeft} days left on trial
+              </div>
+              <div className="upgrade-sub">
+                Upgrade to keep all AI features.
+              </div>
+              <button
+                className="upgrade-btn"
+                onClick={() => {
+                  goTo("/upgrade");
+                  setDrawerOpen(false);
+                }}
+              >
+                Upgrade to Premium
+              </button>
             </div>
-            <div className="upgrade-sub">Upgrade to keep all AI features.</div>
-            <button
-              className="upgrade-btn"
-              onClick={() => {
-                goTo("/upgrade");
-                setDrawerOpen(false);
-              }}
-            >
-              Upgrade to Premium
-            </button>
-          </div>
+          )}
           <button
             className="signout-btn"
             onClick={() => setConfirmLogout(true)}
@@ -518,8 +548,6 @@ export default function AppLayout() {
         <QuickAddModal
           onClose={() => setQuickAddOpen(false)}
           onSaved={() => {
-            // If already on expenses page it'll update via realtime
-            // If elsewhere, navigate there so user sees the new expense
             if (!location.pathname.includes("expenses")) goTo("/expenses");
           }}
         />
@@ -550,7 +578,7 @@ export default function AppLayout() {
           {isTrialing && (
             <div className="sidebar-upgrade">
               <div className="upgrade-title">
-                Trial Active â€” {trialDaysLeft} days left
+                Trial Active — {trialDaysLeft} days left
               </div>
               <div className="upgrade-sub">
                 Upgrade to keep AI features after your trial.
@@ -582,10 +610,10 @@ export default function AppLayout() {
                         : "rgba(255,255,255,0.45)",
                   }}
                 >
-                  âœ¦ {isPremium ? "Premium" : isTrialing ? "Trial" : "Free"}
+                  ✦ {isPremium ? "Premium" : isTrialing ? "Trial" : "Free"}
                 </div>
               </div>
-              <span className="profile-chevron">â‹¯</span>
+              <span className="profile-chevron">⋯</span>
             </div>
             <button
               className="signout-btn"
@@ -602,7 +630,7 @@ export default function AppLayout() {
           {isTrialing && (
             <div className="trial-banner">
               <div className="trial-banner-text">
-                ðŸŽ <strong>{trialDaysLeft} days left</strong> on your free
+                🎁 <strong>{trialDaysLeft} days left</strong> on your free
                 Premium trial
               </div>
               <button
@@ -621,16 +649,19 @@ export default function AppLayout() {
             </div>
             <div className="topbar-right">
               <div className="topbar-search">
-                <span className="search-icon">ðŸ”</span>
+                <span className="search-icon">🔍</span>
                 <input
                   placeholder="Search expenses..."
                   value={searchVal}
                   onChange={(e) => setSearchVal(e.target.value)}
                 />
               </div>
-              <div className="topbar-icon-btn" title="Notifications">
+              <div
+                className="topbar-icon-btn"
+                title="Notifications"
+                onClick={() => setShowNotifPanel((v) => !v)}
+              >
                 <Bell size={16} />
-                <div className="notif-dot" />
               </div>
               <div
                 className="topbar-icon-btn"

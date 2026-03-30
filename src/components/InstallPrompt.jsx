@@ -221,7 +221,8 @@ export default function InstallPrompt() {
 
         if ("serviceWorker" in navigator) {
           const reg = await navigator.serviceWorker.ready;
-          const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+          const vapidKey =
+            "BPXygTbuwsQ5mklz4rFhYyl6LSPX0psGM_gc5tlOcNYkLgK5wjs8y8ojcDzgUwjFyChrP6WlBhisbZXVhNJHiN0";
 
           if (vapidKey && reg.pushManager) {
             try {
@@ -377,5 +378,3 @@ function urlBase64ToUint8Array(base64String) {
   const rawData = window.atob(base64);
   return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
 }
-
-

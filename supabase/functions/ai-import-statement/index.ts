@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
   try {
     // ── Auth ──────────────────────────────────────────────────────────────────
     const authHeader = req.headers.get("Authorization");
-    const userId = await getUserFromJWT(authHeader?.replace("Bearer ", ""));
+    const userId = await getUserFromJWT(authHeader);
     if (!userId)
       return new Response(
         JSON.stringify({ error: "Unauthorized. Please log in again." }),

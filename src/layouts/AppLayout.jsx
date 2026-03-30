@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -16,6 +16,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
+import { supabase } from "../lib/supabase";
 import { useBudget } from "../providers/BudgetProvider";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
@@ -300,6 +301,7 @@ export default function AppLayout() {
   const isPremium = isPremiumOrTrial && !isTrialing;
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [searchVal, setSearchVal] = useState("");
@@ -316,6 +318,34 @@ export default function AppLayout() {
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
   }, []);
+
+  const fetchNotifications = useCallback(async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const cached = JSON.parse(localStorage.getItem("truvllo_auth") || "{}");
+    const userId = session?.user?.id || cached?.user?.id;
+    if (!userId) return;
+    const { data } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (data) setNotifications(data);
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    // Refresh notifications every 60 seconds
+    const interval = setInterval(fetchNotifications, 60_000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
+  // Re-fetch when notification panel opens
+  useEffect(() => {
+    if (showNotifPanel) fetchNotifications();
+  }, [showNotifPanel, fetchNotifications]);
 
   const goTo = (path) => {
     navigate(path);
@@ -448,36 +478,191 @@ export default function AppLayout() {
               position: "absolute",
               top: 70,
               right: 16,
-              width: 320,
+              width: 340,
               background: "#fff",
               borderRadius: 16,
               boxShadow: "0 8px 40px rgba(0,0,0,0.15)",
               border: "1.5px solid rgba(10,10,10,0.08)",
-              padding: 20,
+              overflow: "hidden",
+              maxHeight: 480,
             }}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Header */}
             <div
               style={{
-                fontFamily: "'Playfair Display',serif",
-                fontSize: "1rem",
-                fontWeight: 800,
-                marginBottom: 16,
-                color: "#0A0A0A",
+                padding: "16px 20px",
+                borderBottom: "1px solid rgba(10,10,10,0.07)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
               }}
             >
-              Notifications
+              <div
+                style={{
+                  fontFamily: "'Playfair Display',serif",
+                  fontSize: "1rem",
+                  fontWeight: 800,
+                  color: "#0A0A0A",
+                }}
+              >
+                Notifications{" "}
+                {notifications.filter((n) => !n.read).length > 0 && (
+                  <span
+                    style={{
+                      background: "#D4A017",
+                      color: "#fff",
+                      fontSize: "0.65rem",
+                      fontWeight: 800,
+                      padding: "2px 7px",
+                      borderRadius: 100,
+                      marginLeft: 6,
+                    }}
+                  >
+                    {notifications.filter((n) => !n.read).length}
+                  </span>
+                )}
+              </div>
+              {notifications.some((n) => !n.read) && (
+                <button
+                  onClick={async () => {
+                    const cached = JSON.parse(
+                      localStorage.getItem("truvllo_auth") || "{}",
+                    );
+                    const userId = cached?.user?.id;
+                    if (userId)
+                      await supabase
+                        .from("notifications")
+                        .update({ read: true })
+                        .eq("user_id", userId)
+                        .eq("read", false);
+                    fetchNotifications();
+                  }}
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "#2D6A4F",
+                    fontWeight: 700,
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Mark all read
+                </button>
+              )}
             </div>
-            <div
-              style={{
-                textAlign: "center",
-                padding: "24px 0",
-                color: "#6B6B6B",
-                fontSize: "0.875rem",
-              }}
-            >
-              <div style={{ fontSize: "1.5rem", marginBottom: 8 }}>🔔</div>
-              No notifications yet
+            {/* List */}
+            <div style={{ overflowY: "auto", maxHeight: 380 }}>
+              {notifications.length === 0 ? (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "32px 20px",
+                    color: "#6B6B6B",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  <div style={{ fontSize: "1.5rem", marginBottom: 8 }}>🔔</div>
+                  No notifications yet
+                </div>
+              ) : (
+                notifications.map((n) => {
+                  const icon =
+                    n.type === "pace_alert"
+                      ? "⚠️"
+                      : n.type === "cap_alert"
+                        ? "🎯"
+                        : n.type === "trial"
+                          ? "⏰"
+                          : n.type === "milestone"
+                            ? "🎉"
+                            : "💡";
+                  const timeAgo = (created) => {
+                    const diff = Date.now() - new Date(created).getTime();
+                    if (diff < 3600000)
+                      return `${Math.round(diff / 60000)}m ago`;
+                    if (diff < 86400000)
+                      return `${Math.round(diff / 3600000)}h ago`;
+                    return `${Math.round(diff / 86400000)}d ago`;
+                  };
+                  return (
+                    <div
+                      key={n.id}
+                      style={{
+                        padding: "14px 20px",
+                        borderBottom: "1px solid rgba(10,10,10,0.05)",
+                        background: n.read
+                          ? "transparent"
+                          : "rgba(27,67,50,0.03)",
+                        display: "flex",
+                        gap: 12,
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: 10,
+                          background: "rgba(27,67,50,0.08)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "1rem",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {icon}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: "0.85rem",
+                            fontWeight: 700,
+                            color: "#0A0A0A",
+                            marginBottom: 3,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
+                          {n.title}
+                          {!n.read && (
+                            <span
+                              style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: "50%",
+                                background: "#D4A017",
+                                display: "inline-block",
+                                flexShrink: 0,
+                              }}
+                            />
+                          )}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "0.78rem",
+                            color: "#6B6B6B",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {n.body}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "0.7rem",
+                            color: "#9B9B9B",
+                            marginTop: 4,
+                          }}
+                        >
+                          {timeAgo(n.created_at)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
@@ -662,6 +847,9 @@ export default function AppLayout() {
                 onClick={() => setShowNotifPanel((v) => !v)}
               >
                 <Bell size={16} />
+                {notifications.filter((n) => !n.read).length > 0 && (
+                  <div className="notif-dot" />
+                )}
               </div>
               <div
                 className="topbar-icon-btn"
@@ -723,6 +911,20 @@ export default function AppLayout() {
             onClick={() => setShowNotifPanel((v) => !v)}
           >
             <Bell size={22} />
+            {notifications.filter((n) => !n.read).length > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: 6,
+                  right: 8,
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: "#D4A017",
+                  border: "2px solid #fff",
+                }}
+              />
+            )}
             <span className="bottom-nav-label">Alerts</span>
           </div>
         </nav>

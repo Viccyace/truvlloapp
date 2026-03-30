@@ -411,6 +411,7 @@ export default function ExpensesPage() {
   const [toast, setToast] = useState(null);
   const [showGate, setShowGate] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showTrialCelebration, setShowTrialCelebration] = useState(false);
 
   const goToUpgrade = () => {
     setShowGate(false);
@@ -430,7 +431,7 @@ export default function ExpensesPage() {
       trial_started_at: now.toISOString(),
       trial_ends_at: endsAt.toISOString(),
     });
-    if (!error) setToast("🎉 7-day Premium trial activated");
+    if (!error) setShowTrialCelebration(true);
     else console.error("Trial activation failed:", error);
   }, [profile, updateProfile]);
 
@@ -583,6 +584,119 @@ export default function ExpensesPage() {
           onDelete={handleDeleteExpense}
           onClose={() => setModal(null)}
         />
+      )}
+
+      {/* ── Trial celebration modal ─────────────────────────────────────── */}
+      {showTrialCelebration && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.55)",
+            zIndex: 500,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 20,
+          }}
+          onClick={() => setShowTrialCelebration(false)}
+        >
+          <div
+            style={{
+              background: "#FAF8F3",
+              borderRadius: 24,
+              padding: "40px 32px",
+              maxWidth: 380,
+              width: "100%",
+              textAlign: "center",
+              boxShadow: "0 32px 80px rgba(0,0,0,0.25)",
+              position: "relative",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Confetti top */}
+            <div style={{ fontSize: "3.5rem", marginBottom: 8 }}>🎉</div>
+            <div
+              style={{
+                fontFamily: "'Playfair Display',serif",
+                fontSize: "1.6rem",
+                fontWeight: 900,
+                color: "#0A0A0A",
+                marginBottom: 10,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              Premium Trial Activated!
+            </div>
+            <div
+              style={{
+                fontSize: "0.95rem",
+                color: "#6B6B6B",
+                lineHeight: 1.7,
+                marginBottom: 28,
+              }}
+            >
+              Congratulations! You've unlocked your{" "}
+              <strong style={{ color: "#1B4332" }}>7-day Premium trial</strong>{" "}
+              — all AI features are now yours. Start exploring!
+            </div>
+            {/* Feature list */}
+            <div
+              style={{
+                background: "#D8F3DC",
+                borderRadius: 14,
+                padding: "16px 20px",
+                marginBottom: 28,
+                textAlign: "left",
+              }}
+            >
+              {[
+                "🤖 AI Spending Analyst",
+                "💡 AI Savings Coach",
+                "⚡ Natural Language Entry",
+                "🏦 Bank Statement Import",
+                "📊 Advanced Insights",
+                "🎯 Category Caps",
+              ].map((f, i) => (
+                <div
+                  key={i}
+                  style={{
+                    fontSize: "0.85rem",
+                    fontWeight: 600,
+                    color: "#1B4332",
+                    marginBottom: i < 5 ? 8 : 0,
+                  }}
+                >
+                  {f}{" "}
+                  <span style={{ color: "#40916C", fontWeight: 800 }}>✓</span>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowTrialCelebration(false)}
+              style={{
+                width: "100%",
+                padding: "14px",
+                background: "linear-gradient(135deg,#1B4332,#40916C)",
+                color: "#fff",
+                border: "none",
+                borderRadius: 12,
+                fontFamily: "'Plus Jakarta Sans',sans-serif",
+                fontSize: "1rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: "0 4px 16px rgba(27,67,50,0.3)",
+              }}
+            >
+              Let's go! 🚀
+            </button>
+            <div
+              style={{ fontSize: "0.75rem", color: "#9B9B9B", marginTop: 12 }}
+            >
+              Trial ends in 7 days · No credit card needed
+            </div>
+          </div>
+        </div>
       )}
 
       {showImport && (
@@ -1058,5 +1172,3 @@ export default function ExpensesPage() {
     </>
   );
 }
-
-

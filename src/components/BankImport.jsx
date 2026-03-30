@@ -224,11 +224,18 @@ export default function BankImport({
       form.append("currency", currency);
       form.append("budget_id", budgetId ?? "");
 
-      // Get real user JWT — not anon key
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      // Get token — try getSession() first, fallback to truvllo_auth cache
+      let token = null;
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        token = session?.access_token;
+      } catch (e) {}
+      if (!token) {
+        const cached = JSON.parse(localStorage.getItem("truvllo_auth") || "{}");
+        token = cached?.access_token;
+      }
       if (!token) throw new Error("Your session expired. Please log in again.");
 
       const res = await fetch(
@@ -673,4 +680,3 @@ export default function BankImport({
     </>
   );
 }
-

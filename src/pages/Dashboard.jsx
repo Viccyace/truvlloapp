@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useCallback } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import DOMPurify from "dompurify";
 import {
   Wallet,
@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useBudget } from "../providers/BudgetProvider";
-import { useAI } from "../hooks/useAI";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
@@ -886,10 +885,262 @@ function Toast({ msg, onDone }) {
 }
 
 // ── Main dashboard ────────────────────────────────────────────────────────────
+
+function WhatsAppCard({ profile, onConnect }) {
+  const [phone, setPhone] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const whatsappNumber = profile?.whatsapp_number;
+  const isActive = profile?.whatsapp_active;
+
+  // Already connected and active
+  if (whatsappNumber && isActive) return null;
+
+  const handleConnect = async () => {
+    if (!phone || phone.trim().length < 10) return;
+    setSaving(true);
+    try {
+      await onConnect(phone.trim());
+      setSaved(true);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Number saved but trial not started yet
+  if (whatsappNumber && !isActive) {
+    return (
+      <div
+        style={{
+          background: "linear-gradient(135deg,#1B4332,#2D6A4F)",
+          borderRadius: 20,
+          padding: "20px 24px",
+          marginBottom: 24,
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ fontSize: "2rem", flexShrink: 0 }}>💬</div>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <div
+            style={{
+              fontFamily: "'Playfair Display',serif",
+              fontSize: "1rem",
+              fontWeight: 800,
+              color: "#fff",
+              marginBottom: 4,
+            }}
+          >
+            WhatsApp ready to activate
+          </div>
+          <div
+            style={{
+              fontSize: "0.82rem",
+              color: "rgba(255,255,255,0.65)",
+              lineHeight: 1.5,
+            }}
+          >
+            Log your first expense to activate your agent and 7-day trial.
+          </div>
+        </div>
+        <div
+          style={{
+            background: "var(--amber)",
+            color: "var(--ink)",
+            fontSize: "0.8rem",
+            fontWeight: 800,
+            padding: "8px 16px",
+            borderRadius: 100,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+          onClick={() =>
+            document
+              .querySelector('.nl-input, .modal-input, [placeholder*="spent"]')
+              ?.focus()
+          }
+        >
+          Log first expense →
+        </div>
+      </div>
+    );
+  }
+
+  // Not connected yet
+  if (saved) {
+    return (
+      <div
+        style={{
+          background: "var(--green-pale)",
+          border: "1.5px solid rgba(27,67,50,0.15)",
+          borderRadius: 20,
+          padding: "20px 24px",
+          marginBottom: 24,
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+        }}
+      >
+        <div style={{ fontSize: "1.5rem" }}>✅</div>
+        <div>
+          <div
+            style={{
+              fontFamily: "'Playfair Display',serif",
+              fontSize: "0.95rem",
+              fontWeight: 800,
+              color: "#1B4332",
+            }}
+          >
+            Number saved!
+          </div>
+          <div style={{ fontSize: "0.8rem", color: "#2D6A4F", marginTop: 2 }}>
+            Log your first expense to activate your WhatsApp agent.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        background:
+          "linear-gradient(135deg,rgba(27,67,50,0.05),rgba(64,145,108,0.08))",
+        border: "1.5px solid rgba(27,67,50,0.12)",
+        borderRadius: 20,
+        padding: "20px 24px",
+        marginBottom: 24,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 14,
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ fontSize: "1.8rem", flexShrink: 0 }}>💬</div>
+        <div>
+          <div
+            style={{
+              fontFamily: "'Playfair Display',serif",
+              fontSize: "1rem",
+              fontWeight: 800,
+              color: "#0A0A0A",
+              marginBottom: 4,
+            }}
+          >
+            Get budget alerts on WhatsApp
+          </div>
+          <div
+            style={{ fontSize: "0.82rem", color: "#6B6B6B", lineHeight: 1.55 }}
+          >
+            Send your bank statement PDF, check your balance, and get instant
+            alerts — right in WhatsApp.
+          </div>
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            border: "1.5px solid rgba(10,10,10,0.12)",
+            borderRadius: 12,
+            background: "#fff",
+            overflow: "hidden",
+            flex: 1,
+            minWidth: 200,
+          }}
+        >
+          <span
+            style={{
+              padding: "0 12px",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              color: "#3A3A3A",
+              borderRight: "1px solid rgba(10,10,10,0.08)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            🇳🇬 +234
+          </span>
+          <input
+            type="tel"
+            inputMode="numeric"
+            placeholder="812 345 6789"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+            style={{
+              flex: 1,
+              padding: "12px 14px",
+              border: "none",
+              outline: "none",
+              fontFamily: "'Plus Jakarta Sans',sans-serif",
+              fontSize: 15,
+              background: "transparent",
+            }}
+          />
+        </div>
+        <button
+          onClick={handleConnect}
+          disabled={saving || phone.length < 10}
+          style={{
+            padding: "12px 20px",
+            background: "#1B4332",
+            color: "#fff",
+            border: "none",
+            borderRadius: 12,
+            fontFamily: "'Plus Jakarta Sans',sans-serif",
+            fontSize: "0.875rem",
+            fontWeight: 700,
+            cursor: phone.length >= 10 ? "pointer" : "not-allowed",
+            opacity: phone.length >= 10 ? 1 : 0.5,
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+          }}
+        >
+          {saving ? "Saving..." : "Connect →"}
+        </button>
+      </div>
+
+      <div
+        style={{ display: "flex", gap: 16, marginTop: 12, flexWrap: "wrap" }}
+      >
+        {["📄 PDF import", "⚡ Instant alerts", "📊 Daily summary"].map(
+          (f, i) => (
+            <div
+              key={i}
+              style={{ fontSize: "0.72rem", fontWeight: 600, color: "#40916C" }}
+            >
+              {f}
+            </div>
+          ),
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
-  const { displayName } = useAuth();
+  const { displayName, profile } = useAuth();
   const {
     activeBudget,
+    expenses,
     recentExpenses,
     totalBudget,
     totalSpent,
@@ -900,7 +1151,6 @@ export default function Dashboard() {
     totalDays,
     currentDay,
     daysLeft,
-    expenses,
     addExpense,
     deleteExpense,
     sym, // ✅ currency symbol from BudgetProvider
@@ -930,20 +1180,45 @@ export default function Dashboard() {
     year: "numeric",
   });
 
+  const handleWhatsAppConnect = async (phone) => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const cached = JSON.parse(localStorage.getItem("truvllo_auth") || "{}");
+    const userId = session?.user?.id || cached?.user?.id;
+    if (!userId) return;
+    await supabase
+      .from("profiles")
+      .update({ whatsapp_number: phone })
+      .eq("id", userId);
+    // Refresh profile in AuthProvider cache
+    const updated = JSON.parse(localStorage.getItem("truvllo_profile") || "{}");
+    updated.whatsapp_number = phone;
+    localStorage.setItem("truvllo_profile", JSON.stringify(updated));
+  };
+
   const refreshAI = useCallback(async () => {
     if (!expenses?.length || !activeBudget) return;
     setAiLoading(true);
     try {
       const [insightRes, tipRes] = await Promise.all([
-        getSpendingInsight(expenses, activeBudget, sym),
-        getSavingsTip(expenses, activeBudget, sym),
+        getSpendingInsight(expenses, activeBudget, currency),
+        getSavingsTip(expenses, activeBudget, currency),
       ]);
       if (insightRes?.insight) setAnalystInsight(insightRes.insight);
       if (tipRes?.tip) setCoachTip(tipRes.tip);
     } catch (err) {
-      console.error("[AI]", err);
+      console.error("[Dashboard] AI refresh error:", err);
     } finally {
       setAiLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBudget, expenses, getSpendingInsight, getSavingsTip]);
+
+  // Auto-load AI insights when expenses are available
+  useEffect(() => {
+    if (expenses?.length > 0 && activeBudget) {
+      refreshAI();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBudget?.id, expenses?.length]);
@@ -1067,6 +1342,7 @@ export default function Dashboard() {
           />
         </div>
 
+        <WhatsAppCard profile={profile} onConnect={handleWhatsAppConnect} />
         <NLEntry onAdd={handleAddExpense} sym={currSym} />
 
         <div className="two-col">

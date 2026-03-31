@@ -456,6 +456,209 @@ function Step3({ data, onBack, onFinish, loading }) {
   );
 }
 
+function Step4({ data, onChange, onBack, onFinish, loading }) {
+  const [phone, setPhone] = useState(data.whatsappNumber || "");
+  const [error, setError] = useState("");
+
+  const handleNext = () => {
+    // Phone is optional — can skip
+    if (phone && phone.trim().length < 10) {
+      setError("Enter a valid WhatsApp number");
+      return;
+    }
+    onChange("whatsappNumber", phone.trim());
+    onFinish();
+  };
+
+  return (
+    <>
+      <div style={{ textAlign: "center", marginBottom: 24 }}>
+        <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>💬</div>
+        <h2
+          style={{
+            fontFamily: "'Playfair Display',serif",
+            fontSize: "1.4rem",
+            fontWeight: 800,
+            color: "#0A0A0A",
+            marginBottom: 8,
+          }}
+        >
+          Connect WhatsApp
+        </h2>
+        <p style={{ fontSize: "0.875rem", color: "#6B6B6B", lineHeight: 1.6 }}>
+          Get instant budget alerts and log expenses directly from WhatsApp.
+          Optional — you can add this later.
+        </p>
+      </div>
+
+      {/* Benefits */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          marginBottom: 24,
+        }}
+      >
+        {[
+          [
+            "📄",
+            "Send your bank statement PDF",
+            "We import all transactions automatically",
+          ],
+          [
+            "⚡",
+            "Instant spending alerts",
+            "Know when you hit 80% of any budget cap",
+          ],
+          ["📊", "Daily summary at 9pm", "Your spending recap every evening"],
+        ].map(([icon, title, desc], i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              gap: 12,
+              alignItems: "flex-start",
+              background: "#F5F3EE",
+              borderRadius: 12,
+              padding: "12px 14px",
+            }}
+          >
+            <div style={{ fontSize: "1.2rem", flexShrink: 0 }}>{icon}</div>
+            <div>
+              <div
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: 700,
+                  color: "#0A0A0A",
+                  marginBottom: 2,
+                }}
+              >
+                {title}
+              </div>
+              <div style={{ fontSize: "0.78rem", color: "#6B6B6B" }}>
+                {desc}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Phone input */}
+      <div style={{ marginBottom: 8 }}>
+        <label
+          style={{
+            display: "block",
+            fontSize: "0.8rem",
+            fontWeight: 600,
+            color: "#3A3A3A",
+            marginBottom: 7,
+          }}
+        >
+          WhatsApp number (optional)
+        </label>
+        <div style={{ display: "flex", gap: 8 }}>
+          <div
+            style={{
+              padding: "13px 14px",
+              border: "1.5px solid rgba(10,10,10,0.12)",
+              borderRadius: 12,
+              background: "#fff",
+              fontSize: "0.9rem",
+              fontWeight: 600,
+              color: "#3A3A3A",
+              flexShrink: 0,
+            }}
+          >
+            🇳🇬 +234
+          </div>
+          <input
+            type="tel"
+            inputMode="numeric"
+            placeholder="812 345 6789"
+            value={phone}
+            onChange={(e) => {
+              setPhone(e.target.value.replace(/[^0-9]/g, ""));
+              setError("");
+            }}
+            style={{
+              flex: 1,
+              padding: "13px 16px",
+              border: `1.5px solid ${error ? "#C0392B" : "rgba(10,10,10,0.12)"}`,
+              borderRadius: 12,
+              background: "#fff",
+              fontFamily: "'Plus Jakarta Sans',sans-serif",
+              fontSize: 16,
+              outline: "none",
+            }}
+          />
+        </div>
+        {error && (
+          <div
+            style={{
+              fontSize: "0.75rem",
+              color: "#C0392B",
+              marginTop: 5,
+              fontWeight: 500,
+            }}
+          >
+            {error}
+          </div>
+        )}
+      </div>
+
+      <div
+        style={{
+          fontSize: "0.72rem",
+          color: "#9B9B9B",
+          marginBottom: 28,
+          lineHeight: 1.5,
+        }}
+      >
+        📱 We'll send a quick verification when your trial activates. Standard
+        WhatsApp rates apply.
+      </div>
+
+      <div className="ob-nav">
+        <button className="btn-back" onClick={onBack}>
+          ← Back
+        </button>
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            flex: 1,
+            justifyContent: "flex-end",
+          }}
+        >
+          <button
+            onClick={() => {
+              onChange("whatsappNumber", "");
+              onFinish();
+            }}
+            style={{
+              padding: "13px 20px",
+              border: "1.5px solid rgba(10,10,10,0.1)",
+              borderRadius: 14,
+              background: "transparent",
+              fontFamily: "'Plus Jakarta Sans',sans-serif",
+              fontSize: "0.9rem",
+              fontWeight: 600,
+              color: "#6B6B6B",
+              cursor: "pointer",
+            }}
+          >
+            Skip
+          </button>
+          <button className="btn-next" onClick={handleNext} disabled={loading}>
+            {loading ? "Setting up..." : "Finish →"}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const { completeOnboarding } = useAuth();
@@ -471,6 +674,7 @@ export default function Onboarding() {
     budgetName: "",
     monthlyBudget: "",
     period: "monthly",
+    whatsappNumber: "",
   });
 
   const onChange = (key, val) => {
@@ -483,7 +687,9 @@ export default function Onboarding() {
       ? "rgba(64,145,108,0.22)"
       : step === 2
         ? "rgba(212,160,23,0.18)"
-        : "rgba(27,67,50,0.2)";
+        : step === 3
+          ? "rgba(27,67,50,0.2)"
+          : "rgba(37,99,235,0.15)";
 
   // ── FIXED: now creates budget + marks onboarding complete ──────────────────
   const handleFinish = async () => {
@@ -497,6 +703,7 @@ export default function Onboarding() {
         currency: data.currency,
         _budgetName: data.budgetName,
         _period: data.period,
+        whatsapp_number: data.whatsappNumber || null,
       });
 
       if (profileError) {
@@ -615,7 +822,7 @@ export default function Onboarding() {
         <div className="ob-progress">
           <div style={{ maxWidth: 520, margin: "0 auto" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 0 }}>
-              {[1, 2, 3].map((s, i) => (
+              {[1, 2, 3, 4].map((s, i) => (
                 <div
                   key={s}
                   style={{
@@ -639,10 +846,16 @@ export default function Onboarding() {
                     <div
                       className={`ob-step-label ${step > s ? "done" : step === s ? "active" : "upcoming"}`}
                     >
-                      {s === 1 ? "Currency" : s === 2 ? "Budget" : "Confirm"}
+                      {s === 1
+                        ? "Currency"
+                        : s === 2
+                          ? "Budget"
+                          : s === 3
+                            ? "Confirm"
+                            : "WhatsApp"}
                     </div>
                   </div>
-                  {i < 2 && (
+                  {i < 3 && (
                     <div
                       style={{
                         flex: 1,
@@ -687,6 +900,15 @@ export default function Onboarding() {
               <Step3
                 data={data}
                 onBack={() => setStep(2)}
+                onFinish={() => setStep(4)}
+                loading={loading}
+              />
+            )}
+            {step === 4 && (
+              <Step4
+                data={data}
+                onChange={onChange}
+                onBack={() => setStep(3)}
                 onFinish={handleFinish}
                 loading={loading}
               />
@@ -697,4 +919,3 @@ export default function Onboarding() {
     </>
   );
 }
-

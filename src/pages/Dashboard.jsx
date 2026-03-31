@@ -1204,8 +1204,8 @@ export default function Dashboard() {
     setAiLoading(true);
     try {
       const [insightRes, tipRes] = await Promise.all([
-        getSpendingInsight(expenses, activeBudget, currency),
-        getSavingsTip(expenses, activeBudget, currency),
+        getSpendingInsight(expenses, activeBudget, currSym),
+        getSavingsTip(expenses, activeBudget, currSym),
       ]);
       if (insightRes?.insight) setAnalystInsight(insightRes.insight);
       if (tipRes?.tip) setCoachTip(tipRes.tip);

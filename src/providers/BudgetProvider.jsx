@@ -255,6 +255,20 @@ async function checkAndInsertNotifications(supabase, userId) {
 
     if ((count ?? 0) === 0) {
       await supabase.from("notifications").insert(notif);
+      // Also send WhatsApp alert if user has it connected
+      fetch(`${supabase.supabaseUrl}/functions/v1/whatsapp-send-alert`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${supabase.supabaseKey}`,
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          type: notif.type,
+          title: notif.title,
+          body: notif.body,
+        }),
+      }).catch(() => {}); // non-blocking, silent fail
     }
   }
 }

@@ -110,19 +110,10 @@ const CURRENCIES = [
 ];
 
 const PERIODS = [
-  { id: "weekly", icon: "📅", label: "Weekly", desc: "Every 7 days" },
+  { id: "weekly", icon: "📅", label: "Weekly", desc: "Every 14 days" },
   { id: "monthly", icon: "🗓️", label: "Monthly", desc: "1st – last day" },
   { id: "custom", icon: "✏️", label: "Custom", desc: "Pick your dates" },
 ];
-
-const CURRENCY_PHONE = {
-  NGN: { flag: "🇳🇬", dialCode: "+234" },
-  USD: { flag: "🇺🇸", dialCode: "+1" },
-  GBP: { flag: "🇬🇧", dialCode: "+44" },
-  EUR: { flag: "🇪🇺", dialCode: "+?" },
-  KES: { flag: "🇰🇪", dialCode: "+254" },
-  GHS: { flag: "🇬🇭", dialCode: "+233" },
-};
 
 const CONFETTI_COLORS = [
   "#40916C",
@@ -449,8 +440,8 @@ function Step3({ data, onBack, onFinish, loading }) {
       <div className="confirm-trial">
         <span className="confirm-trial-icon">🎁</span>
         <div className="confirm-trial-text">
-          <strong>Your 7-day Premium trial activates automatically</strong> when
-          you log your first expense.
+          <strong>Your 14-day Premium trial activates automatically</strong>{" "}
+          when you log your first expense.
         </div>
       </div>
       <div className="ob-nav">
@@ -465,23 +456,17 @@ function Step3({ data, onBack, onFinish, loading }) {
   );
 }
 
-function Step4({ data, onChange, onBack, onFinish, loading, currency }) {
+function Step4({ data, onChange, onBack, onFinish, loading }) {
   const [phone, setPhone] = useState(data.whatsappNumber || "");
   const [error, setError] = useState("");
 
-  const phoneInfo = CURRENCY_PHONE[currency] || { flag: "🌍", dialCode: "" };
-  const isEUR = currency === "EUR";
-  const [dialCode, setDialCode] = useState(isEUR ? "" : phoneInfo.dialCode);
-
   const handleNext = () => {
-    if (phone && phone.trim().length < 7) {
+    // Phone is optional — can skip
+    if (phone && phone.trim().length < 10) {
       setError("Enter a valid WhatsApp number");
       return;
     }
-    onChange(
-      "whatsappNumber",
-      phone.trim() ? `${dialCode}${phone.trim()}` : "",
-    );
+    onChange("whatsappNumber", phone.trim());
     onFinish();
   };
 
@@ -506,6 +491,7 @@ function Step4({ data, onChange, onBack, onFinish, loading, currency }) {
         </p>
       </div>
 
+      {/* Benefits */}
       <div
         style={{
           display: "flex",
@@ -558,6 +544,7 @@ function Step4({ data, onChange, onBack, onFinish, loading, currency }) {
         ))}
       </div>
 
+      {/* Phone input */}
       <div style={{ marginBottom: 8 }}>
         <label
           style={{
@@ -571,42 +558,20 @@ function Step4({ data, onChange, onBack, onFinish, loading, currency }) {
           WhatsApp number (optional)
         </label>
         <div style={{ display: "flex", gap: 8 }}>
-          {isEUR ? (
-            // EUR: let user type their own dial code
-            <input
-              type="text"
-              placeholder="+49"
-              value={dialCode}
-              onChange={(e) => setDialCode(e.target.value)}
-              style={{
-                width: 72,
-                padding: "13px 10px",
-                border: "1.5px solid rgba(10,10,10,0.12)",
-                borderRadius: 12,
-                background: "#fff",
-                fontFamily: "'Plus Jakarta Sans',sans-serif",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                outline: "none",
-                textAlign: "center",
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                padding: "13px 14px",
-                border: "1.5px solid rgba(10,10,10,0.12)",
-                borderRadius: 12,
-                background: "#fff",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                color: "#3A3A3A",
-                flexShrink: 0,
-              }}
-            >
-              {phoneInfo.flag} {phoneInfo.dialCode}
-            </div>
-          )}
+          <div
+            style={{
+              padding: "13px 14px",
+              border: "1.5px solid rgba(10,10,10,0.12)",
+              borderRadius: 12,
+              background: "#fff",
+              fontSize: "0.9rem",
+              fontWeight: 600,
+              color: "#3A3A3A",
+              flexShrink: 0,
+            }}
+          >
+            🇳🇬 +234
+          </div>
           <input
             type="tel"
             inputMode="numeric"
@@ -811,7 +776,7 @@ export default function Onboarding() {
           <div className="success-check">✓</div>
           <h1 className="success-title">You're all set!</h1>
           <p className="success-sub">
-            Your budget is ready. Start logging expenses to activate your 7-day
+            Your budget is ready. Start logging expenses to activate your 14-day
             Premium trial and unlock all AI features instantly.
           </p>
           <button
@@ -946,7 +911,7 @@ export default function Onboarding() {
                 onBack={() => setStep(3)}
                 onFinish={handleFinish}
                 loading={loading}
-                currency={data.currency} // ← add this
+                currency={data.currency}
               />
             )}
           </div>

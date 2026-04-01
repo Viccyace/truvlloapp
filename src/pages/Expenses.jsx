@@ -424,7 +424,7 @@ export default function ExpensesPage() {
     if (profile.trial_activated) return;
     const now = new Date();
     const endsAt = new Date(now);
-    endsAt.setDate(endsAt.getDate() + 7);
+    endsAt.setDate(endsAt.getDate() + 14);
     const { error } = await updateProfile({
       plan: "trial",
       trial_activated: true,
@@ -637,7 +637,7 @@ export default function ExpensesPage() {
               }}
             >
               Congratulations! You've unlocked your{" "}
-              <strong style={{ color: "#1B4332" }}>7-day Premium trial</strong>{" "}
+              <strong style={{ color: "#1B4332" }}>14-day Premium trial</strong>{" "}
               — all AI features are now yours. Start exploring!
             </div>
             {/* Feature list */}
@@ -693,7 +693,7 @@ export default function ExpensesPage() {
             <div
               style={{ fontSize: "0.75rem", color: "#9B9B9B", marginTop: 12 }}
             >
-              Trial ends in 7 days · No credit card needed
+              Trial ends in 14 days · No credit card needed
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect, useCallback } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import InstallPrompt from "../components/InstallPrompt";
 import {
   LayoutDashboard,
   Receipt,
@@ -933,6 +934,7 @@ export default function AppLayout() {
           <Plus size={22} />
         </button>
       </div>
+      <InstallPrompt />
     </>
   );
 }

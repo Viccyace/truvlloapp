@@ -24,7 +24,7 @@ export async function sendEmail(payload: EmailPayload): Promise<void> {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      from: payload.from ?? "Truvllo <hello@truvllo.app>",
+      from: payload.from ?? "Truvllo <hello@mail.truvllo.app>",
       reply_to: payload.replyTo ?? "hello@truvllo.app",
       to: Array.isArray(payload.to) ? payload.to : [payload.to],
       subject: payload.subject,

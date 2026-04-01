@@ -86,7 +86,7 @@ serve(async (req) => {
           </p>
         </div>
 
-        ${btn("Go to my dashboard →", "https://truvlloapp.vercel.app/dashboard")}
+        ${btn("Go to my dashboard →", "https://truvllo.app/dashboard")}
         ${divider()}
         <p style="font-size:0.85rem;color:#6B6B6B;line-height:1.6;margin:0;">
           Questions? Just reply to this email — we read and respond to everything.<br/>

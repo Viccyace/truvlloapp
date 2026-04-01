@@ -456,17 +456,23 @@ function Step3({ data, onBack, onFinish, loading }) {
   );
 }
 
-function Step4({ data, onChange, onBack, onFinish, loading }) {
+function Step4({ data, onChange, onBack, onFinish, loading, currency }) {
   const [phone, setPhone] = useState(data.whatsappNumber || "");
   const [error, setError] = useState("");
 
+  const phoneInfo = CURRENCY_PHONE[currency] || { flag: "🌍", dialCode: "" };
+  const isEUR = currency === "EUR";
+  const [dialCode, setDialCode] = useState(isEUR ? "" : phoneInfo.dialCode);
+
   const handleNext = () => {
-    // Phone is optional — can skip
-    if (phone && phone.trim().length < 10) {
+    if (phone && phone.trim().length < 7) {
       setError("Enter a valid WhatsApp number");
       return;
     }
-    onChange("whatsappNumber", phone.trim());
+    onChange(
+      "whatsappNumber",
+      phone.trim() ? `${dialCode}${phone.trim()}` : "",
+    );
     onFinish();
   };
 
@@ -491,7 +497,6 @@ function Step4({ data, onChange, onBack, onFinish, loading }) {
         </p>
       </div>
 
-      {/* Benefits */}
       <div
         style={{
           display: "flex",
@@ -544,7 +549,6 @@ function Step4({ data, onChange, onBack, onFinish, loading }) {
         ))}
       </div>
 
-      {/* Phone input */}
       <div style={{ marginBottom: 8 }}>
         <label
           style={{
@@ -558,20 +562,42 @@ function Step4({ data, onChange, onBack, onFinish, loading }) {
           WhatsApp number (optional)
         </label>
         <div style={{ display: "flex", gap: 8 }}>
-          <div
-            style={{
-              padding: "13px 14px",
-              border: "1.5px solid rgba(10,10,10,0.12)",
-              borderRadius: 12,
-              background: "#fff",
-              fontSize: "0.9rem",
-              fontWeight: 600,
-              color: "#3A3A3A",
-              flexShrink: 0,
-            }}
-          >
-            🇳🇬 +234
-          </div>
+          {isEUR ? (
+            // EUR: let user type their own dial code
+            <input
+              type="text"
+              placeholder="+49"
+              value={dialCode}
+              onChange={(e) => setDialCode(e.target.value)}
+              style={{
+                width: 72,
+                padding: "13px 10px",
+                border: "1.5px solid rgba(10,10,10,0.12)",
+                borderRadius: 12,
+                background: "#fff",
+                fontFamily: "'Plus Jakarta Sans',sans-serif",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                outline: "none",
+                textAlign: "center",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                padding: "13px 14px",
+                border: "1.5px solid rgba(10,10,10,0.12)",
+                borderRadius: 12,
+                background: "#fff",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                color: "#3A3A3A",
+                flexShrink: 0,
+              }}
+            >
+              {phoneInfo.flag} {phoneInfo.dialCode}
+            </div>
+          )}
           <input
             type="tel"
             inputMode="numeric"
@@ -911,6 +937,7 @@ export default function Onboarding() {
                 onBack={() => setStep(3)}
                 onFinish={handleFinish}
                 loading={loading}
+                currency={data.currency} // ← add this
               />
             )}
           </div>

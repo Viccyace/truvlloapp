@@ -9,7 +9,7 @@ export const config = {
 
 const PLAN_AMOUNTS = {
   monthly: 650000, // ₦6,500 in kobo
-  annual: 6500000, // change if your annual price is different
+  annual: 5850000, // change if your annual price is different
 };
 
 function addSubscriptionDuration(fromDate, billingCycle) {

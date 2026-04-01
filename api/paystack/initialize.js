@@ -132,6 +132,7 @@ export default async function handler(req, res) {
       user_id: user.id,
       billing_cycle: cycle,
       plan: "premium",
+      source: "truvllo_upgrade",
       cancel_action: `${APP_URL}/upgrade`,
       custom_fields: [
         { display_name: "User ID", variable_name: "user_id", value: user.id },

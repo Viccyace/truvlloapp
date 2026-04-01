@@ -5,9 +5,16 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendWhatsApp, formatNaira } from "../_shared/twilio.ts";
 
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 Deno.serve(async (req) => {
   // Allow cron + manual trigger
-  if (req.method === "OPTIONS") return new Response("ok");
+  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   try {
     const supabase = createClient(
@@ -33,7 +40,8 @@ Deno.serve(async (req) => {
       .eq("whatsapp_active", true)
       .in("plan", ["trial", "premium"]);
 
-    if (!profiles?.length) return new Response("no users", { status: 200 });
+    if (!profiles?.length)
+      return new Response("no users", { status: 200, headers: CORS });
 
     let sent = 0;
     const errors: string[] = [];
@@ -138,10 +146,13 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ sent, errors: errors.length, details: errors }),
-      { status: 200, headers: { "Content-Type": "application/json" } },
+      { status: 200, headers: { ...CORS, "Content-Type": "application/json" } },
     );
   } catch (e) {
     console.error("[whatsapp-daily-summary]", e);
-    return new Response(JSON.stringify({ error: String(e) }), { status: 500 });
+    return new Response(JSON.stringify({ error: String(e) }), {
+      status: 500,
+      headers: CORS,
+    });
   }
 });

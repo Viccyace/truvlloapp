@@ -1,11 +1,23 @@
 // supabase/functions/send-careers-waitlist/index.ts
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../_shared/cors.ts";
+import { isAllowedOrigin, resolveCorsHeaders } from "../_shared/cors.ts";
 import { sendEmail, emailBase, btn, divider } from "../_shared/resend.ts";
 
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 serve(async (req) => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = resolveCorsHeaders(origin);
   if (req.method === "OPTIONS")
     return new Response("ok", { headers: corsHeaders });
+  if (!isAllowedOrigin(origin)) {
+    return new Response(JSON.stringify({ error: "Origin not allowed" }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const { email } = await req.json();
@@ -14,6 +26,12 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    if (!isValidEmail(email) || email.length > 254) {
+      return new Response(JSON.stringify({ error: "Invalid email" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // 1. Notify team
     await sendEmail({

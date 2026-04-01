@@ -3,12 +3,25 @@
 // Payload format: { type: "INSERT", record: { id, email, first_name, ... } }
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../_shared/cors.ts";
+import { isAllowedOrigin, resolveCorsHeaders } from "../_shared/cors.ts";
 import { sendEmail, emailBase, btn, divider } from "../_shared/resend.ts";
 
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 serve(async (req) => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = resolveCorsHeaders(origin);
+
   if (req.method === "OPTIONS")
     return new Response("ok", { headers: corsHeaders });
+  if (!isAllowedOrigin(origin)) {
+    return new Response(JSON.stringify({ error: "Origin not allowed" }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const body = await req.json();
@@ -23,6 +36,15 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+    if (!isValidEmail(email)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid email in payload" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     await sendEmail({

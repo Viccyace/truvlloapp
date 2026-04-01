@@ -1156,6 +1156,7 @@ export default function Dashboard() {
     addExpense,
     deleteExpense,
     sym, // ✅ currency symbol from BudgetProvider
+    currency,
   } = useBudget();
 
   // Fallback symbol in case BudgetProvider hasn't loaded yet
@@ -1200,13 +1201,15 @@ export default function Dashboard() {
   };
 
   const refreshAI = useCallback(async () => {
-    if (!expenses?.length || !activeBudget) return;
+    if (!expenses?.length || !activeBudget || !currency) return;
+
     setAiLoading(true);
     try {
       const [insightRes, tipRes] = await Promise.all([
-        getSpendingInsight(expenses, activeBudget, currSym),
-        getSavingsTip(expenses, activeBudget, currSym),
+        getSpendingInsight(expenses, activeBudget, currency),
+        getSavingsTip(expenses, activeBudget, currency),
       ]);
+
       if (insightRes?.insight) setAnalystInsight(insightRes.insight);
       if (tipRes?.tip) setCoachTip(tipRes.tip);
     } catch (err) {
@@ -1214,8 +1217,7 @@ export default function Dashboard() {
     } finally {
       setAiLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeBudget, expenses, getSpendingInsight, getSavingsTip]);
+  }, [activeBudget, expenses, currency, getSpendingInsight, getSavingsTip]);
 
   // Auto-load AI insights when expenses are available
   useEffect(() => {

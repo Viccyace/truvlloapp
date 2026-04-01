@@ -1,11 +1,24 @@
 // supabase/functions/send-contact/index.ts
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../_shared/cors.ts";
+import { isAllowedOrigin, resolveCorsHeaders } from "../_shared/cors.ts";
 import { sendEmail, emailBase, divider } from "../_shared/resend.ts";
 
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 serve(async (req) => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = resolveCorsHeaders(origin);
+
   if (req.method === "OPTIONS")
     return new Response("ok", { headers: corsHeaders });
+  if (!isAllowedOrigin(origin)) {
+    return new Response(JSON.stringify({ error: "Origin not allowed" }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const { name, email, topic, message } = await req.json();
@@ -18,6 +31,23 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
+    }
+    if (!isValidEmail(email)) {
+      return new Response(JSON.stringify({ error: "Invalid email address" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (
+      name.length > 120 ||
+      (topic?.length ?? 0) > 140 ||
+      message.length > 4000
+    ) {
+      return new Response(JSON.stringify({ error: "Input too long" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // 1. Notify your team

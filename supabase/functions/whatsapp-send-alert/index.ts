@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (!profile?.whatsapp_number || !profile?.whatsapp_active)
-      return new Response("no whatsapp", { headers: CORS });
+      return new Response("no whatsapp", { status: 200, headers: CORS });
     if (profile.plan === "free")
       return new Response("free plan", { headers: CORS });
 

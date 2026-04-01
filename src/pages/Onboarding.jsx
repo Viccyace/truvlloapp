@@ -115,6 +115,15 @@ const PERIODS = [
   { id: "custom", icon: "✏️", label: "Custom", desc: "Pick your dates" },
 ];
 
+const CURRENCY_PHONE = {
+  NGN: { flag: "🇳🇬", dialCode: "+234" },
+  USD: { flag: "🇺🇸", dialCode: "+1" },
+  GBP: { flag: "🇬🇧", dialCode: "+44" },
+  EUR: { flag: "🇪🇺", dialCode: "+?" },
+  KES: { flag: "🇰🇪", dialCode: "+254" },
+  GHS: { flag: "🇬🇭", dialCode: "+233" },
+};
+
 const CONFETTI_COLORS = [
   "#40916C",
   "#D4A017",

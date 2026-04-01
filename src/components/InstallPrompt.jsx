@@ -10,6 +10,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 
+// @ts-ignore — side effect import, do not tree-shake
+if (typeof window !== "undefined") window.__truvllo_install_prompt = true;
+
 const styles = `
   @keyframes slideUpPrompt { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
   @keyframes fadeInPrompt  { from{opacity:0} to{opacity:1} }

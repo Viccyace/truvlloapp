@@ -934,7 +934,7 @@ export default function AppLayout() {
           <Plus size={22} />
         </button>
       </div>
-      <InstallPrompt />
+      {true && <InstallPrompt />}
     </>
   );
 }

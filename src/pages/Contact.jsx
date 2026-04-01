@@ -12,17 +12,13 @@ const styles = `
   .nav-logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); display: inline-block; margin-bottom: 2px; }
   .nav-back { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border: none; border-radius: 100px; padding: 8px 18px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
   .nav-back:hover { background: rgba(255,255,255,0.14); color: var(--white); }
-
   .page-hero { background: var(--ink); padding: 140px 5% 80px; position: relative; overflow: hidden; }
   .page-hero-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.18; pointer-events: none; width: 500px; height: 500px; top: -100px; right: -100px; background: radial-gradient(circle, #40916C 0%, transparent 70%); }
   .page-hero-label { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); margin-bottom: 16px; display: block; }
   .page-hero-title { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 900; color: var(--white); line-height: 1.1; max-width: 560px; }
   .page-hero-sub { margin-top: 16px; font-size: 0.95rem; color: rgba(255,255,255,0.45); max-width: 480px; line-height: 1.7; }
-
   .page-body { max-width: 960px; margin: 0 auto; padding: 80px 5% 100px; display: grid; grid-template-columns: 1fr 420px; gap: 60px; align-items: start; }
   @media(max-width:800px){ .page-body{ grid-template-columns:1fr; } }
-
-  /* Contact cards */
   .contact-cards { display: flex; flex-direction: column; gap: 16px; }
   .contact-card { background: var(--white); border-radius: 18px; padding: 24px; border: 1.5px solid var(--border); display: flex; align-items: flex-start; gap: 16px; transition: all 0.2s; }
   .contact-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
@@ -31,11 +27,8 @@ const styles = `
   .contact-card-desc { font-size: 0.82rem; color: var(--ink-subtle); line-height: 1.5; margin-bottom: 8px; }
   .contact-card-link { font-size: 0.85rem; font-weight: 600; color: var(--green-light); text-decoration: none; }
   .contact-card-link:hover { color: var(--green-deep); }
-
   .response-note { background: var(--cream-dark); border-radius: 14px; padding: 16px 18px; font-size: 0.85rem; color: var(--ink-subtle); line-height: 1.6; margin-top: 24px; }
   .response-note strong { color: var(--ink); }
-
-  /* Form */
   .form-card { background: var(--white); border-radius: 24px; padding: 36px; border: 1.5px solid var(--border); box-shadow: 0 8px 32px rgba(0,0,0,0.06); }
   .form-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 24px; }
   .form-group { margin-bottom: 18px; }
@@ -49,12 +42,11 @@ const styles = `
   .form-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--green-deep), var(--green-light)); color: var(--white); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.22s; box-shadow: 0 4px 16px rgba(27,67,50,0.25); margin-top: 4px; }
   .form-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(27,67,50,0.35); }
   .form-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
   .success-card { background: var(--green-pale); border-radius: 18px; padding: 36px; text-align: center; border: 1.5px solid rgba(27,67,50,0.15); }
   .success-icon { font-size: 2.5rem; margin-bottom: 16px; }
   .success-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--green-deep); margin-bottom: 8px; }
   .success-sub { font-size: 0.9rem; color: var(--green-mid); line-height: 1.6; }
-
+  .error-box { background: rgba(192,57,43,0.08); border: 1.5px solid rgba(192,57,43,0.2); border-radius: 12px; padding: 12px 16px; font-size: 0.875rem; color: #C0392B; margin-bottom: 16px; line-height: 1.5; display: flex; align-items: center; gap: 8px; }
   .footer-mini { background: var(--ink); padding: 32px 5%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
   .footer-mini-logo { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: var(--white); display: flex; align-items: center; gap: 6px; }
   .footer-mini-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
@@ -71,6 +63,7 @@ export default function Contact() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -80,8 +73,9 @@ export default function Contact() {
   const handleSubmit = async () => {
     if (!form.name.trim() || !form.email.trim() || !form.message.trim()) return;
     setLoading(true);
+    setError("");
     try {
-      await fetch(`${SUPABASE_URL}/functions/v1/send-contact`, {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/send-contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -89,11 +83,28 @@ export default function Contact() {
         },
         body: JSON.stringify(form),
       });
+
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        // Rate limited
+        if (res.status === 429) {
+          const retryAfter = d.retry_after_seconds
+            ? ` Please try again in ${Math.ceil(d.retry_after_seconds / 60)} minutes.`
+            : "";
+          setError(`You've sent too many messages.${retryAfter}`);
+          return;
+        }
+        // Other server error
+        setError(d.error || "Something went wrong. Please try again.");
+        return;
+      }
+
       setSubmitted(true);
     } catch (err) {
-      console.error(err);
-      // Still show success to user — don't block on email failure
-      setSubmitted(true);
+      console.error("[Contact]", err);
+      setError(
+        "Couldn't send your message. Please check your connection and try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -134,9 +145,9 @@ export default function Contact() {
                 </p>
                 <a
                   className="contact-card-link"
-                  href="mailto:hello@truvllo.com"
+                  href="mailto:hello@truvllo.app"
                 >
-                  hello@truvllo.com
+                  hello@truvllo.app
                 </a>
               </div>
             </div>
@@ -149,9 +160,9 @@ export default function Contact() {
                 </p>
                 <a
                   className="contact-card-link"
-                  href="mailto:support@truvllo.com"
+                  href="mailto:support@truvllo.app"
                 >
-                  support@truvllo.com
+                  support@truvllo.app
                 </a>
               </div>
             </div>
@@ -164,9 +175,9 @@ export default function Contact() {
                 </p>
                 <a
                   className="contact-card-link"
-                  href="mailto:privacy@truvllo.com"
+                  href="mailto:privacy@truvllo.app"
                 >
-                  privacy@truvllo.com
+                  privacy@truvllo.app
                 </a>
               </div>
             </div>
@@ -179,18 +190,16 @@ export default function Contact() {
                 </p>
                 <a
                   className="contact-card-link"
-                  href="mailto:partners@truvllo.com"
+                  href="mailto:partners@truvllo.app"
                 >
-                  partners@truvllo.com
+                  partners@truvllo.app
                 </a>
               </div>
             </div>
           </div>
-
           <div className="response-note">
             <strong>Response time:</strong> We aim to respond to all messages
-            within 24–48 hours on business days. For urgent issues, include
-            "URGENT" in your subject line.
+            within 24–48 hours on business days.
           </div>
         </div>
 
@@ -207,6 +216,9 @@ export default function Contact() {
           ) : (
             <div className="form-card">
               <div className="form-title">Send us a message</div>
+
+              {error && <div className="error-box">⚠️ {error}</div>}
+
               <div className="form-group">
                 <label className="form-label">Your name</label>
                 <input
@@ -282,4 +294,3 @@ export default function Contact() {
     </>
   );
 }
-

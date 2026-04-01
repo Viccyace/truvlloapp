@@ -149,7 +149,7 @@ function Step1({ data, onChange, onNext }) {
     <>
       <div className="ob-step-tag">
         <span className="ob-step-tag-dot" />
-        Step 1 of 3
+        Step 1 of 4
       </div>
       <h2 className="ob-card-headline">
         Which currency
@@ -221,7 +221,7 @@ function Step2({ data, onChange, onNext, onBack }) {
     <>
       <div className="ob-step-tag">
         <span className="ob-step-tag-dot" />
-        Step 2 of 3
+        Step 2 of 4
       </div>
       <h2 className="ob-card-headline">
         Set up your
@@ -395,7 +395,7 @@ function Step3({ data, onBack, onFinish, loading }) {
     <>
       <div className="ob-step-tag">
         <span className="ob-step-tag-dot" />
-        Step 3 of 3
+        Step 4 of 4
       </div>
       <div className="confirm-hero">
         <span className="confirm-emoji">🎯</span>
@@ -436,6 +436,15 @@ function Step3({ data, onBack, onFinish, loading }) {
             {daily}/day
           </span>
         </div>
+        <div className="confirm-divider" />
+        <div className="confirm-row">
+          <span className="confirm-row-label">WhatsApp</span>
+          <span className="confirm-row-value">
+            {data.whatsappNumber
+              ? `${data.whatsappNumber.slice(0, 6)}****`
+              : "Not connected"}
+          </span>
+        </div>
       </div>
       <div className="confirm-trial">
         <span className="confirm-trial-icon">🎁</span>
@@ -456,7 +465,7 @@ function Step3({ data, onBack, onFinish, loading }) {
   );
 }
 
-function Step4({ data, onChange, onBack, onFinish, loading }) {
+function Step4({ data, onChange, onBack, onNext, currency }) {
   const [phone, setPhone] = useState(data.whatsappNumber || "");
   const [error, setError] = useState("");
 
@@ -472,6 +481,10 @@ function Step4({ data, onChange, onBack, onFinish, loading }) {
 
   return (
     <>
+      <div className="ob-step-tag">
+        <span className="ob-step-tag-dot" />
+        Step 3 of 4
+      </div>
       <div style={{ textAlign: "center", marginBottom: 24 }}>
         <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>💬</div>
         <h2
@@ -634,7 +647,7 @@ function Step4({ data, onChange, onBack, onFinish, loading }) {
           <button
             onClick={() => {
               onChange("whatsappNumber", "");
-              onFinish();
+              onNext();
             }}
             style={{
               padding: "13px 20px",
@@ -651,7 +664,7 @@ function Step4({ data, onChange, onBack, onFinish, loading }) {
             Skip
           </button>
           <button className="btn-next" onClick={handleNext} disabled={loading}>
-            {loading ? "Setting up..." : "Finish →"}
+            {loading ? "Please wait..." : "Continue →"}
           </button>
         </div>
       </div>
@@ -851,8 +864,8 @@ export default function Onboarding() {
                         : s === 2
                           ? "Budget"
                           : s === 3
-                            ? "Confirm"
-                            : "WhatsApp"}
+                            ? "WhatsApp"
+                            : "Confirm"}
                     </div>
                   </div>
                   {i < 3 && (
@@ -897,21 +910,20 @@ export default function Onboarding() {
               />
             )}
             {step === 3 && (
-              <Step3
-                data={data}
-                onBack={() => setStep(2)}
-                onFinish={() => setStep(4)}
-                loading={loading}
-              />
-            )}
-            {step === 4 && (
               <Step4
                 data={data}
                 onChange={onChange}
+                onBack={() => setStep(2)}
+                onNext={() => setStep(4)}
+                currency={data.currency}
+              />
+            )}
+            {step === 4 && (
+              <Step3
+                data={data}
                 onBack={() => setStep(3)}
                 onFinish={handleFinish}
                 loading={loading}
-                currency={data.currency}
               />
             )}
           </div>

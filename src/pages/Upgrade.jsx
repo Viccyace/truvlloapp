@@ -294,11 +294,11 @@ const COMPARE = [
 const FAQS = [
   {
     q: "Do I need a credit card to start?",
-    a: "No. You can sign up and use Truvllo's free plan forever without a card. Your 7-day Premium trial also activates automatically when you log your first expense — no card required for the trial either.",
+    a: "No. You can sign up and use Truvllo's free plan forever without a card. Your 14-day Premium trial also activates automatically when you log your first expense — no card required for the trial either.",
   },
   {
-    q: "How does the 7-day free trial work?",
-    a: "The moment you log your very first expense, Truvllo automatically activates a full 7-day Premium trial on your account. No buttons to click, no card to enter. You just start using the app and Premium unlocks instantly.",
+    q: "How does the 14-day free trial work?",
+    a: "The moment you log your very first expense, Truvllo automatically activates a full 14-day Premium trial on your account. No buttons to click, no card to enter. You just start using the app and Premium unlocks instantly.",
   },
   {
     q: "What happens when my trial ends?",
@@ -434,7 +434,7 @@ export default function UpgradePage() {
     ? "Manage subscription"
     : isTrialing
       ? "Upgrade to keep Premium"
-      : "Start 7-day free trial";
+      : "Start 14-day free trial";
   const priceButtonText = isPremium ? "Manage plan" : `Upgrade — ₦${price}/mo`;
 
   return (
@@ -534,14 +534,14 @@ export default function UpgradePage() {
           </div>
         </div>
 
-        {/* ── INFO BANNER ────────────────────────────────────────────── */}
+        {/* ── INFO BANNER ──────────────────────────────────────────────
         <div className="info-banner">
           <div className="info-banner-icon">ℹ️</div>
           <div className="info-banner-text">
             <strong>Checkout is live:</strong> upgrade opens Paystack securely,
             then returns here for payment verification and Premium activation.
           </div>
-        </div>
+        </div> */}
 
         {/* ── BILLING TOGGLE ─────────────────────────────────────────── */}
         <div className="billing-toggle-wrap">
@@ -787,4 +787,3 @@ export default function UpgradePage() {
     </>
   );
 }
-

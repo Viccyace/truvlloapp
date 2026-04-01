@@ -210,6 +210,15 @@ const CATEGORIES = [
   { id: "other", icon: "💼", label: "Other", bg: "#F5F5F5" },
 ];
 
+const CURRENCY_PHONE = {
+  NGN: { flag: "🇳🇬", dialCode: "+234" },
+  USD: { flag: "🇺🇸", dialCode: "+1" },
+  GBP: { flag: "🇬🇧", dialCode: "+44" },
+  EUR: { flag: "🇪🇺", dialCode: "" }, // editable
+  KES: { flag: "🇰🇪", dialCode: "+254" },
+  GHS: { flag: "🇬🇭", dialCode: "+233" },
+};
+
 const NL_EXAMPLES = [
   "spent 4500 on lunch",
   "bolt ride 2800",
@@ -888,7 +897,13 @@ function Toast({ msg, onDone }) {
 
 // ── Main dashboard ────────────────────────────────────────────────────────────
 
-function WhatsAppCard({ profile, onConnect }) {
+function WhatsAppCard({ profile, onConnect, currency }) {
+  const phoneInfo = CURRENCY_PHONE[currency] || {
+    flag: "🇳🇬",
+    dialCode: "+234",
+  };
+  const isEUR = currency === "EUR";
+  const [dialCode, setDialCode] = useState(isEUR ? "" : phoneInfo.dialCode);
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -903,7 +918,7 @@ function WhatsAppCard({ profile, onConnect }) {
     if (!phone || phone.trim().length < 10) return;
     setSaving(true);
     try {
-      await onConnect(phone.trim());
+      await onConnect(`${dialCode}${phone.trim()}`);
       setSaved(true);
     } catch (e) {
       console.error(e);
@@ -1069,18 +1084,39 @@ function WhatsAppCard({ profile, onConnect }) {
             minWidth: 200,
           }}
         >
-          <span
-            style={{
-              padding: "0 12px",
-              fontSize: "0.85rem",
-              fontWeight: 600,
-              color: "#3A3A3A",
-              borderRight: "1px solid rgba(10,10,10,0.08)",
-              whiteSpace: "nowrap",
-            }}
-          >
-            🇳🇬 +234
-          </span>
+          {isEUR ? (
+            <input
+              type="text"
+              placeholder="+49"
+              value={dialCode}
+              onChange={(e) => setDialCode(e.target.value)}
+              style={{
+                width: 64,
+                padding: "12px 10px",
+                border: "none",
+                outline: "none",
+                borderRight: "1px solid rgba(10,10,10,0.08)",
+                fontFamily: "'Plus Jakarta Sans',sans-serif",
+                fontSize: "0.85rem",
+                fontWeight: 600,
+                textAlign: "center",
+                background: "transparent",
+              }}
+            />
+          ) : (
+            <span
+              style={{
+                padding: "0 12px",
+                fontSize: "0.85rem",
+                fontWeight: 600,
+                color: "#3A3A3A",
+                borderRight: "1px solid rgba(10,10,10,0.08)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {phoneInfo.flag} {phoneInfo.dialCode}
+            </span>
+          )}
           <input
             type="tel"
             inputMode="numeric"
@@ -1346,7 +1382,11 @@ export default function Dashboard() {
           />
         </div>
 
-        <WhatsAppCard profile={profile} onConnect={handleWhatsAppConnect} />
+        <WhatsAppCard
+          profile={profile}
+          onConnect={handleWhatsAppConnect}
+          currency={currency}
+        />
         <NLEntry onAdd={handleAddExpense} sym={currSym} />
 
         <div className="two-col">

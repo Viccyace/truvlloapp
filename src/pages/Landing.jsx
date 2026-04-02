@@ -24,13 +24,28 @@ const styles = `
   @keyframes barGrow  { from{width:0} }
 
   /* ── NAV ──────────────────────────────────────────────────────────────── */
-  .nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: rgba(250,248,243,0.92); backdrop-filter: blur(12px);
-    padding: 0 6%; height: 68px;
-    display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-  }
+.nav {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 48px);
+  max-width: 1200px;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 0 32px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+}
   .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 8px; cursor: pointer; }
   .nav-logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
   .nav-links { display: flex; align-items: center; gap: 32px; }
@@ -42,8 +57,25 @@ const styles = `
   @media(max-width:768px) { .nav-links { display: none; } .nav-mobile-btn { display: block; } }
 
   /* ── HERO ─────────────────────────────────────────────────────────────── */
-  .hero { min-height: 100vh; padding: 120px 6% 80px; display: flex; flex-direction: column; justify-content: center; background: var(--cream); position: relative; overflow: hidden; }
-  .hero-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; max-width: 1200px; margin: 0 auto; width: 100%; }
+ .hero {
+  min-height: 100vh;
+  padding: 160px 6% 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--cream);
+  position: relative;
+  overflow: hidden;
+}
+ .hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
   @media(max-width:900px) { .hero-inner { grid-template-columns: 1fr; } }
   .hero-left { animation: fadeUp 0.6s ease both; }
   .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--green-pale); color: var(--green-deep); padding: 6px 14px; border-radius: 100px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 28px; border: 1px solid rgba(27,67,50,0.15); }
@@ -56,9 +88,42 @@ const styles = `
   .btn-primary:hover { background: var(--green-mid); transform: translateY(-1px); }
   .btn-outline { background: transparent; color: var(--ink); border: 1.5px solid var(--border); border-radius: 8px; padding: 13px 24px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
   .btn-outline:hover { border-color: var(--green-light); color: var(--green-mid); }
-  .hero-right { display: flex; align-items: center; justify-content: center; animation: fadeUp 0.6s ease 0.2s both; }
-  .hero-phone-slot { width: 100%; max-width: 420px; aspect-ratio: 9/16; background: linear-gradient(135deg, var(--cream-dark) 0%, rgba(64,145,108,0.08) 100%); border-radius: 32px; border: 2px dashed rgba(27,67,50,0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--ink-subtle); font-size: 0.875rem; font-weight: 500; position: relative; overflow: hidden; }
+  .hero-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeUp 0.6s ease 0.2s both;
+}
+.hero-video-slot {
+  width: 100%;
+  max-width: 420px;
+  height: 580px;
+  border-radius: 32px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 24px 60px rgba(27, 67, 50, 0.18);
+}
+.hero-video-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 140px;
+  background: linear-gradient(to bottom, transparent, var(--cream));
+  pointer-events: none;
+  border-radius: 0 0 32px 32px;
+}
   .hero-phone-slot::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 60% 40%, rgba(64,145,108,0.12) 0%, transparent 60%); }
+  .hero-phone-slot::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, transparent, var(--cream));
+  pointer-events: none;
+}
   .hero-phone-icon { font-size: 3rem; opacity: 0.4; }
   .hero-phone-text { opacity: 0.6; text-align: center; line-height: 1.5; font-size: 0.82rem; }
   @media(max-width:900px) { .hero-right { display: none; } }
@@ -217,7 +282,26 @@ const styles = `
   .cta-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--green-deep); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; color: var(--white); margin-left: -8px; }
   .cta-avatar:first-child { margin-left: 0; }
   .cta-users-text { font-size: 0.82rem; color: rgba(255,255,255,0.55); }
-  .cta-phone-slot { width: 220px; aspect-ratio: 9/18; background: rgba(255,255,255,0.06); border-radius: 24px; border: 1px dashed rgba(255,255,255,0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: rgba(255,255,255,0.3); font-size: 0.75rem; text-align: center; flex-shrink: 0; }
+ .cta-phone-slot {
+  width: 220px;
+  height: 380px;
+  aspect-ratio: unset;
+  border-radius: 24px;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+}
+.cta-phone-slot::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to bottom, transparent, var(--green-deep));
+  pointer-events: none;
+}
   @media(max-width:768px) { .cta-phone-slot { display: none; } }
 
   /* ── FOOTER ───────────────────────────────────────────────────────────── */
@@ -235,47 +319,55 @@ const styles = `
   .footer-wordmark { font-family: 'Playfair Display', serif; font-size: clamp(3rem, 8vw, 7rem); font-weight: 900; color: rgba(255,255,255,0.04); text-align: center; display: block; margin-top: 48px; letter-spacing: -0.02em; line-height: 1; max-width: 1200px; margin-left: auto; margin-right: auto; }
 
   /* ── MOBILE ───────────────────────────────────────────────────────────── */
-  @media(max-width:480px) {
-    .nav { padding: 0 4%; height: 60px; }
-    .nav-logo { font-size: 1.25rem; }
-    .nav-cta { padding: 8px 14px; font-size: 0.8rem; }
-    .hero { padding: 90px 4% 60px; min-height: auto; }
-    .hero-headline { font-size: 2.2rem; margin-bottom: 18px; }
-    .hero-sub { font-size: 0.95rem; margin-bottom: 28px; max-width: 100%; }
-    .hero-btns { flex-direction: row; gap: 10px; flex-wrap: nowrap; }
-    .btn-primary, .btn-outline { flex: 1; text-align: center; padding: 13px 12px; font-size: 0.85rem; }
-    .hero-right { display: none; }
-    .stats-strip { padding: 40px 4%; }
-    .stats-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
-    .stat-val { font-size: 2rem; }
-    .features-section { padding: 60px 4%; }
-    .section-header { margin-bottom: 40px; }
-    .section-headline { font-size: 1.75rem; }
-    .features-grid { grid-template-columns: 1fr; gap: 14px; }
-    .feature-card { padding: 22px; }
-    .wa-section { padding: 60px 4%; }
-    .wa-inner { grid-template-columns: 1fr; gap: 40px; }
-    .wa-headline { font-size: 2rem; }
-    .wa-mockup { display: none; }
-    .how-section { padding: 60px 4%; }
-    .how-inner { grid-template-columns: 1fr; gap: 40px; }
-    .how-right { order: -1; }
-    .how-headline { font-size: 2rem; }
-    .pricing-section { padding: 60px 4%; }
-    .pricing-toggle { width: 100%; }
-    .pricing-grid { grid-template-columns: 1fr; max-width: 100%; gap: 16px; margin-top: 32px; }
-    .testimonials-section { padding: 60px 4%; }
-    .testimonials-top { grid-template-columns: 1fr; gap: 24px; margin-bottom: 40px; }
-    .testimonials-grid { grid-template-columns: 1fr; gap: 14px; }
-    .cta-banner { padding: 60px 4%; }
-    .cta-banner-inner { grid-template-columns: 1fr; }
-    .cta-headline { font-size: 2rem; }
-    .cta-btns { flex-direction: row; gap: 10px; }
-    .cta-btn-primary, .cta-btn-outline { flex: 1; text-align: center; padding: 13px 12px; font-size: 0.85rem; }
-    .footer { padding: 48px 4% 24px; }
-    .footer-top { grid-template-columns: 1fr; gap: 32px; }
-    .footer-wordmark { font-size: 3.5rem; margin-top: 32px; }
-  }
+@media(max-width:480px) {
+  .nav { 
+  top: 10px; 
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 24px); 
+  height: 68px; 
+  padding: 0 20px; 
+  border-radius: 20px; 
+}
+  .nav-logo { font-size: 1.25rem; }
+  .nav-cta { padding: 8px 14px; font-size: 0.8rem; }
+  .hero { padding: 90px 4% 60px; min-height: auto; }
+  .hero-headline { font-size: 2.2rem; margin-bottom: 18px; }
+  .hero-sub { font-size: 0.95rem; margin-bottom: 28px; max-width: 100%; }
+  .hero-btns { flex-direction: row; gap: 10px; flex-wrap: nowrap; }
+  .btn-primary, .btn-outline { flex: 1; text-align: center; padding: 13px 12px; font-size: 0.85rem; }
+  .hero-right { display: none; }
+  .stats-strip { padding: 40px 4%; }
+  .stats-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .stat-val { font-size: 2rem; }
+  .features-section { padding: 60px 4%; }
+  .section-header { margin-bottom: 40px; }
+  .section-headline { font-size: 1.75rem; }
+  .features-grid { grid-template-columns: 1fr; gap: 14px; }
+  .feature-card { padding: 22px; }
+  .wa-section { padding: 60px 4%; }
+  .wa-inner { grid-template-columns: 1fr; gap: 40px; }
+  .wa-headline { font-size: 2rem; }
+  .wa-mockup { display: none; }
+  .how-section { padding: 60px 4%; }
+  .how-inner { grid-template-columns: 1fr; gap: 40px; }
+  .how-right { order: -1; }
+  .how-headline { font-size: 2rem; }
+  .pricing-section { padding: 60px 4%; }
+  .pricing-toggle { width: 100%; }
+  .pricing-grid { grid-template-columns: 1fr; max-width: 100%; gap: 16px; margin-top: 32px; }
+  .testimonials-section { padding: 60px 4%; }
+  .testimonials-top { grid-template-columns: 1fr; gap: 24px; margin-bottom: 40px; }
+  .testimonials-grid { grid-template-columns: 1fr; gap: 14px; }
+  .cta-banner { padding: 60px 4%; }
+  .cta-banner-inner { grid-template-columns: 1fr; }
+  .cta-headline { font-size: 2rem; }
+  .cta-btns { flex-direction: row; gap: 10px; }
+  .cta-btn-primary, .cta-btn-outline { flex: 1; text-align: center; padding: 13px 12px; font-size: 0.85rem; }
+  .footer { padding: 48px 4% 24px; }
+  .footer-top { grid-template-columns: 1fr; gap: 32px; }
+  .footer-wordmark { font-size: 3.5rem; margin-top: 32px; }
+}
   @media(min-width:481px) and (max-width:768px) {
     .hero { padding: 100px 5% 60px; }
     .hero-headline { font-size: 2.8rem; }
@@ -435,7 +527,11 @@ export default function Landing() {
       {/* NAV */}
       <nav
         className="nav"
-        style={{ boxShadow: scrolled ? "0 2px 20px rgba(0,0,0,0.08)" : "none" }}
+        style={{
+          boxShadow: scrolled
+            ? "0 12px 40px rgba(0,0,0,0.12), 0 1px 0 rgba(255,255,255,0.9) inset"
+            : "0 8px 32px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset",
+        }}
       >
         <div
           className="nav-logo"
@@ -486,13 +582,24 @@ export default function Landing() {
             </div>
           </div>
           <div className="hero-right">
-            <div className="hero-phone-slot">
-              <div className="hero-phone-icon">📱</div>
-              <div className="hero-phone-text">
-                Add your phone
-                <br />
-                hand image here
-              </div>
+            <div className="hero-video-slot">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  objectPosition: "center top",
+                  display: "block",
+                  borderRadius: "32px",
+                }}
+              >
+                <source src="/truvllovid.mp4" type="video/mp4" />
+              </video>
+              <div className="hero-video-fade" />
             </div>
           </div>
         </div>
@@ -1080,8 +1187,18 @@ export default function Landing() {
             </div>
           </div>
           <div className="cta-phone-slot">
-            <div style={{ fontSize: "2rem", opacity: 0.4 }}>📱</div>
-            <div>Add phone image here</div>
+            <img
+              src="/truvllo.png"
+              alt="Truvllo image app in use"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center top",
+                display: "block",
+                borderRadius: "24px",
+              }}
+            />
           </div>
         </div>
       </section>

@@ -115,6 +115,15 @@ const PERIODS = [
   { id: "custom", icon: "✏️", label: "Custom", desc: "Pick your dates" },
 ];
 
+const CURRENCY_PHONE = {
+  NGN: { flag: "🇳🇬", dialCode: "+234" },
+  USD: { flag: "🇺🇸", dialCode: "+1" },
+  GBP: { flag: "🇬🇧", dialCode: "+44" },
+  EUR: { flag: "🇪🇺", dialCode: "" },
+  KES: { flag: "🇰🇪", dialCode: "+254" },
+  GHS: { flag: "🇬🇭", dialCode: "+233" },
+};
+
 const CONFETTI_COLORS = [
   "#40916C",
   "#D4A017",
@@ -372,7 +381,7 @@ function Step2({ data, onChange, onNext, onBack }) {
           ← Back
         </button>
         <button className="btn-next" onClick={handleNext}>
-          Review & Finish <span>→</span>
+          Continue <span>→</span>
         </button>
       </div>
     </>
@@ -468,15 +477,20 @@ function Step3({ data, onBack, onFinish, loading }) {
 function Step4({ data, onChange, onBack, onNext, currency }) {
   const [phone, setPhone] = useState(data.whatsappNumber || "");
   const [error, setError] = useState("");
+  const phoneInfo = CURRENCY_PHONE[currency] || {
+    flag: "🇳🇬",
+    dialCode: "+234",
+  };
+  const isEUR = currency === "EUR";
+  const [dialCode, setDialCode] = useState(isEUR ? "" : phoneInfo.dialCode);
 
   const handleNext = () => {
-    // Phone is optional — can skip
     if (phone && phone.trim().length < 10) {
       setError("Enter a valid WhatsApp number");
       return;
     }
     onChange("whatsappNumber", phone.trim());
-    onFinish();
+    onNext(); // ← correct
   };
 
   return (
@@ -571,20 +585,41 @@ function Step4({ data, onChange, onBack, onNext, currency }) {
           WhatsApp number (optional)
         </label>
         <div style={{ display: "flex", gap: 8 }}>
-          <div
-            style={{
-              padding: "13px 14px",
-              border: "1.5px solid rgba(10,10,10,0.12)",
-              borderRadius: 12,
-              background: "#fff",
-              fontSize: "0.9rem",
-              fontWeight: 600,
-              color: "#3A3A3A",
-              flexShrink: 0,
-            }}
-          >
-            🇳🇬 +234
-          </div>
+          {isEUR ? (
+            <input
+              type="text"
+              placeholder="+49"
+              value={dialCode}
+              onChange={(e) => setDialCode(e.target.value)}
+              style={{
+                width: 72,
+                padding: "13px 10px",
+                border: "1.5px solid rgba(10,10,10,0.12)",
+                borderRadius: 12,
+                background: "#fff",
+                fontFamily: "'Plus Jakarta Sans',sans-serif",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                outline: "none",
+                textAlign: "center",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                padding: "13px 14px",
+                border: "1.5px solid rgba(10,10,10,0.12)",
+                borderRadius: 12,
+                background: "#fff",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                color: "#3A3A3A",
+                flexShrink: 0,
+              }}
+            >
+              {phoneInfo.flag} {phoneInfo.dialCode}
+            </div>
+          )}
           <input
             type="tel"
             inputMode="numeric"
@@ -663,8 +698,8 @@ function Step4({ data, onChange, onBack, onNext, currency }) {
           >
             Skip
           </button>
-          <button className="btn-next" onClick={handleNext} disabled={loading}>
-            {loading ? "Please wait..." : "Continue →"}
+          <button className="btn-next" onClick={handleNext}>
+            Continue →
           </button>
         </div>
       </div>

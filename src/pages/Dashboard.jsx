@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef, useCallback } from "react";
 import DOMPurify from "dompurify";
 import {
   Wallet,
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useBudget } from "../providers/BudgetProvider";
+import { useAI } from "../hooks/useAI";
 
 const styles = `
   * { box-sizing: border-box; margin: 0; padding: 0; }

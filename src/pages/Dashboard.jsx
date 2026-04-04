@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useCallback } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import DOMPurify from "dompurify";
 import {
   Wallet,
@@ -14,10 +14,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useBudget } from "../providers/BudgetProvider";
-import { useAI } from "../hooks/useAI";
-import { supabase } from "../lib/supabase";
-
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
 const styles = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -209,15 +205,6 @@ const CATEGORIES = [
   { id: "fun", icon: "🎬", label: "Entertain.", bg: "#F9FBE7" },
   { id: "other", icon: "💼", label: "Other", bg: "#F5F5F5" },
 ];
-
-const CURRENCY_PHONE = {
-  NGN: { flag: "🇳🇬", dialCode: "+234" },
-  USD: { flag: "🇺🇸", dialCode: "+1" },
-  GBP: { flag: "🇬🇧", dialCode: "+44" },
-  EUR: { flag: "🇪🇺", dialCode: "" }, // editable
-  KES: { flag: "🇰🇪", dialCode: "+254" },
-  GHS: { flag: "🇬🇭", dialCode: "+233" },
-};
 
 const NL_EXAMPLES = [
   "spent 4500 on lunch",
@@ -897,13 +884,7 @@ function Toast({ msg, onDone }) {
 
 // ── Main dashboard ────────────────────────────────────────────────────────────
 
-function WhatsAppCard({ profile, onConnect, currency }) {
-  const phoneInfo = CURRENCY_PHONE[currency] || {
-    flag: "🇳🇬",
-    dialCode: "+234",
-  };
-  const isEUR = currency === "EUR";
-  const [dialCode, setDialCode] = useState(isEUR ? "" : phoneInfo.dialCode);
+function WhatsAppCard({ profile, onConnect }) {
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -918,7 +899,7 @@ function WhatsAppCard({ profile, onConnect, currency }) {
     if (!phone || phone.trim().length < 10) return;
     setSaving(true);
     try {
-      await onConnect(`${dialCode}${phone.trim()}`);
+      await onConnect(phone.trim());
       setSaved(true);
     } catch (e) {
       console.error(e);
@@ -1084,39 +1065,18 @@ function WhatsAppCard({ profile, onConnect, currency }) {
             minWidth: 200,
           }}
         >
-          {isEUR ? (
-            <input
-              type="text"
-              placeholder="+49"
-              value={dialCode}
-              onChange={(e) => setDialCode(e.target.value)}
-              style={{
-                width: 64,
-                padding: "12px 10px",
-                border: "none",
-                outline: "none",
-                borderRight: "1px solid rgba(10,10,10,0.08)",
-                fontFamily: "'Plus Jakarta Sans',sans-serif",
-                fontSize: "0.85rem",
-                fontWeight: 600,
-                textAlign: "center",
-                background: "transparent",
-              }}
-            />
-          ) : (
-            <span
-              style={{
-                padding: "0 12px",
-                fontSize: "0.85rem",
-                fontWeight: 600,
-                color: "#3A3A3A",
-                borderRight: "1px solid rgba(10,10,10,0.08)",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {phoneInfo.flag} {phoneInfo.dialCode}
-            </span>
-          )}
+          <span
+            style={{
+              padding: "0 12px",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              color: "#3A3A3A",
+              borderRight: "1px solid rgba(10,10,10,0.08)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            🇳🇬 +234
+          </span>
           <input
             type="tel"
             inputMode="numeric"
@@ -1175,7 +1135,7 @@ function WhatsAppCard({ profile, onConnect, currency }) {
 }
 
 export default function Dashboard() {
-  const { displayName, profile } = useAuth();
+  const { displayName, profile, updateProfile } = useAuth();
   const {
     activeBudget,
     expenses,
@@ -1192,7 +1152,6 @@ export default function Dashboard() {
     addExpense,
     deleteExpense,
     sym, // ✅ currency symbol from BudgetProvider
-    currency,
   } = useBudget();
 
   // Fallback symbol in case BudgetProvider hasn't loaded yet
@@ -1220,16 +1179,8 @@ export default function Dashboard() {
   });
 
   const handleWhatsAppConnect = async (phone) => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const cached = JSON.parse(localStorage.getItem("truvllo_auth") || "{}");
-    const userId = session?.user?.id || cached?.user?.id;
     if (!userId) return;
-    await supabase
-      .from("profiles")
-      .update({ whatsapp_number: phone })
-      .eq("id", userId);
+    await updateProfile({ whatsapp_number: waPhone.trim() });
     // Refresh profile in AuthProvider cache
     const updated = JSON.parse(localStorage.getItem("truvllo_profile") || "{}");
     updated.whatsapp_number = phone;
@@ -1237,15 +1188,13 @@ export default function Dashboard() {
   };
 
   const refreshAI = useCallback(async () => {
-    if (!expenses?.length || !activeBudget || !currency) return;
-
+    if (!expenses?.length || !activeBudget) return;
     setAiLoading(true);
     try {
       const [insightRes, tipRes] = await Promise.all([
-        getSpendingInsight(expenses, activeBudget, currency),
-        getSavingsTip(expenses, activeBudget, currency),
+        getSpendingInsight(expenses, activeBudget, currSym),
+        getSavingsTip(expenses, activeBudget, currSym),
       ]);
-
       if (insightRes?.insight) setAnalystInsight(insightRes.insight);
       if (tipRes?.tip) setCoachTip(tipRes.tip);
     } catch (err) {
@@ -1253,7 +1202,8 @@ export default function Dashboard() {
     } finally {
       setAiLoading(false);
     }
-  }, [activeBudget, expenses, currency, getSpendingInsight, getSavingsTip]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBudget, expenses, getSpendingInsight, getSavingsTip]);
 
   // Auto-load AI insights when expenses are available
   useEffect(() => {
@@ -1300,7 +1250,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <style>{FONTS + styles}</style>
+      <style>{styles}</style>
       {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
 
       <div className="dash">
@@ -1382,11 +1332,7 @@ export default function Dashboard() {
           />
         </div>
 
-        <WhatsAppCard
-          profile={profile}
-          onConnect={handleWhatsAppConnect}
-          currency={currency}
-        />
+        <WhatsAppCard profile={profile} onConnect={handleWhatsAppConnect} />
         <NLEntry onAdd={handleAddExpense} sym={currSym} />
 
         <div className="two-col">

@@ -22,10 +22,10 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
+import { TRIAL_DAYS } from "../lib/config";
+import { CATEGORIES, CAT_MAP, normalizeCategory } from "../lib/categories";
 import { useBudget } from "../providers/BudgetProvider";
 import BankImport from "../components/BankImport";
-
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
 const styles = `
   * { box-sizing:border-box; margin:0; padding:0; }
@@ -163,54 +163,6 @@ const styles = `
 
 const PAGE_SIZE = 10;
 
-const CATEGORIES = [
-  { id: "food", label: "Food", Icon: Wallet, color: "#D97706", bg: "#FFF3E0" },
-  {
-    id: "transport",
-    label: "Transport",
-    Icon: Car,
-    color: "#2D6A4F",
-    bg: "#E8F5E9",
-  },
-  { id: "bills", label: "Bills", Icon: Home, color: "#C026D3", bg: "#FCE4EC" },
-  {
-    id: "shopping",
-    label: "Shopping",
-    Icon: ShoppingBag,
-    color: "#7C3AED",
-    bg: "#F3E5F5",
-  },
-  {
-    id: "health",
-    label: "Health",
-    Icon: HeartPulse,
-    color: "#0F766E",
-    bg: "#E0F7FA",
-  },
-  {
-    id: "airtime",
-    label: "Airtime",
-    Icon: Smartphone,
-    color: "#2563EB",
-    bg: "#E3F2FD",
-  },
-  {
-    id: "entertainment",
-    label: "Entertainment",
-    Icon: Clapperboard,
-    color: "#65A30D",
-    bg: "#F9FBE7",
-  },
-  {
-    id: "other",
-    label: "Other",
-    Icon: Briefcase,
-    color: "#475569",
-    bg: "#F5F5F5",
-  },
-];
-const CAT_MAP = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
-
 function fmt(n) {
   return Number(n || 0).toLocaleString("en-NG");
 }
@@ -224,21 +176,6 @@ function fmtDate(d) {
     month: "short",
     year: "numeric",
   });
-}
-
-function normalizeCategory(value) {
-  if (!value) return "other";
-  const v = String(value).toLowerCase().replace(/\s+/g, "");
-  if (CAT_MAP[v]) return v;
-  const aliases = {
-    shop: "shopping",
-    fun: "entertainment",
-    data: "airtime",
-    airtime: "airtime",
-    bills: "bills",
-    bill: "bills",
-  };
-  return aliases[v] || "other";
 }
 
 function Toast({ msg, onDone }) {
@@ -424,7 +361,7 @@ export default function ExpensesPage() {
     if (profile.trial_activated) return;
     const now = new Date();
     const endsAt = new Date(now);
-    endsAt.setDate(endsAt.getDate() + 14);
+    endsAt.setDate(endsAt.getDate() + TRIAL_DAYS);
     const { error } = await updateProfile({
       plan: "trial",
       trial_activated: true,
@@ -574,7 +511,7 @@ export default function ExpensesPage() {
 
   return (
     <>
-      <style>{FONTS + styles}</style>
+      <style>{styles}</style>
       {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
 
       {modal && (
@@ -693,7 +630,7 @@ export default function ExpensesPage() {
             <div
               style={{ fontSize: "0.75rem", color: "#9B9B9B", marginTop: 12 }}
             >
-              Trial ends in 14 days · No credit card needed
+              Trial ends in {TRIAL_DAYS} days · No credit card needed
             </div>
           </div>
         </div>

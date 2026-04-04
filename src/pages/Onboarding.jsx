@@ -1,9 +1,8 @@
 ﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
+import { TRIAL_DAYS } from "../lib/config";
 import { useBudget } from "../providers/BudgetProvider";
-
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
 const styles = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -110,19 +109,10 @@ const CURRENCIES = [
 ];
 
 const PERIODS = [
-  { id: "weekly", icon: "📅", label: "Weekly", desc: "Every 14 days" },
+  { id: "weekly", icon: "📅", label: "Weekly", desc: "Every 7 days" },
   { id: "monthly", icon: "🗓️", label: "Monthly", desc: "1st – last day" },
   { id: "custom", icon: "✏️", label: "Custom", desc: "Pick your dates" },
 ];
-
-const CURRENCY_PHONE = {
-  NGN: { flag: "🇳🇬", dialCode: "+234" },
-  USD: { flag: "🇺🇸", dialCode: "+1" },
-  GBP: { flag: "🇬🇧", dialCode: "+44" },
-  EUR: { flag: "🇪🇺", dialCode: "" },
-  KES: { flag: "🇰🇪", dialCode: "+254" },
-  GHS: { flag: "🇬🇭", dialCode: "+233" },
-};
 
 const CONFETTI_COLORS = [
   "#40916C",
@@ -381,7 +371,7 @@ function Step2({ data, onChange, onNext, onBack }) {
           ← Back
         </button>
         <button className="btn-next" onClick={handleNext}>
-          Continue <span>→</span>
+          Review & Finish <span>→</span>
         </button>
       </div>
     </>
@@ -458,7 +448,9 @@ function Step3({ data, onBack, onFinish, loading }) {
       <div className="confirm-trial">
         <span className="confirm-trial-icon">🎁</span>
         <div className="confirm-trial-text">
-          <strong>Your 14-day Premium trial activates automatically</strong>{" "}
+          <strong>
+            Your {TRIAL_DAYS}-day Premium trial activates automatically
+          </strong>{" "}
           when you log your first expense.
         </div>
       </div>
@@ -474,23 +466,18 @@ function Step3({ data, onBack, onFinish, loading }) {
   );
 }
 
-function Step4({ data, onChange, onBack, onNext, currency }) {
+function Step4({ data, onChange, onBack, onNext }) {
   const [phone, setPhone] = useState(data.whatsappNumber || "");
   const [error, setError] = useState("");
-  const phoneInfo = CURRENCY_PHONE[currency] || {
-    flag: "🇳🇬",
-    dialCode: "+234",
-  };
-  const isEUR = currency === "EUR";
-  const [dialCode, setDialCode] = useState(isEUR ? "" : phoneInfo.dialCode);
 
   const handleNext = () => {
+    // Phone is optional — can skip
     if (phone && phone.trim().length < 10) {
       setError("Enter a valid WhatsApp number");
       return;
     }
     onChange("whatsappNumber", phone.trim());
-    onNext(); // ← correct
+    onFinish();
   };
 
   return (
@@ -585,41 +572,20 @@ function Step4({ data, onChange, onBack, onNext, currency }) {
           WhatsApp number (optional)
         </label>
         <div style={{ display: "flex", gap: 8 }}>
-          {isEUR ? (
-            <input
-              type="text"
-              placeholder="+49"
-              value={dialCode}
-              onChange={(e) => setDialCode(e.target.value)}
-              style={{
-                width: 72,
-                padding: "13px 10px",
-                border: "1.5px solid rgba(10,10,10,0.12)",
-                borderRadius: 12,
-                background: "#fff",
-                fontFamily: "'Plus Jakarta Sans',sans-serif",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                outline: "none",
-                textAlign: "center",
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                padding: "13px 14px",
-                border: "1.5px solid rgba(10,10,10,0.12)",
-                borderRadius: 12,
-                background: "#fff",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                color: "#3A3A3A",
-                flexShrink: 0,
-              }}
-            >
-              {phoneInfo.flag} {phoneInfo.dialCode}
-            </div>
-          )}
+          <div
+            style={{
+              padding: "13px 14px",
+              border: "1.5px solid rgba(10,10,10,0.12)",
+              borderRadius: 12,
+              background: "#fff",
+              fontSize: "0.9rem",
+              fontWeight: 600,
+              color: "#3A3A3A",
+              flexShrink: 0,
+            }}
+          >
+            🇳🇬 +234
+          </div>
           <input
             type="tel"
             inputMode="numeric"
@@ -698,8 +664,8 @@ function Step4({ data, onChange, onBack, onNext, currency }) {
           >
             Skip
           </button>
-          <button className="btn-next" onClick={handleNext}>
-            Continue →
+          <button className="btn-next" onClick={handleNext} disabled={loading}>
+            {loading ? "Please wait..." : "Continue →"}
           </button>
         </div>
       </div>
@@ -770,7 +736,8 @@ export default function Onboarding() {
       const startDate = new Date().toISOString().split("T")[0];
       const endDate = (() => {
         const s = new Date(startDate);
-        if (data.period === "weekly") s.setDate(s.getDate() + 7);
+        if (data.period === "weekly")
+          s.setDate(s.getDate() + 7); // budget period, not trial
         else s.setMonth(s.getMonth() + 1);
         return s.toISOString().split("T")[0];
       })();
@@ -818,14 +785,14 @@ export default function Onboarding() {
   if (done) {
     return (
       <>
-        <style>{FONTS + styles}</style>
+        <style>{styles}</style>
         <Confetti show={showConfetti} />
         <div className="success-root">
           <div className="success-check">✓</div>
           <h1 className="success-title">You're all set!</h1>
           <p className="success-sub">
-            Your budget is ready. Start logging expenses to activate your 14-day
-            Premium trial and unlock all AI features instantly.
+            Your budget is ready. Start logging expenses to activate your{" "}
+            {TRIAL_DAYS}-day Premium trial and unlock all AI features instantly.
           </p>
           <button
             className="success-btn"
@@ -840,7 +807,7 @@ export default function Onboarding() {
 
   return (
     <>
-      <style>{FONTS + styles}</style>
+      <style>{styles}</style>
       <Confetti show={showConfetti} />
       <div className="ob-root">
         <div

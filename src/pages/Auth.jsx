@@ -1,8 +1,7 @@
 ﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
+import { TRIAL_DAYS } from "../lib/config";
 
 const styles = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -404,8 +403,8 @@ function SignupForm({ onSwitch }) {
       <div className="trial-callout">
         <span className="trial-callout-icon">🎁</span>
         <div className="trial-callout-text">
-          <strong>14-day Premium trial included</strong> — unlocks automatically
-          when you log your first expense. No card needed.
+          <strong>{TRIAL_DAYS}-day Premium trial included</strong> — unlocks
+          automatically when you log your first expense. No card needed.
         </div>
       </div>
 
@@ -646,7 +645,7 @@ export default function AuthPages() {
 
   return (
     <>
-      <style>{FONTS + styles}</style>
+      <style>{styles}</style>
       <div className="auth-root">
         <LeftPanel mode={mode} />
         <div className="auth-right">

@@ -20,8 +20,6 @@ import { useAuth } from "../providers/AuthProvider";
 import { supabase } from "../lib/supabase";
 import { useBudget } from "../providers/BudgetProvider";
 
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
-
 const styles = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background: #F5F3EE; color: #0A0A0A; overflow-x: hidden; }
@@ -298,6 +296,7 @@ export default function AppLayout() {
     isPremiumOrTrial,
     trialDaysLeft,
     signOut,
+    user,
   } = useAuth();
   const isPremium = isPremiumOrTrial && !isTrialing;
 
@@ -320,30 +319,24 @@ export default function AppLayout() {
     return () => window.removeEventListener("resize", handler);
   }, []);
 
+  // ── Fetch notifications — uses user from context, no localStorage ──────────
   const fetchNotifications = useCallback(async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const cached = JSON.parse(localStorage.getItem("truvllo_auth") || "{}");
-    const userId = session?.user?.id || cached?.user?.id;
-    if (!userId) return;
+    if (!user?.id) return;
     const { data } = await supabase
       .from("notifications")
       .select("*")
-      .eq("user_id", userId)
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(20);
     if (data) setNotifications(data);
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchNotifications();
-    // Refresh notifications every 60 seconds
     const interval = setInterval(fetchNotifications, 60_000);
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
-  // Re-fetch when notification panel opens
   useEffect(() => {
     if (showNotifPanel) fetchNotifications();
   }, [showNotifPanel, fetchNotifications]);
@@ -373,7 +366,7 @@ export default function AppLayout() {
 
   return (
     <>
-      <style>{FONTS + styles}</style>
+      <style>{styles}</style>
 
       {/* Logout confirmation */}
       {confirmLogout && (
@@ -489,7 +482,6 @@ export default function AppLayout() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div
               style={{
                 padding: "16px 20px",
@@ -527,15 +519,11 @@ export default function AppLayout() {
               {notifications.some((n) => !n.read) && (
                 <button
                   onClick={async () => {
-                    const cached = JSON.parse(
-                      localStorage.getItem("truvllo_auth") || "{}",
-                    );
-                    const userId = cached?.user?.id;
-                    if (userId)
+                    if (user?.id)
                       await supabase
                         .from("notifications")
                         .update({ read: true })
-                        .eq("user_id", userId)
+                        .eq("user_id", user.id)
                         .eq("read", false);
                     fetchNotifications();
                   }}
@@ -552,7 +540,6 @@ export default function AppLayout() {
                 </button>
               )}
             </div>
-            {/* List */}
             <div style={{ overflowY: "auto", maxHeight: 380 }}>
               {notifications.length === 0 ? (
                 <div

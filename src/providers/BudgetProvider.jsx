@@ -9,6 +9,7 @@ import {
   useMemo,
 } from "react";
 import { supabase } from "../lib/supabase";
+import { TRIAL_DAYS } from "../lib/config";
 import { useAuth } from "./AuthProvider";
 
 const BudgetContext = createContext(null);
@@ -154,7 +155,7 @@ export function calcCategoryProgress(caps, expenses) {
 function calcEndDate(period, startDate) {
   const s = new Date(startDate);
   if (period === "weekly") {
-    s.setDate(s.getDate() + 7);
+    s.setDate(s.getDate() + TRIAL_DAYS);
   }
   if (period === "monthly") {
     s.setMonth(s.getMonth() + 1);

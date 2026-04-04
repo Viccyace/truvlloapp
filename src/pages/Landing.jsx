@@ -1,9 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-
-const FONTS = `
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-`;
+import { TRIAL_DAYS, MONTHLY_PRICE_FMT, ANNUAL_PRICE_FMT } from "../lib/config";
 
 const styles = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -507,12 +504,12 @@ export default function Landing() {
   const scrollTo = (id) =>
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
-  const price = billing === "monthly" ? "6,500" : "4,875";
+  const price = billing === "monthly" ? MONTHLY_PRICE_FMT : ANNUAL_PRICE_FMT;
   const period = billing === "monthly" ? "/mo" : "/mo (billed annually)";
 
   return (
     <>
-      <style>{FONTS + styles}</style>
+      <style>{styles}</style>
 
       {/* NAV */}
       <header>
@@ -592,7 +589,7 @@ export default function Landing() {
               <p className="hero-sub">
                 Truvllo is a smart budgeting app that thinks with you. Track
                 spending, get daily safe-to-spend limits, and let AI coach you
-                to save more, even from WhatsApp.
+                to save more — even from WhatsApp.
               </p>
               <div className="hero-btns">
                 <button className="btn-primary" onClick={goToAuth}>
@@ -1088,7 +1085,7 @@ export default function Landing() {
               </h2>
               <p className="cta-sub">
                 Start your free account today. No credit card. No tricks. Full
-                AI access for your first 14 days automatically.
+                AI access for your first {TRIAL_DAYS} days automatically.
               </p>
               <div className="cta-btns">
                 <button className="cta-btn-primary" onClick={goToAuth}>

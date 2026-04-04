@@ -113,17 +113,7 @@ const styles = `
   pointer-events: none;
   border-radius: 0 0 32px 32px;
 }
-  .hero-phone-slot::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 60% 40%, rgba(64,145,108,0.12) 0%, transparent 60%); }
-  .hero-phone-slot::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 120px;
-  background: linear-gradient(to bottom, transparent, var(--cream));
-  pointer-events: none;
-}
+  .hero-phone-slot::before { content: \'\'; position: absolute; inset: 0; background: radial-gradient(circle at 60% 40%, rgba(64,145,108,0.12) 0%, transparent 60%); }
   .hero-phone-icon { font-size: 3rem; opacity: 0.4; }
   .hero-phone-text { opacity: 0.6; text-align: center; line-height: 1.5; font-size: 0.82rem; }
   @media(max-width:900px) { .hero-right { display: none; } }
@@ -293,7 +283,7 @@ const styles = `
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
 }
 .cta-phone-slot::after {
-  content: '';
+  content: \'\';
   position: absolute;
   bottom: 0;
   left: 0;
@@ -319,7 +309,7 @@ const styles = `
   .footer-wordmark { font-family: 'Playfair Display', serif; font-size: clamp(3rem, 8vw, 7rem); font-weight: 900; color: rgba(255,255,255,0.04); text-align: center; display: block; margin-top: 48px; letter-spacing: -0.02em; line-height: 1; max-width: 1200px; margin-left: auto; margin-right: auto; }
 
   /* ── MOBILE ───────────────────────────────────────────────────────────── */
-@media(max-width:480px) {
+  @media(max-width:480px) {
   .nav { 
   top: 10px; 
   left: 50%;
@@ -331,43 +321,43 @@ const styles = `
 }
   .nav-logo { font-size: 1.25rem; }
   .nav-cta { padding: 8px 14px; font-size: 0.8rem; }
-  .hero { padding: 90px 4% 60px; min-height: auto; }
-  .hero-headline { font-size: 2.2rem; margin-bottom: 18px; }
-  .hero-sub { font-size: 0.95rem; margin-bottom: 28px; max-width: 100%; }
-  .hero-btns { flex-direction: row; gap: 10px; flex-wrap: nowrap; }
-  .btn-primary, .btn-outline { flex: 1; text-align: center; padding: 13px 12px; font-size: 0.85rem; }
-  .hero-right { display: none; }
-  .stats-strip { padding: 40px 4%; }
-  .stats-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
-  .stat-val { font-size: 2rem; }
-  .features-section { padding: 60px 4%; }
-  .section-header { margin-bottom: 40px; }
-  .section-headline { font-size: 1.75rem; }
-  .features-grid { grid-template-columns: 1fr; gap: 14px; }
-  .feature-card { padding: 22px; }
-  .wa-section { padding: 60px 4%; }
-  .wa-inner { grid-template-columns: 1fr; gap: 40px; }
-  .wa-headline { font-size: 2rem; }
-  .wa-mockup { display: none; }
-  .how-section { padding: 60px 4%; }
-  .how-inner { grid-template-columns: 1fr; gap: 40px; }
-  .how-right { order: -1; }
-  .how-headline { font-size: 2rem; }
-  .pricing-section { padding: 60px 4%; }
-  .pricing-toggle { width: 100%; }
-  .pricing-grid { grid-template-columns: 1fr; max-width: 100%; gap: 16px; margin-top: 32px; }
-  .testimonials-section { padding: 60px 4%; }
-  .testimonials-top { grid-template-columns: 1fr; gap: 24px; margin-bottom: 40px; }
-  .testimonials-grid { grid-template-columns: 1fr; gap: 14px; }
-  .cta-banner { padding: 60px 4%; }
-  .cta-banner-inner { grid-template-columns: 1fr; }
-  .cta-headline { font-size: 2rem; }
-  .cta-btns { flex-direction: row; gap: 10px; }
-  .cta-btn-primary, .cta-btn-outline { flex: 1; text-align: center; padding: 13px 12px; font-size: 0.85rem; }
-  .footer { padding: 48px 4% 24px; }
-  .footer-top { grid-template-columns: 1fr; gap: 32px; }
-  .footer-wordmark { font-size: 3.5rem; margin-top: 32px; }
-}
+    .hero { padding: 90px 4% 60px; min-height: auto; }
+    .hero-headline { font-size: 2.2rem; margin-bottom: 18px; }
+    .hero-sub { font-size: 0.95rem; margin-bottom: 28px; max-width: 100%; }
+    .hero-btns { flex-direction: row; gap: 10px; flex-wrap: nowrap; }
+    .btn-primary, .btn-outline { flex: 1; text-align: center; padding: 13px 12px; font-size: 0.85rem; }
+    .hero-right { display: none; }
+    .stats-strip { padding: 40px 4%; }
+    .stats-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
+    .stat-val { font-size: 2rem; }
+    .features-section { padding: 60px 4%; }
+    .section-header { margin-bottom: 40px; }
+    .section-headline { font-size: 1.75rem; }
+    .features-grid { grid-template-columns: 1fr; gap: 14px; }
+    .feature-card { padding: 22px; }
+    .wa-section { padding: 60px 4%; }
+    .wa-inner { grid-template-columns: 1fr; gap: 40px; }
+    .wa-headline { font-size: 2rem; }
+    .wa-mockup { display: none; }
+    .how-section { padding: 60px 4%; }
+    .how-inner { grid-template-columns: 1fr; gap: 40px; }
+    .how-right { order: -1; }
+    .how-headline { font-size: 2rem; }
+    .pricing-section { padding: 60px 4%; }
+    .pricing-toggle { width: 100%; }
+    .pricing-grid { grid-template-columns: 1fr; max-width: 100%; gap: 16px; margin-top: 32px; }
+    .testimonials-section { padding: 60px 4%; }
+    .testimonials-top { grid-template-columns: 1fr; gap: 24px; margin-bottom: 40px; }
+    .testimonials-grid { grid-template-columns: 1fr; gap: 14px; }
+    .cta-banner { padding: 60px 4%; }
+    .cta-banner-inner { grid-template-columns: 1fr; }
+    .cta-headline { font-size: 2rem; }
+    .cta-btns { flex-direction: row; gap: 10px; }
+    .cta-btn-primary, .cta-btn-outline { flex: 1; text-align: center; padding: 13px 12px; font-size: 0.85rem; }
+    .footer { padding: 48px 4% 24px; }
+    .footer-top { grid-template-columns: 1fr; gap: 32px; }
+    .footer-wordmark { font-size: 3.5rem; margin-top: 32px; }
+  }
   @media(min-width:481px) and (max-width:768px) {
     .hero { padding: 100px 5% 60px; }
     .hero-headline { font-size: 2.8rem; }
@@ -525,685 +515,722 @@ export default function Landing() {
       <style>{FONTS + styles}</style>
 
       {/* NAV */}
-      <nav
-        className="nav"
-        style={{
-          boxShadow: scrolled
-            ? "0 12px 40px rgba(0,0,0,0.12), 0 1px 0 rgba(255,255,255,0.9) inset"
-            : "0 8px 32px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset",
-        }}
-      >
-        <div
-          className="nav-logo"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      <header>
+        <nav
+          className="nav"
+          style={{
+            boxShadow: scrolled
+              ? "0 12px 40px rgba(0,0,0,0.12), 0 1px 0 rgba(255,255,255,0.9) inset"
+              : "0 8px 32px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset",
+          }}
         >
-          <span className="nav-logo-dot" />
-          Truvllo
-        </div>
-        <div className="nav-links">
-          <a onClick={() => scrollTo("features")}>Features</a>
-          <a onClick={() => scrollTo("whatsapp")}>WhatsApp</a>
-          <a onClick={() => scrollTo("pricing")}>Pricing</a>
-          <a onClick={() => scrollTo("how")}>How it works</a>
-        </div>
-        <button className="nav-cta" onClick={goToAuth}>
-          Get Started Free
-        </button>
-      </nav>
+          <div
+            className="nav-logo"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          >
+            <span className="nav-logo-dot" />
+            Truvllo
+          </div>
+          <div className="nav-links">
+            <a
+              href="#features"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollTo("features");
+              }}
+            >
+              Features
+            </a>
+            <a
+              href="#whatsapp"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollTo("whatsapp");
+              }}
+            >
+              WhatsApp
+            </a>
+            <a
+              href="#pricing"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollTo("pricing");
+              }}
+            >
+              Pricing
+            </a>
+            <a
+              href="#how"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollTo("how");
+              }}
+            >
+              How it works
+            </a>
+          </div>
+          <button className="nav-cta" onClick={goToAuth}>
+            Get Started Free
+          </button>
+        </nav>
+      </header>
 
       {/* HERO */}
-      <section className="hero">
-        <div className="hero-inner">
-          <div className="hero-left">
-            <div className="hero-eyebrow">
-              <span className="hero-eyebrow-dot" />
-              Now with WhatsApp AI Agent
+      <main>
+        <section className="hero">
+          <div className="hero-inner">
+            <div className="hero-left">
+              <div className="hero-eyebrow">
+                <span className="hero-eyebrow-dot" />
+                Now with WhatsApp AI Agent
+              </div>
+              <h1 className="hero-headline">
+                Your Money.
+                <em>Smarter Choices.</em>
+                Every Day.
+              </h1>
+              <p className="hero-sub">
+                Truvllo is a smart budgeting app that thinks with you. Track
+                spending, get daily safe-to-spend limits, and let AI coach you
+                to save more, even from WhatsApp.
+              </p>
+              <div className="hero-btns">
+                <button className="btn-primary" onClick={goToAuth}>
+                  Start Free — 14 Days
+                </button>
+                <button
+                  className="btn-outline"
+                  onClick={() => scrollTo("features")}
+                >
+                  View Features
+                </button>
+              </div>
             </div>
-            <h1 className="hero-headline">
-              Your Money.
-              <em>Smarter Choices.</em>
-              Every Day.
-            </h1>
-            <p className="hero-sub">
-              Truvllo is a smart budgeting app that thinks with you. Track
-              spending, get daily safe-to-spend limits, and let AI coach you to
-              save more — even from WhatsApp.
+            <div className="hero-right">
+              <div className="hero-video-slot">
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    objectPosition: "center top",
+                    display: "block",
+                    borderRadius: "32px",
+                  }}
+                >
+                  <source src="/truvllovid.mp4" type="video/mp4" />
+                </video>
+                <div className="hero-video-fade" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* STATS */}
+        <section className="stats-strip">
+          <div className="stats-inner">
+            <div className="stat-item">
+              <div className="stat-val">
+                2<span>K+</span>
+              </div>
+              <div className="stat-label">Active users</div>
+            </div>
+            <div className="stat-divider" />
+            <div className="stat-item">
+              <div className="stat-val">
+                99<span>.9%</span>
+              </div>
+              <div className="stat-label">Uptime reliability</div>
+            </div>
+            <div className="stat-divider" />
+            <div className="stat-item">
+              <div className="stat-val">
+                ₦<span>0</span>
+              </div>
+              <div className="stat-label">Transaction fees</div>
+            </div>
+            <div className="stat-divider" />
+            <div className="stat-item">
+              <div className="stat-val">
+                6<span>+</span>
+              </div>
+              <div className="stat-label">West African currencies</div>
+            </div>
+          </div>
+        </section>
+
+        {/* FEATURES */}
+        <section id="features" className="features-section">
+          <div className="section-header">
+            <span className="section-label">Features</span>
+            <h2 className="section-headline">Precision Financial Tools</h2>
+            <p className="section-sub">
+              A budgeting suite designed for speed, clarity, and real results.
             </p>
-            <div className="hero-btns">
-              <button className="btn-primary" onClick={goToAuth}>
-                Start Free — 14 Days
-              </button>
-              <button
-                className="btn-outline"
-                onClick={() => scrollTo("features")}
+          </div>
+          <div className="features-grid">
+            {FEATURES.map((f, i) => (
+              <div
+                key={i}
+                className={`feature-card${f.highlight ? " highlight" : ""}`}
               >
-                View Features
+                <div className={`feature-icon ${f.bg}`}>{f.icon}</div>
+                <div className="feature-title">{f.title}</div>
+                <p className="feature-desc">{f.desc}</p>
+                <div
+                  className="feature-link"
+                  onClick={f.highlight ? () => scrollTo("whatsapp") : goToAuth}
+                >
+                  {f.highlight ? "See how it works →" : "Learn more →"}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* WHATSAPP SECTION */}
+        <section id="whatsapp" className="wa-section">
+          <div
+            className="wa-blob"
+            style={{
+              width: 400,
+              height: 400,
+              background:
+                "radial-gradient(circle,rgba(37,211,102,0.15) 0%,transparent 70%)",
+              top: -100,
+              right: -100,
+            }}
+          />
+          <div className="wa-inner">
+            <div>
+              <div className="wa-badge">
+                <span>💬</span>
+                <span className="wa-badge-text">New Feature</span>
+              </div>
+              <h2 className="wa-headline">
+                Your budget lives
+                <br />
+                <span>in WhatsApp</span>
+              </h2>
+              <p className="wa-sub">
+                No need to open the app. Send your bank statement PDF, check
+                your balance, log expenses, and get instant alerts — all from
+                WhatsApp.
+              </p>
+              <div className="wa-features">
+                {[
+                  [
+                    "📄",
+                    "Send PDF → auto-import",
+                    "Forward your bank statement and AI extracts every transaction instantly",
+                  ],
+                  [
+                    "⚡",
+                    "Instant cap & pace alerts",
+                    "Get notified the moment you're about to overspend",
+                  ],
+                  [
+                    "💸",
+                    "Log expenses by chat",
+                    'Just type "spent 4500 on lunch" — we handle the rest',
+                  ],
+                  [
+                    "📊",
+                    "Daily 9pm summary",
+                    "Your spending recap delivered every evening",
+                  ],
+                ].map(([icon, title, desc], i) => (
+                  <div key={i} className="wa-feature">
+                    <div className="wa-feature-icon">{icon}</div>
+                    <div>
+                      <div className="wa-feature-title">{title}</div>
+                      <div className="wa-feature-desc">{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="wa-cta">
+                <button className="wa-btn" onClick={goToAuth}>
+                  Try it free — 14 days
+                </button>
+                <span className="wa-note">
+                  Premium & Trial only · No card needed
+                </span>
+              </div>
+            </div>
+
+            {/* Chat mockup */}
+            <div className="wa-mockup">
+              <div className="wa-chat">
+                <div className="wa-chat-header">
+                  <div className="wa-chat-avatar">🤖</div>
+                  <div>
+                    <div className="wa-chat-name">Truvllo Agent</div>
+                    <div className="wa-chat-status">● online</div>
+                  </div>
+                </div>
+                <div className="wa-chat-body">
+                  <div className="wa-msg-out">
+                    <div className="wa-msg-text">spent 4500 on lunch</div>
+                    <div className="wa-msg-time right">12:34 ✓✓</div>
+                  </div>
+                  <div className="wa-msg-in">
+                    <div className="wa-msg-text">
+                      ✅ <strong>₦4,500</strong> logged under Food
+                      <br />
+                      <br />
+                      💰 Remaining: <strong>₦45,200</strong>
+                      <br />
+                      📅 12 days left this month
+                    </div>
+                    <div className="wa-msg-time">12:34</div>
+                  </div>
+                  <div className="wa-msg-in">
+                    <div className="wa-msg-text">
+                      ⚠️ <strong>Food cap alert!</strong>
+                      <br />
+                      ₦18,200 of ₦20,000 used
+                      <br />
+                      <span style={{ color: "#25D366", fontSize: "0.75rem" }}>
+                        90% reached
+                      </span>
+                    </div>
+                    <div className="wa-msg-time">18:45</div>
+                  </div>
+                  <div className="wa-msg-out">
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 8 }}
+                    >
+                      <div
+                        style={{
+                          width: 32,
+                          height: 32,
+                          background: "rgba(255,255,255,0.1)",
+                          borderRadius: 6,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        📄
+                      </div>
+                      <div>
+                        <div
+                          style={{
+                            fontSize: "0.78rem",
+                            color: "#fff",
+                            fontWeight: 600,
+                          }}
+                        >
+                          GTB_Statement.pdf
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "0.68rem",
+                            color: "rgba(255,255,255,0.5)",
+                          }}
+                        >
+                          94.5 KB
+                        </div>
+                      </div>
+                    </div>
+                    <div className="wa-msg-time right">12:40 ✓✓</div>
+                  </div>
+                  <div className="wa-msg-in">
+                    <div className="wa-msg-text">
+                      📊 Found <strong>23 transactions</strong>
+                      <br />
+                      Total: ₦187,400
+                      <br />
+                      <br />
+                      Import all? Reply <strong>YES</strong> or{" "}
+                      <strong>NO</strong>
+                    </div>
+                    <div className="wa-msg-time">12:41</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* HOW IT WORKS */}
+        <section id="how" className="how-section">
+          <div className="how-inner">
+            <div className="how-steps">
+              {STEPS.map((s, i) => (
+                <div key={i} className="how-step">
+                  <div className="how-step-num">{i + 1}</div>
+                  <div>
+                    <div className="how-step-title">{s.title}</div>
+                    <p className="how-step-desc">{s.desc}</p>
+                  </div>
+                </div>
+              ))}
+              <button
+                className="btn-primary"
+                style={{ marginTop: 8, width: "fit-content" }}
+                onClick={goToAuth}
+              >
+                Open an account
+              </button>
+            </div>
+            <div className="how-right">
+              <h2 className="how-headline">
+                Simple.<em>Transparent.</em>Fast.
+              </h2>
+              <p className="how-sub">
+                No complicated setup. No financial jargon. Go from signup to
+                your first budget in under 3 minutes — and start seeing where
+                your money goes immediately.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* PRICING */}
+        <section id="pricing" className="pricing-section">
+          <div className="section-header">
+            <span className="section-label">Pricing</span>
+            <h2 className="section-headline">Plans that scale with you</h2>
+            <p className="section-sub">
+              Choose the perfect plan for your money goals.
+            </p>
+          </div>
+          <div className="pricing-toggle">
+            <button
+              className={billing === "monthly" ? "active" : ""}
+              onClick={() => setBilling("monthly")}
+            >
+              Monthly
+            </button>
+            <button
+              className={billing === "annual" ? "active" : ""}
+              onClick={() => setBilling("annual")}
+            >
+              Annual{" "}
+              <span style={{ color: "var(--green-mid)", fontWeight: 800 }}>
+                −25%
+              </span>
+            </button>
+          </div>
+          <div className="pricing-grid">
+            <div className="pricing-card">
+              <div className="pricing-plan">Basic</div>
+              <div className="pricing-price">
+                ₦0<span>/month</span>
+              </div>
+              <p className="pricing-desc">
+                The essentials to get you started. No card needed.
+              </p>
+              <div className="pricing-divider" />
+              <ul className="pricing-features">
+                {FREE_FEATURES.map((f, i) => (
+                  <li key={i}>
+                    <span className="check">✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <button className="pricing-btn" onClick={goToAuth}>
+                Get started free
+              </button>
+            </div>
+            <div className="pricing-card featured">
+              <div className="pricing-badge">Most Popular</div>
+              <div className="pricing-plan">Premium</div>
+              <div className="pricing-price">
+                ₦{price}
+                <span>{period}</span>
+              </div>
+              <p className="pricing-desc">
+                Full AI suite + WhatsApp agent for serious money management.
+              </p>
+              <div className="pricing-divider" />
+              <ul className="pricing-features">
+                {PREMIUM_FEATURES.map((f, i) => (
+                  <li key={i}>
+                    <span className="check">✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <button className="pricing-btn featured-btn" onClick={goToAuth}>
+                Start 14-day free trial
+              </button>
+            </div>
+            <div
+              className="pricing-card"
+              style={{ opacity: 0.75, position: "relative" }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: 16,
+                  right: 16,
+                  background: "var(--amber-light)",
+                  color: "var(--ink)",
+                  fontSize: "0.65rem",
+                  fontWeight: 800,
+                  padding: "3px 10px",
+                  borderRadius: "100px",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Coming Soon
+              </div>
+              <div className="pricing-plan">Business</div>
+              <div className="pricing-price" style={{ fontSize: "2rem" }}>
+                Custom
+              </div>
+              <p className="pricing-desc">
+                Team budgets, expense approvals, and financial oversight for
+                organisations.
+              </p>
+              <div className="pricing-divider" />
+              <ul className="pricing-features">
+                {[
+                  "Everything in Premium",
+                  "API integration",
+                  "Account manager",
+                  "Custom roles",
+                  "Tailored solutions",
+                ].map((f, i) => (
+                  <li key={i}>
+                    <span className="check">✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <button
+                className="pricing-btn"
+                disabled
+                style={{ opacity: 0.5, cursor: "not-allowed" }}
+              >
+                Coming soon
               </button>
             </div>
           </div>
-          <div className="hero-right">
-            <div className="hero-video-slot">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
+          <p
+            style={{
+              textAlign: "center",
+              marginTop: 32,
+              color: "var(--ink-subtle)",
+              fontSize: "0.875rem",
+            }}
+          >
+            🎉 Your <strong>14-day Premium trial</strong> starts automatically
+            when you log your first expense — no card required.
+          </p>
+        </section>
+
+        {/* TESTIMONIALS */}
+        <section className="testimonials-section">
+          <div className="testimonials-inner">
+            <div className="testimonials-top">
+              <div>
+                <span className="testimonials-quote-mark">"</span>
+                <h2 className="testimonials-headline">
+                  What our users are saying
+                </h2>
+              </div>
+              <div className="testimonials-stats">
+                <div>
+                  <div className="t-stat-val">
+                    2<span>K+</span>
+                  </div>
+                  <div className="t-stat-label">Active users</div>
+                </div>
+                <div>
+                  <div className="t-stat-val">
+                    4.8<span>★</span>
+                  </div>
+                  <div className="t-stat-label">Average rating</div>
+                </div>
+              </div>
+            </div>
+            <div className="testimonials-grid">
+              {TESTIMONIALS.map((t, i) => (
+                <div key={i} className="testimonial-card">
+                  <div className="testimonial-stars">{"★".repeat(t.stars)}</div>
+                  <p className="testimonial-text">"{t.text}"</p>
+                  <div className="testimonial-author">
+                    <div
+                      className="testimonial-avatar"
+                      style={{ background: t.color }}
+                    >
+                      {t.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="testimonial-name">{t.name}</div>
+                      <div className="testimonial-role">{t.role}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA BANNER */}
+        <section className="cta-banner">
+          <div className="cta-blob cta-blob-1" />
+          <div className="cta-blob cta-blob-2" />
+          <div className="cta-banner-inner">
+            <div>
+              <h2 className="cta-headline">
+                Join people who<em>moved</em> <em>their money smarter.</em>
+              </h2>
+              <p className="cta-sub">
+                Start your free account today. No credit card. No tricks. Full
+                AI access for your first 14 days automatically.
+              </p>
+              <div className="cta-btns">
+                <button className="cta-btn-primary" onClick={goToAuth}>
+                  Open an Account
+                </button>
+                <button
+                  className="cta-btn-outline"
+                  onClick={() => scrollTo("features")}
+                >
+                  Learn More
+                </button>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  flexWrap: "wrap",
+                  marginTop: 24,
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  style={{ position: "relative", cursor: "default" }}
+                  title="Coming Soon to App Store"
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: -8,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      background: "var(--amber)",
+                      color: "var(--ink)",
+                      fontSize: "0.58rem",
+                      fontWeight: 800,
+                      padding: "2px 8px",
+                      borderRadius: "100px",
+                      whiteSpace: "nowrap",
+                      zIndex: 1,
+                    }}
+                  >
+                    Coming Soon
+                  </div>
+                  <div
+                    style={{
+                      background: "#FFFFFF",
+                      borderRadius: 10,
+                      padding: "8px 16px",
+                      opacity: 0.9,
+                    }}
+                  >
+                    <img
+                      src="/apple_store.png"
+                      alt="Download on App Store"
+                      style={{
+                        height: 36,
+                        display: "block",
+                        objectFit: "contain",
+                      }}
+                    />
+                  </div>
+                </div>
+                <div
+                  style={{ position: "relative", cursor: "default" }}
+                  title="Coming Soon to Google Play"
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: -8,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      background: "var(--amber)",
+                      color: "var(--ink)",
+                      fontSize: "0.58rem",
+                      fontWeight: 800,
+                      padding: "2px 8px",
+                      borderRadius: "100px",
+                      whiteSpace: "nowrap",
+                      zIndex: 1,
+                    }}
+                  >
+                    Coming Soon
+                  </div>
+                  <div
+                    style={{
+                      background: "#FFFFFF",
+                      borderRadius: 10,
+                      padding: "8px 16px",
+                      opacity: 0.9,
+                    }}
+                  >
+                    <img
+                      src="/google_play_store.png"
+                      alt="Get it on Google Play"
+                      style={{
+                        height: 36,
+                        display: "block",
+                        objectFit: "contain",
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="cta-users">
+                <div className="cta-avatars">
+                  {["#40916C", "#2D6A4F", "#D4A017", "#1B4332", "#52B788"].map(
+                    (c, i) => (
+                      <div
+                        key={i}
+                        className="cta-avatar"
+                        style={{ background: c }}
+                      >
+                        {["A", "C", "F", "T", "B"][i]}
+                      </div>
+                    ),
+                  )}
+                </div>
+                <div className="cta-users-text">
+                  Join 2,000+ users already budgeting smarter
+                </div>
+              </div>
+            </div>
+            <div className="cta-phone-slot">
+              <img
+                src="/truvllo.png"
+                alt="Truvllo app in use"
                 style={{
                   width: "100%",
                   height: "100%",
                   objectFit: "cover",
                   objectPosition: "center top",
                   display: "block",
-                  borderRadius: "32px",
+                  borderRadius: "24px",
                 }}
-              >
-                <source src="/truvllovid.mp4" type="video/mp4" />
-              </video>
-              <div className="hero-video-fade" />
+              />
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* STATS */}
-      <section className="stats-strip">
-        <div className="stats-inner">
-          <div className="stat-item">
-            <div className="stat-val">
-              2<span>K+</span>
-            </div>
-            <div className="stat-label">Active users</div>
-          </div>
-          <div className="stat-divider" />
-          <div className="stat-item">
-            <div className="stat-val">
-              99<span>.9%</span>
-            </div>
-            <div className="stat-label">Uptime reliability</div>
-          </div>
-          <div className="stat-divider" />
-          <div className="stat-item">
-            <div className="stat-val">
-              ₦<span>0</span>
-            </div>
-            <div className="stat-label">Transaction fees</div>
-          </div>
-          <div className="stat-divider" />
-          <div className="stat-item">
-            <div className="stat-val">
-              6<span>+</span>
-            </div>
-            <div className="stat-label">West African currencies</div>
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <section id="features" className="features-section">
-        <div className="section-header">
-          <span className="section-label">Features</span>
-          <h2 className="section-headline">Precision Financial Tools</h2>
-          <p className="section-sub">
-            A budgeting suite designed for speed, clarity, and real results.
-          </p>
-        </div>
-        <div className="features-grid">
-          {FEATURES.map((f, i) => (
-            <div
-              key={i}
-              className={`feature-card${f.highlight ? " highlight" : ""}`}
-            >
-              <div className={`feature-icon ${f.bg}`}>{f.icon}</div>
-              <div className="feature-title">{f.title}</div>
-              <p className="feature-desc">{f.desc}</p>
-              <div
-                className="feature-link"
-                onClick={f.highlight ? () => scrollTo("whatsapp") : goToAuth}
-              >
-                {f.highlight ? "See how it works →" : "Learn more →"}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* WHATSAPP SECTION */}
-      <section id="whatsapp" className="wa-section">
-        <div
-          className="wa-blob"
-          style={{
-            width: 400,
-            height: 400,
-            background:
-              "radial-gradient(circle,rgba(37,211,102,0.15) 0%,transparent 70%)",
-            top: -100,
-            right: -100,
-          }}
-        />
-        <div className="wa-inner">
-          <div>
-            <div className="wa-badge">
-              <span>💬</span>
-              <span className="wa-badge-text">New Feature</span>
-            </div>
-            <h2 className="wa-headline">
-              Your budget lives
-              <br />
-              <span>in WhatsApp</span>
-            </h2>
-            <p className="wa-sub">
-              No need to open the app. Send your bank statement PDF, check your
-              balance, log expenses, and get instant alerts — all from WhatsApp.
-            </p>
-            <div className="wa-features">
-              {[
-                [
-                  "📄",
-                  "Send PDF → auto-import",
-                  "Forward your bank statement and AI extracts every transaction instantly",
-                ],
-                [
-                  "⚡",
-                  "Instant cap & pace alerts",
-                  "Get notified the moment you're about to overspend",
-                ],
-                [
-                  "💸",
-                  "Log expenses by chat",
-                  'Just type "spent 4500 on lunch" — we handle the rest',
-                ],
-                [
-                  "📊",
-                  "Daily 9pm summary",
-                  "Your spending recap delivered every evening",
-                ],
-              ].map(([icon, title, desc], i) => (
-                <div key={i} className="wa-feature">
-                  <div className="wa-feature-icon">{icon}</div>
-                  <div>
-                    <div className="wa-feature-title">{title}</div>
-                    <div className="wa-feature-desc">{desc}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="wa-cta">
-              <button className="wa-btn" onClick={goToAuth}>
-                Try it free — 14 days
-              </button>
-              <span className="wa-note">
-                Premium & Trial only · No card needed
-              </span>
-            </div>
-          </div>
-
-          {/* Chat mockup */}
-          <div className="wa-mockup">
-            <div className="wa-chat">
-              <div className="wa-chat-header">
-                <div className="wa-chat-avatar">🤖</div>
-                <div>
-                  <div className="wa-chat-name">Truvllo Agent</div>
-                  <div className="wa-chat-status">● online</div>
-                </div>
-              </div>
-              <div className="wa-chat-body">
-                <div className="wa-msg-out">
-                  <div className="wa-msg-text">spent 4500 on lunch</div>
-                  <div className="wa-msg-time right">12:34 ✓✓</div>
-                </div>
-                <div className="wa-msg-in">
-                  <div className="wa-msg-text">
-                    ✅ <strong>₦4,500</strong> logged under Food
-                    <br />
-                    <br />
-                    💰 Remaining: <strong>₦45,200</strong>
-                    <br />
-                    📅 12 days left this month
-                  </div>
-                  <div className="wa-msg-time">12:34</div>
-                </div>
-                <div className="wa-msg-in">
-                  <div className="wa-msg-text">
-                    ⚠️ <strong>Food cap alert!</strong>
-                    <br />
-                    ₦18,200 of ₦20,000 used
-                    <br />
-                    <span style={{ color: "#25D366", fontSize: "0.75rem" }}>
-                      90% reached
-                    </span>
-                  </div>
-                  <div className="wa-msg-time">18:45</div>
-                </div>
-                <div className="wa-msg-out">
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
-                    <div
-                      style={{
-                        width: 32,
-                        height: 32,
-                        background: "rgba(255,255,255,0.1)",
-                        borderRadius: 6,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      📄
-                    </div>
-                    <div>
-                      <div
-                        style={{
-                          fontSize: "0.78rem",
-                          color: "#fff",
-                          fontWeight: 600,
-                        }}
-                      >
-                        GTB_Statement.pdf
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "0.68rem",
-                          color: "rgba(255,255,255,0.5)",
-                        }}
-                      >
-                        94.5 KB
-                      </div>
-                    </div>
-                  </div>
-                  <div className="wa-msg-time right">12:40 ✓✓</div>
-                </div>
-                <div className="wa-msg-in">
-                  <div className="wa-msg-text">
-                    📊 Found <strong>23 transactions</strong>
-                    <br />
-                    Total: ₦187,400
-                    <br />
-                    <br />
-                    Import all? Reply <strong>YES</strong> or{" "}
-                    <strong>NO</strong>
-                  </div>
-                  <div className="wa-msg-time">12:41</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section id="how" className="how-section">
-        <div className="how-inner">
-          <div className="how-steps">
-            {STEPS.map((s, i) => (
-              <div key={i} className="how-step">
-                <div className="how-step-num">{i + 1}</div>
-                <div>
-                  <div className="how-step-title">{s.title}</div>
-                  <p className="how-step-desc">{s.desc}</p>
-                </div>
-              </div>
-            ))}
-            <button
-              className="btn-primary"
-              style={{ marginTop: 8, width: "fit-content" }}
-              onClick={goToAuth}
-            >
-              Open an account
-            </button>
-          </div>
-          <div className="how-right">
-            <h2 className="how-headline">
-              Simple.<em>Transparent.</em>Fast.
-            </h2>
-            <p className="how-sub">
-              No complicated setup. No financial jargon. Go from signup to your
-              first budget in under 3 minutes — and start seeing where your
-              money goes immediately.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section id="pricing" className="pricing-section">
-        <div className="section-header">
-          <span className="section-label">Pricing</span>
-          <h2 className="section-headline">Plans that scale with you</h2>
-          <p className="section-sub">
-            Choose the perfect plan for your money goals.
-          </p>
-        </div>
-        <div className="pricing-toggle">
-          <button
-            className={billing === "monthly" ? "active" : ""}
-            onClick={() => setBilling("monthly")}
-          >
-            Monthly
-          </button>
-          <button
-            className={billing === "annual" ? "active" : ""}
-            onClick={() => setBilling("annual")}
-          >
-            Annual{" "}
-            <span style={{ color: "var(--green-mid)", fontWeight: 800 }}>
-              −25%
-            </span>
-          </button>
-        </div>
-        <div className="pricing-grid">
-          <div className="pricing-card">
-            <div className="pricing-plan">Basic</div>
-            <div className="pricing-price">
-              ₦0<span>/month</span>
-            </div>
-            <p className="pricing-desc">
-              The essentials to get you started. No card needed.
-            </p>
-            <div className="pricing-divider" />
-            <ul className="pricing-features">
-              {FREE_FEATURES.map((f, i) => (
-                <li key={i}>
-                  <span className="check">✓</span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <button className="pricing-btn" onClick={goToAuth}>
-              Get started free
-            </button>
-          </div>
-          <div className="pricing-card featured">
-            <div className="pricing-badge">Most Popular</div>
-            <div className="pricing-plan">Premium</div>
-            <div className="pricing-price">
-              ₦{price}
-              <span>{period}</span>
-            </div>
-            <p className="pricing-desc">
-              Full AI suite + WhatsApp agent for serious money management.
-            </p>
-            <div className="pricing-divider" />
-            <ul className="pricing-features">
-              {PREMIUM_FEATURES.map((f, i) => (
-                <li key={i}>
-                  <span className="check">✓</span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <button className="pricing-btn featured-btn" onClick={goToAuth}>
-              Start 14-day free trial
-            </button>
-          </div>
-          <div
-            className="pricing-card"
-            style={{ opacity: 0.75, position: "relative" }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                top: 16,
-                right: 16,
-                background: "var(--amber-light)",
-                color: "var(--ink)",
-                fontSize: "0.65rem",
-                fontWeight: 800,
-                padding: "3px 10px",
-                borderRadius: "100px",
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-              }}
-            >
-              Coming Soon
-            </div>
-            <div className="pricing-plan">Business</div>
-            <div className="pricing-price" style={{ fontSize: "2rem" }}>
-              Custom
-            </div>
-            <p className="pricing-desc">
-              Team budgets, expense approvals, and financial oversight for
-              organisations.
-            </p>
-            <div className="pricing-divider" />
-            <ul className="pricing-features">
-              {[
-                "Everything in Premium",
-                "API integration",
-                "Account manager",
-                "Custom roles",
-                "Tailored solutions",
-              ].map((f, i) => (
-                <li key={i}>
-                  <span className="check">✓</span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <button
-              className="pricing-btn"
-              disabled
-              style={{ opacity: 0.5, cursor: "not-allowed" }}
-            >
-              Coming soon
-            </button>
-          </div>
-        </div>
-        <p
-          style={{
-            textAlign: "center",
-            marginTop: 32,
-            color: "var(--ink-subtle)",
-            fontSize: "0.875rem",
-          }}
-        >
-          🎉 Your <strong>14-day Premium trial</strong> starts automatically
-          when you log your first expense — no card required.
-        </p>
-      </section>
-
-      {/* TESTIMONIALS */}
-      <section className="testimonials-section">
-        <div className="testimonials-inner">
-          <div className="testimonials-top">
-            <div>
-              <span className="testimonials-quote-mark">"</span>
-              <h2 className="testimonials-headline">
-                What our users are saying
-              </h2>
-            </div>
-            <div className="testimonials-stats">
-              <div>
-                <div className="t-stat-val">
-                  2<span>K+</span>
-                </div>
-                <div className="t-stat-label">Active users</div>
-              </div>
-              <div>
-                <div className="t-stat-val">
-                  4.8<span>★</span>
-                </div>
-                <div className="t-stat-label">Average rating</div>
-              </div>
-            </div>
-          </div>
-          <div className="testimonials-grid">
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i} className="testimonial-card">
-                <div className="testimonial-stars">{"★".repeat(t.stars)}</div>
-                <p className="testimonial-text">"{t.text}"</p>
-                <div className="testimonial-author">
-                  <div
-                    className="testimonial-avatar"
-                    style={{ background: t.color }}
-                  >
-                    {t.name.charAt(0)}
-                  </div>
-                  <div>
-                    <div className="testimonial-name">{t.name}</div>
-                    <div className="testimonial-role">{t.role}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA BANNER */}
-      <section className="cta-banner">
-        <div className="cta-blob cta-blob-1" />
-        <div className="cta-blob cta-blob-2" />
-        <div className="cta-banner-inner">
-          <div>
-            <h2 className="cta-headline">
-              Join people who<em>moved</em> <em>their money smarter.</em>
-            </h2>
-            <p className="cta-sub">
-              Start your free account today. No credit card. No tricks. Full AI
-              access for your first 14 days automatically.
-            </p>
-            <div className="cta-btns">
-              <button className="cta-btn-primary" onClick={goToAuth}>
-                Open an Account
-              </button>
-              <button
-                className="cta-btn-outline"
-                onClick={() => scrollTo("features")}
-              >
-                Learn More
-              </button>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                gap: 12,
-                flexWrap: "wrap",
-                marginTop: 24,
-                alignItems: "center",
-              }}
-            >
-              <div
-                style={{ position: "relative", cursor: "default" }}
-                title="Coming Soon to App Store"
-              >
-                <div
-                  style={{
-                    position: "absolute",
-                    top: -8,
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    background: "var(--amber)",
-                    color: "var(--ink)",
-                    fontSize: "0.58rem",
-                    fontWeight: 800,
-                    padding: "2px 8px",
-                    borderRadius: "100px",
-                    whiteSpace: "nowrap",
-                    zIndex: 1,
-                  }}
-                >
-                  Coming Soon
-                </div>
-                <div
-                  style={{
-                    background: "#FFFFFF",
-                    borderRadius: 10,
-                    padding: "8px 16px",
-                    opacity: 0.9,
-                  }}
-                >
-                  <img
-                    src="/apple_store.png"
-                    alt="Download on App Store"
-                    style={{
-                      height: 36,
-                      display: "block",
-                      objectFit: "contain",
-                    }}
-                  />
-                </div>
-              </div>
-              <div
-                style={{ position: "relative", cursor: "default" }}
-                title="Coming Soon to Google Play"
-              >
-                <div
-                  style={{
-                    position: "absolute",
-                    top: -8,
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    background: "var(--amber)",
-                    color: "var(--ink)",
-                    fontSize: "0.58rem",
-                    fontWeight: 800,
-                    padding: "2px 8px",
-                    borderRadius: "100px",
-                    whiteSpace: "nowrap",
-                    zIndex: 1,
-                  }}
-                >
-                  Coming Soon
-                </div>
-                <div
-                  style={{
-                    background: "#FFFFFF",
-                    borderRadius: 10,
-                    padding: "8px 16px",
-                    opacity: 0.9,
-                  }}
-                >
-                  <img
-                    src="/google_play_store.png"
-                    alt="Get it on Google Play"
-                    style={{
-                      height: 36,
-                      display: "block",
-                      objectFit: "contain",
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="cta-users">
-              <div className="cta-avatars">
-                {["#40916C", "#2D6A4F", "#D4A017", "#1B4332", "#52B788"].map(
-                  (c, i) => (
-                    <div
-                      key={i}
-                      className="cta-avatar"
-                      style={{ background: c }}
-                    >
-                      {["A", "C", "F", "T", "B"][i]}
-                    </div>
-                  ),
-                )}
-              </div>
-              <div className="cta-users-text">
-                Join 2,000+ users already budgeting smarter
-              </div>
-            </div>
-          </div>
-          <div className="cta-phone-slot">
-            <img
-              src="/truvllo.png"
-              alt="Truvllo image app in use"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                objectPosition: "center top",
-                display: "block",
-                borderRadius: "24px",
-              }}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
+        {/* FOOTER */}
+      </main>
       <footer className="footer">
         <div className="footer-top">
           <div>
@@ -1221,17 +1248,81 @@ export default function Landing() {
           </div>
           <div className="footer-col">
             <div className="footer-col-title">Product</div>
-            <a onClick={() => scrollTo("features")}>Features</a>
-            <a onClick={() => scrollTo("whatsapp")}>WhatsApp Agent</a>
-            <a onClick={() => scrollTo("pricing")}>Pricing</a>
-            <a onClick={() => scrollTo("how")}>How it works</a>
+            <a
+              href="#features"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollTo("features");
+              }}
+            >
+              Features
+            </a>
+            <a
+              href="#whatsapp"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollTo("whatsapp");
+              }}
+            >
+              WhatsApp Agent
+            </a>
+            <a
+              href="#pricing"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollTo("pricing");
+              }}
+            >
+              Pricing
+            </a>
+            <a
+              href="#how"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollTo("how");
+              }}
+            >
+              How it works
+            </a>
           </div>
           <div className="footer-col">
             <div className="footer-col-title">Company</div>
-            <a onClick={() => navigate("/about")}>About</a>
-            <a onClick={() => navigate("/blog")}>Blog</a>
-            <a onClick={() => navigate("/careers")}>Careers</a>
-            <a onClick={() => navigate("/contact")}>Contact</a>
+            <a
+              href="/about"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/about");
+              }}
+            >
+              About
+            </a>
+            <a
+              href="/blog"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/blog");
+              }}
+            >
+              Blog
+            </a>
+            <a
+              href="/careers"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/careers");
+              }}
+            >
+              Careers
+            </a>
+            <a
+              href="/contact"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/contact");
+              }}
+            >
+              Contact
+            </a>
           </div>
           <div className="footer-col">
             <div className="footer-col-title">Connect</div>

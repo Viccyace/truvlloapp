@@ -6,14 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover" />
 
   <!-- ── Primary SEO ─────────────────────────────────────────────────────── -->
-  <title>Truvllo — The smart Budgeting App That Thinks With You</title>
+  <title>Truvllo — AI Budgeting App That Thinks With You</title>
   <meta name="description"
-    content="Truvllo is a smart budgeting app that thinks with you. Track spending, get daily safe-to-spend limits, and let AI coach you to save more. Free to start." />
+    content="Track spending, get daily safe-to-spend limits, and let AI coach you to save more. Free to start — 14-day Premium trial included." />
   <meta name="keywords"
-    content="Smart budgeting app, budget tracker, personal finance app, spending tracker, ai budget planner, truvllo" />
+    content="ai budgeting app, budget tracker, personal finance app, spending tracker, ai budget planner, truvllo" />
   <meta name="author" content="Truvllo" />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://truvllo.app/" />
+  <link rel="canonical" href="https://www.truvllo.app/" />
 
   <!-- ── Theme ──────────────────────────────────────────────────────────── -->
   <meta name="theme-color" content="#1B4332" />
@@ -22,25 +22,28 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Truvllo" />
 
-  <!-- ── Open Graph (WhatsApp, Facebook, LinkedIn previews) ────────────── -->
+  <!-- ── Open Graph — www URLs, JPEG image, optimal lengths ────────────── -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Truvllo" />
-  <meta property="og:url" content="https://truvllo.app/" />
-  <meta property="og:title" content="Truvllo — The Smart Budgeting App That Thinks With You" />
+  <meta property="og:url" content="https://www.truvllo.app/" />
+  <meta property="og:title" content="Truvllo — AI Budgeting App That Thinks With You" />
   <meta property="og:description"
-    content="Truvllo is a smart budgeting app that thinks with you. Track spending, get daily safe-to-spend limits, and let AI coach you to save more. Free to start." />
-  <meta property="og:image" content="https://truvllo.app/og-image.png" />
+    content="Track spending, get daily safe-to-spend limits, and let AI coach you to save more. Free 14-day Premium trial — no card needed." />
+  <meta property="og:image" content="https://www.truvllo.app/og-image.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Truvllo — The Smart Budgeting App That Thinks With You" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:alt" content="Truvllo — AI budgeting app dashboard" />
   <meta property="og:locale" content="en_NG" />
 
   <!-- ── Twitter Card ──────────────────────────────────────────────────── -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Truvllo — The smart Budgeting App That Thinks With You" />
+  <meta name="twitter:site" content="@truvlloapp" />
+  <meta name="twitter:title" content="Truvllo — AI Budgeting App That Thinks With You" />
   <meta name="twitter:description"
-    content="Truvllo is a smart budgeting app that thinks with you. Track spending, get daily safe-to-spend limits, and let AI coach you to save more. Free to start." />
-  <meta name="twitter:image" content="https://truvllo.app/og-image.png" />
+    content="Track spending, get daily safe-to-spend limits, and let AI coach you to save more. Free 14-day Premium trial — no card needed." />
+  <meta name="twitter:image" content="https://www.truvllo.app/og-image.jpg" />
+  <meta name="twitter:image:alt" content="Truvllo — AI budgeting app dashboard" />
 
   <!-- ── Structured Data ───────────────────────────────────────────────── -->
   <script type="application/ld+json">
@@ -48,8 +51,8 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "Truvllo",
-    "url": "https://truvllo.app",
-    "description": "The Smart budgeting app that thinks with you. Track spending, get daily safe-to-spend limits, and let AI coach you to save more.",
+    "url": "https://www.truvllo.app",
+    "description": "The AI budgeting app that thinks with you. Track spending, get daily safe-to-spend limits, and let AI coach you to save more.",
     "applicationCategory": "FinanceApplication",
     "operatingSystem": "Web, Android, iOS",
     "offers": [
@@ -61,6 +64,8 @@
       "Safe-to-spend daily limit",
       "AI spending analyst",
       "Natural language expense entry",
+      "WhatsApp AI agent",
+      "Bank statement import",
       "Multi-currency support",
       "Category spending caps",
       "CSV export"
@@ -70,7 +75,7 @@
     "publisher": {
       "@type": "Organization",
       "name": "Truvllo",
-      "url": "https://truvllo.app"
+      "url": "https://www.truvllo.app"
     }
   }
   </script>
@@ -86,22 +91,34 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-  <!-- ── Global fixes ──────────────────────────────────────────────────── -->
+  <!-- ── Critical CSS — prevents LCP flash, matches app cream ──────────── -->
   <style>
     * {
       -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
     }
 
     html,
     body {
       overflow-x: hidden;
       overscroll-behavior-x: none;
+      margin: 0;
+      padding: 0;
     }
 
     input,
     select,
     textarea {
       font-size: 16px !important;
+    }
+
+    body {
+      background: #FAF8F3;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    #root {
+      min-height: 100vh;
     }
   </style>
 </head>

@@ -1,4 +1,4 @@
-import { corsHeaders } from "../_shared/cors.ts";
+import { resolveCorsHeaders } from "../_shared/cors.ts";
 import { requireAuth, logUsage } from "../_shared/auth.ts";
 import { callClaude, parseJSON } from "../_shared/claude.ts";
 
@@ -14,8 +14,21 @@ const VALID = [
 ];
 
 Deno.serve(async (req) => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = resolveCorsHeaders(origin);
   if (req.method === "OPTIONS")
     return new Response("ok", { headers: corsHeaders });
+
+  const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+  if (!ANTHROPIC_KEY) {
+    return new Response(
+      JSON.stringify({ error: "ANTHROPIC_API_KEY not configured" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
 
   try {
     const { user, supabase } = await requireAuth(req, "smart_categorise");
@@ -33,6 +46,7 @@ Deno.serve(async (req) => {
     }
 
     const raw = await callClaude({
+      model: "claude-haiku-4-5-20251001",
       system: `You are an expense categoriser for a Nigerian budgeting app.
 Categorise into one of: food, transport, bills, shopping, health, airtime, entertainment, other
 
@@ -77,4 +91,3 @@ Return ONLY JSON: { category, confidence (0-1), alternatives (2 other possible c
     });
   }
 });
-

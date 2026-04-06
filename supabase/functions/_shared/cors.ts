@@ -13,7 +13,6 @@ export const ALLOWED_ORIGINS = [
 export function resolveCorsHeaders(origin: string | null) {
   const allowOrigin =
     origin && ALLOWED_ORIGINS.includes(origin) ? origin : PROD_ORIGINS[0];
-
   return {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Headers":

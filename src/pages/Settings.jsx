@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useMemo } from "react";
 /* eslint-disable no-unused-vars -- sub-components are used in JSX */
 import { useNavigate } from "react-router-dom";
+import ReferralCard from "../components/ReferralCard";
 import { useAuth } from "../providers/AuthProvider";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
@@ -988,7 +989,9 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Invite friends */}
+      <ReferralCard />
     </>
   );
 }
-

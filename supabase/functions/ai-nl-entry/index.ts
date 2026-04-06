@@ -1,4 +1,4 @@
-import { corsHeaders } from "../_shared/cors.ts";
+import { resolveCorsHeaders } from "../_shared/cors.ts";
 import { requireAuth, logUsage } from "../_shared/auth.ts";
 import { callClaude, parseJSON } from "../_shared/claude.ts";
 
@@ -14,8 +14,21 @@ const VALID_CATEGORIES = [
 ];
 
 Deno.serve(async (req) => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = resolveCorsHeaders(origin);
   if (req.method === "OPTIONS")
     return new Response("ok", { headers: corsHeaders });
+
+  const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+  if (!ANTHROPIC_KEY) {
+    return new Response(
+      JSON.stringify({ error: "ANTHROPIC_API_KEY not configured" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
 
   try {
     const { user, supabase } = await requireAuth(req, "nl_entry");
@@ -31,6 +44,7 @@ Deno.serve(async (req) => {
     const today = new Date().toISOString().split("T")[0];
 
     const raw = await callClaude({
+      model: "claude-haiku-4-5-20251001",
       system: `You are an expense parser for a Nigerian budgeting app.
 Parse natural language expense descriptions into structured JSON.
 
@@ -79,4 +93,3 @@ Return ONLY JSON: { description, amount, category, date, confidence }`,
     });
   }
 });
-

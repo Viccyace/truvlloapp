@@ -11,7 +11,11 @@ const CORS = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const ok = (msg = "ok") => new Response(msg, { status: 200, headers: CORS });
+const ok = () =>
+  new Response('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
+    status: 200,
+    headers: { ...CORS, "Content-Type": "text/xml" },
+  });
 const err = (msg: string, status = 400) =>
   new Response(JSON.stringify({ error: msg }), {
     status,
@@ -69,11 +73,37 @@ Deno.serve(async (req) => {
       profile.first_name || profile.full_name?.split(" ")[0] || "there";
     const userId = profile.id;
 
-    // Check plan — must be trial or premium
-    if (profile.plan === "free" || !profile.whatsapp_active) {
+    // Check plan — free users get canned response only, zero AI calls
+    if (profile.plan === "free") {
+      const cmd2 = (params.get("Body") ?? "").trim().toLowerCase();
+      // Allow basic logging commands — regex only, no Claude
+      if (
+        cmd2 === "hello" ||
+        cmd2 === "hi" ||
+        cmd2 === "help" ||
+        cmd2 === "menu"
+      ) {
+        await sendWhatsApp(
+          from,
+          `👋 Hi ${name}! I'm your Truvllo agent.\n\n` +
+            `You're on the free plan. To unlock AI insights, bank import, and full WhatsApp features:\n\n` +
+            `🚀 Start your 14-day free trial by logging your first expense:\n👉 truvllo.app/expenses\n\n` +
+            `Once your trial activates, I can do a lot more! 💪`,
+        );
+      } else {
+        await sendWhatsApp(
+          from,
+          `⭐ This feature requires a Truvllo trial or Premium plan.\n\n` +
+            `Start your free 14-day trial at truvllo.app — no card needed.`,
+        );
+      }
+      return ok();
+    }
+
+    if (!profile.whatsapp_active) {
       await sendWhatsApp(
         from,
-        `👋 Hi ${name}! Your WhatsApp agent isn't active yet.\n\nLog your first expense on Truvllo to activate your 7-day free trial.\n\n👉 truvllo.app/dashboard`,
+        `👋 Hi ${name}! Your WhatsApp agent isn't active yet.\n\nLog your first expense on Truvllo to activate your free trial.\n\n👉 truvllo.app/dashboard`,
       );
       return ok();
     }
@@ -128,7 +158,8 @@ Deno.serve(async (req) => {
           `Here's what I can do:\n\n` +
           `📊 *BALANCE* — Your budget summary\n` +
           `💸 *TODAY* — What you spent today\n` +
-          `📄 Send a *PDF* — Import bank statement\n\n` +
+          `📄 Send a *PDF* — Import bank statement\n` +
+          `🎯 *NEW BUDGET [name] [amount]* — Create a budget\n\n` +
           `Or just ask me anything about your budget! 💬`,
       );
       return ok();
@@ -137,6 +168,16 @@ Deno.serve(async (req) => {
     // Expense logging — "spent X on Y" or "X for Y"
     if (isExpenseMessage(cmd)) {
       await handleLogExpense(supabase, userId, from, name, body);
+      return ok();
+    }
+
+    // Create budget
+    if (
+      cmd.includes("create budget") ||
+      cmd.includes("new budget") ||
+      cmd.startsWith("budget ")
+    ) {
+      await handleCreateBudget(supabase, userId, from, name, body);
       return ok();
     }
 
@@ -489,6 +530,76 @@ Never use markdown headers. Use emojis sparingly.`,
   await sendWhatsApp(from, reply);
 }
 
+// ── Budget creation handler ──────────────────────────────────────────────────
+async function handleCreateBudget(
+  supabase: any,
+  userId: string,
+  from: string,
+  name: string,
+  message: string,
+) {
+  // Parse: "new budget March 2026 150000" or "create budget Salary 200,000"
+  const amountMatch = message.match(/[\d,]+/);
+  const amount = amountMatch ? parseFloat(amountMatch[0].replace(/,/g, "")) : 0;
+
+  if (!amount || amount < 1000) {
+    await sendWhatsApp(
+      from,
+      `🎯 *Create a budget*\n\n` +
+        `Send: *NEW BUDGET [name] [amount]*\n\n` +
+        `Example:\n• new budget April 2026 150000\n• new budget Salary 200000`,
+    );
+    return;
+  }
+
+  // Extract name — everything before the first number
+  const budgetName =
+    message
+      .replace(/create budget|new budget/i, "")
+      .replace(/[\d,]+.*$/, "")
+      .trim() ||
+    `Budget ${new Date().toLocaleString("en-NG", { month: "long", year: "numeric" })}`;
+
+  const startDate = new Date().toISOString().split("T")[0];
+  const endDate = new Date(new Date().setMonth(new Date().getMonth() + 1))
+    .toISOString()
+    .split("T")[0];
+
+  // Deactivate current budget
+  await supabase
+    .from("budgets")
+    .update({ is_active: false })
+    .eq("user_id", userId);
+
+  // Create new budget
+  const { error } = await supabase.from("budgets").insert({
+    user_id: userId,
+    name: budgetName,
+    total_amount: amount,
+    timeframe: "monthly",
+    start_date: startDate,
+    end_date: endDate,
+    is_active: true,
+  });
+
+  if (error) {
+    await sendWhatsApp(
+      from,
+      `❌ Couldn't create budget. Try at truvllo.app/budget`,
+    );
+    return;
+  }
+
+  await sendWhatsApp(
+    from,
+    `✅ *Budget created!*\n\n` +
+      `📋 ${budgetName}\n` +
+      `💰 ${formatNaira(amount)} / month\n` +
+      `📅 ${startDate} → ${endDate}\n\n` +
+      `Reply *BALANCE* to see your budget summary.`,
+  );
+}
+
 // ── Expense detection ─────────────────────────────────────────────────────────
 function isExpenseMessage(msg: string): boolean {
   const patterns = [
@@ -502,6 +613,52 @@ function isExpenseMessage(msg: string): boolean {
   return patterns.some((p) => p.test(msg));
 }
 
+// ── Regex-based expense parser (works without AI) ────────────────────────────
+function parseExpenseRegex(
+  msg: string,
+): { amount: number; description: string; category: string } | null {
+  // Extract amount — handles: 4500, 4,500, 4.5k, 4500k
+  const amountMatch = msg.match(/[\d,]+(?:\.\d+)?k?/i);
+  if (!amountMatch) return null;
+
+  let amount = parseFloat(amountMatch[0].replace(/,/g, ""));
+  if (amountMatch[0].toLowerCase().endsWith("k")) amount *= 1000;
+  if (amount < 1) return null;
+
+  // Extract description — what comes after "on", "for", "at"
+  const descMatch = msg.match(/(?:on|for|at)\s+(.+?)(?:\s*$)/i);
+  const description = descMatch ? descMatch[1].trim() : msg.trim();
+
+  // Guess category from keywords
+  const lower = msg.toLowerCase();
+  const category =
+    /food|lunch|dinner|breakfast|eat|meal|rice|chicken|pizza|sharwarma|suya|shoprite|spar/i.test(
+      lower,
+    )
+      ? "food"
+      : /transport|uber|bolt|taxi|bus|bike|okada|fuel|petrol|fare|ride/i.test(
+            lower,
+          )
+        ? "transport"
+        : /bill|electricity|nepa|water|internet|wifi|data|rent|dstv|gotv|netflix/i.test(
+              lower,
+            )
+          ? "bills"
+          : /shop|buy|cloth|shoe|market|mall|jumia|konga|amazon/i.test(lower)
+            ? "shopping"
+            : /hospital|doctor|pharmacy|drug|medicine|health|clinic/i.test(
+                  lower,
+                )
+              ? "health"
+              : /airtime|recharge|mtn|airtel|glo|9mobile/i.test(lower)
+                ? "airtime"
+                : /cinema|movie|bar|club|party|event|concert/i.test(lower)
+                  ? "entertainment"
+                  : "other";
+
+  return { amount, description, category };
+}
+
 async function handleLogExpense(
   supabase: any,
   userId: string,
@@ -509,7 +666,6 @@ async function handleLogExpense(
   name: string,
   message: string,
 ) {
-  // Get user context
   const [profileRes, budgetRes] = await Promise.all([
     supabase.from("profiles").select("currency").eq("id", userId).single(),
     supabase
@@ -520,52 +676,48 @@ async function handleLogExpense(
       .single(),
   ]);
 
-  const currency = profileRes.data?.currency || "NGN";
   const budget = budgetRes.data;
 
-  // Use Claude to parse the expense
-  const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!ANTHROPIC_KEY) {
-    await sendWhatsApp(
-      from,
-      "❌ AI parsing unavailable. Log at truvllo.app/expenses",
-    );
-    return;
+  // Try regex first (no API needed)
+  let parsed: any = parseExpenseRegex(message);
+
+  // If regex fails or we have credits, try Claude for better parsing
+  if (!parsed) {
+    const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+    if (ANTHROPIC_KEY) {
+      try {
+        const aiRes = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": ANTHROPIC_KEY,
+            "anthropic-version": "2023-06-01",
+          },
+          body: JSON.stringify({
+            model: "claude-haiku-4-5-20251001",
+            max_tokens: 100,
+            system: `Extract expense. Reply ONLY with JSON: {"amount": number, "description": "string", "category": "food|transport|bills|shopping|health|airtime|entertainment|other"}`,
+            messages: [{ role: "user", content: message }],
+          }),
+        });
+        const aiData = await aiRes.json();
+        const rawText = aiData.content?.[0]?.text?.trim() || "";
+        parsed = JSON.parse(rawText);
+      } catch (e) {
+        // AI failed — parsed stays null
+      }
+    }
   }
 
-  const aiRes = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": ANTHROPIC_KEY,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 100,
-      system: `Extract expense from message. Reply ONLY with JSON: {"amount": number, "description": "string", "category": "food|transport|bills|shopping|health|airtime|entertainment|other"}. No markdown, no explanation.`,
-      messages: [{ role: "user", content: message }],
-    }),
-  });
-
-  const aiData = await aiRes.json();
-  const rawText = aiData.content?.[0]?.text?.trim() || "";
-
-  let parsed: any;
-  try {
-    parsed = JSON.parse(rawText);
-  } catch (e) {
+  if (!parsed || !parsed.amount || parsed.amount < 1) {
     await sendWhatsApp(
       from,
-      `❌ Couldn't parse that. Try: "spent 4500 on lunch"`,
-    );
-    return;
-  }
+      `❌ Couldn't parse that.
 
-  if (!parsed.amount || parsed.amount < 1) {
-    await sendWhatsApp(
-      from,
-      `❌ Couldn't find an amount. Try: "spent 4500 on lunch"`,
+Try:
+• "spent 4500 on lunch"
+• "paid 2000 for uber"
+• "3000 for airtime"`,
     );
     return;
   }

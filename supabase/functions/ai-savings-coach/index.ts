@@ -1,10 +1,23 @@
-import { corsHeaders } from "../_shared/cors.ts";
+import { resolveCorsHeaders } from "../_shared/cors.ts";
 import { requireAuth, logUsage } from "../_shared/auth.ts";
 import { callClaude, fmtCurrency } from "../_shared/claude.ts";
 
 Deno.serve(async (req) => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = resolveCorsHeaders(origin);
   if (req.method === "OPTIONS")
     return new Response("ok", { headers: corsHeaders });
+
+  const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+  if (!ANTHROPIC_KEY) {
+    return new Response(
+      JSON.stringify({ error: "ANTHROPIC_API_KEY not configured" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
 
   try {
     const { user, supabase } = await requireAuth(req, "savings_coach");
@@ -53,4 +66,3 @@ Give one specific savings tip.`,
     });
   }
 });
-

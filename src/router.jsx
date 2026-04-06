@@ -11,6 +11,7 @@ import Upgrade from "./pages/Upgrade";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Security from "./pages/Security";
+import AuthCallback from "./pages/AuthCallback";
 import { useAuth } from "./providers/AuthProvider";
 
 function LoadingScreen() {
@@ -60,6 +61,7 @@ export const router = createBrowserRouter([
   // Landing — accessible to everyone
   { path: "/", element: <Landing /> },
   { path: "/security", element: <Security /> },
+  { path: "/auth/callback", element: <AuthCallback /> },
 
   // Auth — redirect to dashboard if already logged in
   {

@@ -155,7 +155,7 @@ export function calcCategoryProgress(caps, expenses) {
 function calcEndDate(period, startDate) {
   const s = new Date(startDate);
   if (period === "weekly") {
-    s.setDate(s.getDate() + TRIAL_DAYS);
+    s.setDate(s.getDate() + 7);
   }
   if (period === "monthly") {
     s.setMonth(s.getMonth() + 1);
@@ -445,6 +445,7 @@ export function BudgetProvider({ children }) {
         return { error };
       }
       setExpenses((prev) => prev.map((e) => (e.id === id ? data : e)));
+      checkAndInsertNotifications(supabase, user.id).catch(console.error);
       return { data };
     },
     [user?.id, fetchAll],
@@ -464,6 +465,7 @@ export function BudgetProvider({ children }) {
         return { error };
       }
       invalidateCache(user.id);
+      checkAndInsertNotifications(supabase, user.id).catch(console.error);
       return { error: null };
     },
     [user?.id, expenses],
@@ -498,6 +500,13 @@ export function BudgetProvider({ children }) {
         end_date,
         is_active: budgetData.is_active ?? true,
       };
+
+      // Deactivate all existing active budgets before creating new one
+      await supabase
+        .from("budgets")
+        .update({ is_active: false })
+        .eq("user_id", user.id)
+        .eq("is_active", true);
 
       const { data, error } = await supabase
         .from("budgets")
@@ -725,6 +734,10 @@ export function BudgetProvider({ children }) {
     formatCurrency: (amount) => formatCurrency(amount, currency),
     sym: CURRENCY_SYMBOLS[currency] ?? "₦",
     fetchAll: () => fetchAll(user?.id),
+    invalidateCache: () => {
+      invalidateCache(user?.id);
+      fetchAll(user?.id);
+    },
     addExpense,
     updateExpense,
     deleteExpense,

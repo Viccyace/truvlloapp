@@ -20,12 +20,13 @@ import {
   Clapperboard,
   Briefcase,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 import { TRIAL_DAYS } from "../lib/config";
 import { CATEGORIES, CAT_MAP, normalizeCategory } from "../lib/categories";
 import { useBudget } from "../providers/BudgetProvider";
 import BankImport from "../components/BankImport";
+import { supabase } from "../lib/supabase";
 
 const styles = `
   * { box-sizing:border-box; margin:0; padding:0; }
@@ -325,7 +326,14 @@ function ExpenseModal({ expense, onSave, onDelete, onClose }) {
 
 export default function ExpensesPage() {
   const navigate = useNavigate();
-  const { isPremiumOrTrial, profile, updateProfile } = useAuth();
+  const location = useLocation();
+
+  // Pre-fill search from URL ?q= param (from topbar search)
+  useEffect(() => {
+    const q = new URLSearchParams(location.search).get("q");
+    if (q) setSearch(decodeURIComponent(q));
+  }, [location.search]);
+  const { isPremiumOrTrial, profile, updateProfile, user } = useAuth();
   const {
     expenses = [],
     recurring = [],
@@ -334,6 +342,8 @@ export default function ExpensesPage() {
     deleteExpense,
     deleteRecurring,
     exportCSV,
+    activeBudget,
+    invalidateCache,
     sym: budgetSym,
   } = useBudget();
   const sym = budgetSym || "₦";
@@ -487,20 +497,31 @@ export default function ExpensesPage() {
 
   // ── BUG FIX 2: importExpenses doesn't exist — call addExpense per item ────
   const handleImport = async (transactions) => {
+    if (!transactions?.length) return;
+    setToast(`Importing ${transactions.length} transactions...`);
     try {
-      let count = 0;
-      for (const t of transactions) {
-        await addExpense({
-          description: t.description,
-          category: normalizeCategory(t.category),
-          amount: Number(t.amount),
-          date: t.date,
-          notes: "Imported from bank",
-        });
-        count++;
+      // Batch insert — single DB call instead of one per transaction
+      const rows = transactions.map((t) => ({
+        user_id: user?.id,
+        budget_id: activeBudget?.id || null,
+        description: t.description,
+        category: normalizeCategory(t.category),
+        amount: Number(t.amount),
+        date: t.date || new Date().toISOString().split("T")[0],
+        notes: "Imported from bank",
+      }));
+      const { data, error } = await supabase
+        .from("expenses")
+        .insert(rows)
+        .select();
+      if (error) throw new Error(error.message);
+      // Update local state in one shot
+      if (data?.length) {
+        // Refresh expenses via cache invalidation
+        invalidateCache(user?.id);
       }
-      setToast(`${count} transactions imported`);
-      if (count > 0) await activateTrialIfEligible();
+      setToast(`${data?.length ?? 0} transactions imported successfully`);
+      if (data?.length > 0) await activateTrialIfEligible();
     } catch (error) {
       console.error("Import error:", error);
       setToast(error?.message || "Could not import transactions");

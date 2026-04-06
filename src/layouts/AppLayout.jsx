@@ -827,6 +827,14 @@ export default function AppLayout() {
                   placeholder="Search expenses..."
                   value={searchVal}
                   onChange={(e) => setSearchVal(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && searchVal.trim()) {
+                      navigate(
+                        `/expenses?q=${encodeURIComponent(searchVal.trim())}`,
+                      );
+                      setSearchVal("");
+                    }
+                  }}
                 />
               </div>
               <div

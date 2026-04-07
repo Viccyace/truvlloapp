@@ -1,5 +1,5 @@
 ﻿import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { TRIAL_DAYS } from "../lib/config";
 
@@ -136,6 +136,13 @@ async function signInWithGoogle() {
 // ── Login Form ────────────────────────────────────────────────────────────────
 function LoginForm({ onSwitch }) {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Capture referral code from URL and store it
+  useEffect(() => {
+    const ref = new URLSearchParams(location.search).get("ref");
+    if (ref) localStorage.setItem("truvllo_ref", ref);
+  }, [location.search]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -373,6 +380,31 @@ function SignupForm({ onSwitch }) {
       }).catch(console.error);
 
       setLoading(false);
+      // Store referred_by in profile if came via referral link
+      const refCode = localStorage.getItem("truvllo_ref");
+      if (refCode && data?.user) {
+        // Update profile with referral info
+        await supabase
+          .from("profiles")
+          .update({ referred_by: refCode })
+          .eq("id", data.user.id);
+        // Create referral row — find referrer by first 8 chars of their ID
+        const { data: referrer } = await supabase
+          .from("profiles")
+          .select("id")
+          .ilike("id", `${refCode}%`)
+          .single();
+        if (referrer) {
+          await supabase.from("referrals").insert({
+            referrer_id: referrer.id,
+            referred_id: data.user.id,
+            referral_code: refCode,
+            status: "pending",
+          });
+        }
+        localStorage.removeItem("truvllo_ref");
+      }
+
       // If session exists, email confirmation is OFF — go directly to onboarding
       if (data?.session) {
         navigate("/onboarding", { replace: true });
@@ -601,6 +633,13 @@ function SignupForm({ onSwitch }) {
 // ── Left Panel ────────────────────────────────────────────────────────────────
 function LeftPanel({ mode }) {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Capture referral code from URL and store it
+  useEffect(() => {
+    const ref = new URLSearchParams(location.search).get("ref");
+    if (ref) localStorage.setItem("truvllo_ref", ref);
+  }, [location.search]);
   return (
     <div className="auth-left">
       <div className="auth-left-bg left-blob-1" />
@@ -668,6 +707,13 @@ function LeftPanel({ mode }) {
 // ── Root ──────────────────────────────────────────────────────────────────────
 export default function AuthPages() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Capture referral code from URL and store it
+  useEffect(() => {
+    const ref = new URLSearchParams(location.search).get("ref");
+    if (ref) localStorage.setItem("truvllo_ref", ref);
+  }, [location.search]);
   const [mode, setMode] = useState("login");
 
   return (

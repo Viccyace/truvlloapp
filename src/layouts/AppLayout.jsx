@@ -923,28 +923,6 @@ export default function AppLayout() {
               <span className="bottom-nav-label">{item.label}</span>
             </div>
           ))}
-          <div
-            className="bottom-nav-item"
-            style={{ position: "relative" }}
-            onClick={() => setShowNotifPanel((v) => !v)}
-          >
-            <Bell size={22} />
-            {notifications.filter((n) => !n.read).length > 0 && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: 6,
-                  right: 8,
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: "#D4A017",
-                  border: "2px solid #fff",
-                }}
-              />
-            )}
-            <span className="bottom-nav-label">Alerts</span>
-          </div>
         </nav>
 
         <button className="fab" onClick={() => setQuickAddOpen(true)}>

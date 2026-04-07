@@ -378,8 +378,15 @@ export default function ExpensesPage() {
       trial_started_at: now.toISOString(),
       trial_ends_at: endsAt.toISOString(),
     });
-    if (!error) setShowTrialCelebration(true);
-    else console.error("Trial activation failed:", error);
+    if (!error) {
+      setShowTrialCelebration(true);
+      // Activate referral reward if user came via referral link
+      if (user?.id) {
+        supabase
+          .rpc("activate_referral", { p_referred_id: user.id })
+          .catch(console.error);
+      }
+    } else console.error("Trial activation failed:", error);
   }, [profile, updateProfile]);
 
   const filtered = useMemo(() => {

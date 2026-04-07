@@ -954,6 +954,25 @@ export default function SettingsPage() {
           </div>
 
           <div className="card-divider" />
+
+          {/* Invite friends */}
+          <div style={{ padding: "4px 0 8px" }}>
+            <div
+              style={{
+                fontSize: "0.82rem",
+                fontWeight: 700,
+                color: "var(--ink-subtle)",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                marginBottom: 12,
+              }}
+            >
+              Refer a friend
+            </div>
+            <ReferralCard />
+          </div>
+
+          <div className="card-divider" />
           <div className="danger-section">
             <div>
               <div className="danger-title">Sign out</div>
@@ -989,9 +1008,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-
-      {/* Invite friends */}
-      <ReferralCard />
     </>
   );
 }

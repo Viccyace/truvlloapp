@@ -1,6 +1,6 @@
 /**
  * ReferralCard.jsx
- * WhatsApp referral program — invite a friend, both get 30 extra days
+ * WhatsApp referral program — invite a friend, both get 7 extra days
  */
 import { useState } from "react";
 import { useAuth } from "../providers/AuthProvider";
@@ -13,9 +13,8 @@ export default function ReferralCard() {
   const referralLink = `https://www.truvllo.app/auth?ref=${referralCode}`;
 
   const whatsappMsg = encodeURIComponent(
-    `Hey! I've been using Truvllo to track my spending and it's actually helped me understand where my salary goes 🤑\n\n` +
-      `It's free to start and you get a 14-day AI trial automatically.\n\n` +
-      `Sign up with my link and we both get 30 extra days of Premium:\n` +
+    `Hey! I've been using Truvllo to track my spending — it actually shows where my salary goes 🤑\n\n` +
+      `Sign up with my link and get a 21-day free trial instead of 14:\n` +
       `${referralLink}`,
   );
 
@@ -29,8 +28,8 @@ export default function ReferralCard() {
     <div
       style={{
         background: "linear-gradient(135deg,#1B4332,#2D6A4F)",
-        borderRadius: 20,
-        padding: 24,
+        borderRadius: 16,
+        padding: "20px 20px",
         color: "#fff",
       }}
     >
@@ -43,7 +42,7 @@ export default function ReferralCard() {
           marginBottom: 6,
         }}
       >
-        Invite a friend, both get 30 days free
+        Invite a friend, both get 7 extra days
       </div>
       <div
         style={{
@@ -53,8 +52,9 @@ export default function ReferralCard() {
           marginBottom: 20,
         }}
       >
-        Share your link. When your friend signs up and logs their first expense,
-        you both get 30 extra days of Premium automatically.
+        Share your link. When your friend logs their first expense, they get a
+        21-day trial. You get 7 bonus days on your trial — one reward, for your
+        first referral only.
       </div>
 
       {/* Referral link */}

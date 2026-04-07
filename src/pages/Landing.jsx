@@ -1,9 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-
-const FONTS = `
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-`;
+import { TRIAL_DAYS, MONTHLY_PRICE_FMT, ANNUAL_PRICE_FMT } from "../lib/config";
 
 const styles = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,28 +21,7 @@ const styles = `
   @keyframes barGrow  { from{width:0} }
 
   /* ── NAV ──────────────────────────────────────────────────────────────── */
-.nav {
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 48px);
-  max-width: 1200px;
-  z-index: 100;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  padding: 0 32px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    0 1px 0 rgba(255, 255, 255, 0.9) inset;
-}
+  .nav { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); width: calc(100% - 48px); max-width: 1200px; z-index: 100; background: rgba(255,255,255,0.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); padding: 0 32px; height: 80px; display: flex; align-items: center; justify-content: space-between; border-radius: 24px; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset; }
   .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 8px; cursor: pointer; }
   .nav-logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
   .nav-links { display: flex; align-items: center; gap: 32px; }
@@ -56,67 +32,24 @@ const styles = `
   .nav-mobile-btn { display: none; background: none; border: none; cursor: pointer; font-size: 1.5rem; }
   @media(max-width:768px) { .nav-links { display: none; } .nav-mobile-btn { display: block; } }
 
-  /* ── HERO ─────────────────────────────────────────────────────────────── */
- .hero {
-  min-height: 100vh;
-  padding: 160px 6% 80px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--cream);
-  position: relative;
-  overflow: hidden;
-}
- .hero-inner {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px;
-  align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
-  @media(max-width:900px) { .hero-inner { grid-template-columns: 1fr; } }
-  .hero-left { animation: fadeUp 0.6s ease both; }
+  /* ── HERO — centered, no video ────────────────────────────────────────── */
+  .hero { min-height: 100vh; padding: 140px 6% 0; display: flex; flex-direction: column; align-items: center; background: var(--cream); position: relative; overflow: hidden; }
+  .hero-inner { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 780px; width: 100%; animation: fadeUp 0.6s ease both; }
   .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--green-pale); color: var(--green-deep); padding: 6px 14px; border-radius: 100px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 28px; border: 1px solid rgba(27,67,50,0.15); }
   .hero-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); animation: pulse 2s ease infinite; }
-  .hero-headline { font-family: 'Playfair Display', serif; font-size: clamp(2.8rem, 5vw, 4.5rem); font-weight: 900; line-height: 1.08; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 24px; }
+  .hero-headline { font-family: 'Playfair Display', serif; font-size: clamp(3rem, 6vw, 5.5rem); font-weight: 900; line-height: 1.05; letter-spacing: -0.025em; color: var(--ink); margin-bottom: 24px; }
   .hero-headline em { font-style: italic; color: var(--green-mid); display: block; }
-  .hero-sub { font-size: 1.1rem; color: var(--ink-subtle); line-height: 1.7; max-width: 480px; margin-bottom: 40px; }
-  .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
-  .btn-primary { background: var(--green-deep); color: var(--white); border: none; border-radius: 8px; padding: 14px 28px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(27,67,50,0.25); }
+  .hero-sub { font-size: 1.1rem; color: var(--ink-subtle); line-height: 1.7; max-width: 520px; margin: 0 auto 40px; }
+  .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 64px; }
+  .btn-primary { background: var(--green-deep); color: var(--white); border: none; border-radius: 8px; padding: 15px 32px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(27,67,50,0.25); }
   .btn-primary:hover { background: var(--green-mid); transform: translateY(-1px); }
-  .btn-outline { background: transparent; color: var(--ink); border: 1.5px solid var(--border); border-radius: 8px; padding: 13px 24px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-outline { background: transparent; color: var(--ink); border: 1.5px solid var(--border); border-radius: 8px; padding: 14px 28px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
   .btn-outline:hover { border-color: var(--green-light); color: var(--green-mid); }
-  .hero-right {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeUp 0.6s ease 0.2s both;
-}
-.hero-video-slot {
-  width: 100%;
-  max-width: 420px;
-  height: 580px;
-  border-radius: 32px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 24px 60px rgba(27, 67, 50, 0.18);
-}
-.hero-video-fade {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 140px;
-  background: linear-gradient(to bottom, transparent, var(--cream));
-  pointer-events: none;
-  border-radius: 0 0 32px 32px;
-}
-  .hero-phone-slot::before { content: \'\'; position: absolute; inset: 0; background: radial-gradient(circle at 60% 40%, rgba(64,145,108,0.12) 0%, transparent 60%); }
-  .hero-phone-icon { font-size: 3rem; opacity: 0.4; }
-  .hero-phone-text { opacity: 0.6; text-align: center; line-height: 1.5; font-size: 0.82rem; }
-  @media(max-width:900px) { .hero-right { display: none; } }
+  .hero-mockup-wrap { width: 100%; max-width: 900px; margin: 0 auto; position: relative; }
+  .hero-mockup-inner { width: 100%; border-radius: 24px 24px 0 0; overflow: hidden; box-shadow: 0 -8px 60px rgba(27,67,50,0.12), 0 0 0 1px rgba(27,67,50,0.06); background: var(--white); min-height: 420px; display: flex; align-items: flex-start; justify-content: center; }
+  .hero-mockup-img { width: 100%; height: auto; display: block; border-radius: 24px 24px 0 0; }
+  .hero-mockup-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 420px; gap: 20px; padding: 40px; width: 100%; }
+  @media(max-width:640px) { .hero { padding-top: 120px; } .hero-mockup-inner { min-height: 260px; } }
 
   /* ── STATS STRIP ───────────────────────────────────────────────────────── */
   .stats-strip { background: var(--cream-dark); padding: 60px 6%; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
@@ -144,10 +77,7 @@ const styles = `
   .feature-card.highlight { border: 2px solid var(--wa-green); overflow: visible; }
   .feature-card.highlight::before { content: "NEW"; position: absolute; top: -10px; right: 16px; background: var(--wa-green); color: #fff; font-size: 0.65rem; font-weight: 800; padding: 3px 10px; border-radius: 100px; letter-spacing: 0.08em; }
   .feature-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
-  .fi-green { background: var(--green-pale); }
-  .fi-amber { background: rgba(212,160,23,0.12); }
-  .fi-ink   { background: rgba(10,10,10,0.06); }
-  .fi-whatsapp { background: rgba(37,211,102,0.15); }
+  .fi-green { background: var(--green-pale); } .fi-amber { background: rgba(212,160,23,0.12); } .fi-ink { background: rgba(10,10,10,0.06); } .fi-whatsapp { background: rgba(37,211,102,0.15); }
   .feature-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; }
   .feature-desc  { font-size: 0.875rem; color: var(--ink-subtle); line-height: 1.65; }
   .feature-link  { font-size: 0.82rem; font-weight: 700; color: var(--green-mid); margin-top: auto; cursor: pointer; }
@@ -171,8 +101,6 @@ const styles = `
   .wa-btn { padding: 14px 28px; background: var(--wa-green); color: #fff; border: none; border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(37,211,102,0.35); transition: all 0.2s; }
   .wa-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(37,211,102,0.45); }
   .wa-note { font-size: 0.8rem; color: rgba(255,255,255,0.3); }
-
-  /* WhatsApp chat mockup */
   .wa-mockup { display: flex; justify-content: center; }
   .wa-chat { width: 100%; max-width: 320px; background: #0B141A; border-radius: 24px; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.06); }
   .wa-chat-header { background: #1F2C34; padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
@@ -272,26 +200,8 @@ const styles = `
   .cta-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--green-deep); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; color: var(--white); margin-left: -8px; }
   .cta-avatar:first-child { margin-left: 0; }
   .cta-users-text { font-size: 0.82rem; color: rgba(255,255,255,0.55); }
- .cta-phone-slot {
-  width: 220px;
-  height: 380px;
-  aspect-ratio: unset;
-  border-radius: 24px;
-  overflow: hidden;
-  flex-shrink: 0;
-  position: relative;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
-}
-.cta-phone-slot::after {
-  content: \'\';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 100px;
-  background: linear-gradient(to bottom, transparent, var(--green-deep));
-  pointer-events: none;
-}
+  .cta-phone-slot { width: 220px; height: 380px; border-radius: 24px; overflow: hidden; flex-shrink: 0; position: relative; box-shadow: 0 24px 60px rgba(0,0,0,0.3); }
+  .cta-phone-slot::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 100px; background: linear-gradient(to bottom, transparent, var(--green-deep)); pointer-events: none; }
   @media(max-width:768px) { .cta-phone-slot { display: none; } }
 
   /* ── FOOTER ───────────────────────────────────────────────────────────── */
@@ -310,23 +220,14 @@ const styles = `
 
   /* ── MOBILE ───────────────────────────────────────────────────────────── */
   @media(max-width:480px) {
-  .nav { 
-  top: 10px; 
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 24px); 
-  height: 68px; 
-  padding: 0 20px; 
-  border-radius: 20px; 
-}
-  .nav-logo { font-size: 1.25rem; }
-  .nav-cta { padding: 8px 14px; font-size: 0.8rem; }
-    .hero { padding: 90px 4% 60px; min-height: auto; }
-    .hero-headline { font-size: 2.2rem; margin-bottom: 18px; }
-    .hero-sub { font-size: 0.95rem; margin-bottom: 28px; max-width: 100%; }
+    .nav { top: 10px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); height: 68px; padding: 0 20px; border-radius: 20px; }
+    .nav-logo { font-size: 1.25rem; }
+    .nav-cta { padding: 8px 14px; font-size: 0.8rem; }
+    .hero { padding: 110px 4% 0; min-height: auto; }
+    .hero-headline { font-size: 2.4rem; }
+    .hero-sub { font-size: 0.95rem; }
     .hero-btns { flex-direction: row; gap: 10px; flex-wrap: nowrap; }
     .btn-primary, .btn-outline { flex: 1; text-align: center; padding: 13px 12px; font-size: 0.85rem; }
-    .hero-right { display: none; }
     .stats-strip { padding: 40px 4%; }
     .stats-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
     .stat-val { font-size: 2rem; }
@@ -359,9 +260,8 @@ const styles = `
     .footer-wordmark { font-size: 3.5rem; margin-top: 32px; }
   }
   @media(min-width:481px) and (max-width:768px) {
-    .hero { padding: 100px 5% 60px; }
+    .hero { padding: 120px 5% 0; }
     .hero-headline { font-size: 2.8rem; }
-    .hero-right { display: none; }
     .stats-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
     .features-grid { grid-template-columns: 1fr 1fr; }
     .wa-inner { grid-template-columns: 1fr; }
@@ -426,7 +326,7 @@ const STEPS = [
   },
   {
     title: "Log your first expense",
-    desc: "Type it in plain language. Your 14-day Premium trial activates automatically — all AI features unlocked.",
+    desc: `Type it in plain language. Your ${TRIAL_DAYS}-day Premium trial activates automatically — all AI features unlocked.`,
   },
 ];
 
@@ -507,12 +407,12 @@ export default function Landing() {
   const scrollTo = (id) =>
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
-  const price = billing === "monthly" ? "6,500" : "4,875";
+  const price = billing === "monthly" ? MONTHLY_PRICE_FMT : ANNUAL_PRICE_FMT;
   const period = billing === "monthly" ? "/mo" : "/mo (billed annually)";
 
   return (
     <>
-      <style>{FONTS + styles}</style>
+      <style>{styles}</style>
 
       {/* NAV */}
       <header>
@@ -575,56 +475,83 @@ export default function Landing() {
         </nav>
       </header>
 
-      {/* HERO */}
+      {/* HERO — centered, app mockup below, no video */}
       <main>
         <section className="hero">
           <div className="hero-inner">
-            <div className="hero-left">
-              <div className="hero-eyebrow">
-                <span className="hero-eyebrow-dot" />
-                Now with WhatsApp AI Agent
-              </div>
-              <h1 className="hero-headline">
-                Your Money.
-                <em>Smarter Choices.</em>
-                Every Day.
-              </h1>
-              <p className="hero-sub">
-                Truvllo is a smart budgeting app that thinks with you. Track
-                spending, get daily safe-to-spend limits, and let AI coach you
-                to save more, even from WhatsApp.
-              </p>
-              <div className="hero-btns">
-                <button className="btn-primary" onClick={goToAuth}>
-                  Start Free — 14 Days
-                </button>
-                <button
-                  className="btn-outline"
-                  onClick={() => scrollTo("features")}
-                >
-                  View Features
-                </button>
-              </div>
+            <div className="hero-eyebrow">
+              <span className="hero-eyebrow-dot" />
+              Now with WhatsApp AI Agent
             </div>
-            <div className="hero-right">
-              <div className="hero-video-slot">
-                <video
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
+            <h1 className="hero-headline">
+              Your Money.
+              <em>Smarter Choices.</em>
+              Every Day.
+            </h1>
+            <p className="hero-sub">
+              Truvllo is a smart budgeting app that thinks with you. Track
+              spending, get daily safe-to-spend limits, and let AI coach you to
+              save more, even from WhatsApp.
+            </p>
+            <div className="hero-btns">
+              <button className="btn-primary" onClick={goToAuth}>
+                Start Free — {TRIAL_DAYS} Days
+              </button>
+              <button
+                className="btn-outline"
+                onClick={() => scrollTo("features")}
+              >
+                View Features
+              </button>
+            </div>
+          </div>
+
+          {/* App mockup — replace /dashboard-preview.png with your actual dashboard screenshot */}
+          <div className="hero-mockup-wrap">
+            <div className="hero-mockup-inner">
+              <img
+                src="/dashboard-preview.png"
+                alt="Truvllo dashboard"
+                className="hero-mockup-img"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                  e.target.nextSibling.style.display = "flex";
+                }}
+              />
+              <div
+                className="hero-mockup-placeholder"
+                style={{ display: "none" }}
+              >
+                <div style={{ fontSize: "3rem" }}>📊</div>
+                <div
                   style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    objectPosition: "center top",
-                    display: "block",
-                    borderRadius: "32px",
+                    fontFamily: "'Playfair Display',serif",
+                    fontSize: "1.2rem",
+                    fontWeight: 700,
+                    color: "var(--ink)",
                   }}
                 >
-                  <source src="/truvllovid.mp4" type="video/mp4" />
-                </video>
-                <div className="hero-video-fade" />
+                  Your dashboard, here
+                </div>
+                <p
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "var(--ink-subtle)",
+                    textAlign: "center",
+                    maxWidth: 320,
+                  }}
+                >
+                  Save a dashboard screenshot as{" "}
+                  <code
+                    style={{
+                      background: "var(--cream-dark)",
+                      padding: "2px 6px",
+                      borderRadius: 4,
+                    }}
+                  >
+                    /public/dashboard-preview.png
+                  </code>
+                </p>
               </div>
             </div>
           </div>
@@ -755,15 +682,13 @@ export default function Landing() {
               </div>
               <div className="wa-cta">
                 <button className="wa-btn" onClick={goToAuth}>
-                  Try it free — 14 days
+                  Try it free — {TRIAL_DAYS} days
                 </button>
                 <span className="wa-note">
                   Premium & Trial only · No card needed
                 </span>
               </div>
             </div>
-
-            {/* Chat mockup */}
             <div className="wa-mockup">
               <div className="wa-chat">
                 <div className="wa-chat-header">
@@ -960,7 +885,7 @@ export default function Landing() {
                 ))}
               </ul>
               <button className="pricing-btn featured-btn" onClick={goToAuth}>
-                Start 14-day free trial
+                Start {TRIAL_DAYS}-day free trial
               </button>
             </div>
             <div
@@ -1024,8 +949,8 @@ export default function Landing() {
               fontSize: "0.875rem",
             }}
           >
-            🎉 Your <strong>14-day Premium trial</strong> starts automatically
-            when you log your first expense — no card required.
+            🎉 Your <strong>{TRIAL_DAYS}-day Premium trial</strong> starts
+            automatically when you log your first expense — no card required.
           </p>
         </section>
 
@@ -1088,7 +1013,7 @@ export default function Landing() {
               </h2>
               <p className="cta-sub">
                 Start your free account today. No credit card. No tricks. Full
-                AI access for your first 14 days automatically.
+                AI access for your first {TRIAL_DAYS} days automatically.
               </p>
               <div className="cta-btns">
                 <button className="cta-btn-primary" onClick={goToAuth}>
@@ -1228,9 +1153,9 @@ export default function Landing() {
             </div>
           </div>
         </section>
-
-        {/* FOOTER */}
       </main>
+
+      {/* FOOTER */}
       <footer className="footer">
         <div className="footer-top">
           <div>
@@ -1339,6 +1264,12 @@ export default function Landing() {
               rel="noreferrer"
             >
               Instagram
+            </a>
+            <a
+              href="/security"
+              style={{ color: "inherit", textDecoration: "none" }}
+            >
+              Security
             </a>
             <Link to="/privacy-policy">Privacy Policy</Link>
             <Link to="/terms-of-service">Terms of Service</Link>

@@ -387,7 +387,7 @@ export default function ExpensesPage() {
           .catch(console.error);
       }
     } else console.error("Trial activation failed:", error);
-  }, [profile, updateProfile]);
+  }, [profile, updateProfile, user?.id]);
 
   const filtered = useMemo(() => {
     return expenses.filter((e) => {

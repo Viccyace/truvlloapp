@@ -373,6 +373,12 @@ function SignupForm({ onSwitch }) {
       }).catch(console.error);
 
       setLoading(false);
+      // If session exists, email confirmation is OFF — go directly to onboarding
+      if (data?.session) {
+        navigate("/onboarding", { replace: true });
+        return;
+      }
+      // Session is null = email confirmation is ON — show confirmation screen
       setSubmitted(true);
     } catch (err) {
       setGlobalError(err.message || "Something went wrong. Please try again.");
@@ -383,11 +389,32 @@ function SignupForm({ onSwitch }) {
   if (submitted) {
     return (
       <div className="success-screen">
-        <div className="success-icon">🎉</div>
-        <div className="success-title">Account created!</div>
+        <div className="success-icon">📧</div>
+        <div className="success-title">Check your email</div>
         <p className="success-sub">
-          Welcome to Truvllo, {firstName}! Your account is ready. Check your
-          email for a confirmation link, then log in to get started.
+          We sent a confirmation link to <strong>{email}</strong>. Click it to
+          verify your account and start using Truvllo.
+        </p>
+        <p
+          style={{
+            fontSize: "0.8rem",
+            color: "var(--ink-subtle)",
+            marginTop: 12,
+            textAlign: "center",
+          }}
+        >
+          Didn't get it? Check your spam folder or{" "}
+          <span
+            style={{
+              color: "var(--green-mid)",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+            onClick={() => setSubmitted(false)}
+          >
+            try again
+          </span>
+          .
         </p>
       </div>
     );

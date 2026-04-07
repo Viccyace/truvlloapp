@@ -469,16 +469,17 @@ export default function AppLayout() {
         >
           <div
             style={{
-              position: "absolute",
-              top: 70,
+              position: "fixed",
+              top: 68,
               right: 16,
-              width: 340,
+              width: "min(340px, calc(100vw - 32px))",
               background: "#fff",
               borderRadius: 16,
               boxShadow: "0 8px 40px rgba(0,0,0,0.15)",
               border: "1.5px solid rgba(10,10,10,0.08)",
               overflow: "hidden",
-              maxHeight: 480,
+              maxHeight: "80vh",
+              zIndex: 200,
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -875,6 +876,27 @@ export default function AppLayout() {
               Truvllo
             </div>
             <div className="mobile-topbar-right">
+              <div
+                className="mobile-menu-btn"
+                style={{ position: "relative" }}
+                onClick={() => setShowNotifPanel((v) => !v)}
+              >
+                <Bell size={18} />
+                {notifications.filter((n) => !n.read).length > 0 && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: 4,
+                      right: 4,
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: "#D4A017",
+                      border: "2px solid #FAF8F3",
+                    }}
+                  />
+                )}
+              </div>
               <div className="mobile-avatar">{initials}</div>
               <div
                 className="mobile-menu-btn"

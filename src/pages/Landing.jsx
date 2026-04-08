@@ -45,22 +45,57 @@ const styles = `
   .btn-primary:hover { background: var(--green-mid); transform: translateY(-1px); }
   .btn-outline { background: transparent; color: var(--ink); border: 1.5px solid var(--border); border-radius: 8px; padding: 14px 28px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
   .btn-outline:hover { border-color: var(--green-light); color: var(--green-mid); }
-  .hero-mockup-wrap { width: 100%; max-width: 900px; margin: 0 auto; position: relative; }
-  .hero-mockup-inner { width: 100%; border-radius: 24px 24px 0 0; overflow: hidden; box-shadow: 0 -8px 60px rgba(27,67,50,0.12), 0 0 0 1px rgba(27,67,50,0.06); background: var(--white); min-height: 420px; display: flex; align-items: flex-start; justify-content: center; }
-  .hero-mockup-img { width: 100%; height: auto; display: block; border-radius: 24px 24px 0 0; }
+  /* Hero mockup — Vaultify-style centered image with radial fade */
+  .hero-mockup-wrap {
+    width: 100%;
+    max-width: 860px;
+    margin: 0 auto;
+    position: relative;
+    background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(27,67,50,0.08) 0%, transparent 70%);
+    padding: 0 24px;
+  }
+  .hero-mockup-wrap::after {
+    content: "";
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 45%;
+    background: linear-gradient(to bottom, transparent 0%, var(--cream) 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .hero-mockup-inner {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    position: relative;
+  }
+  .hero-mockup-img {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    display: block;
+    
+    
+    z-index: 1;
+    margin: 0 auto;
+    transition: transform 0.15s ease-out;
+    will-change: transform;
+    transform-origin: center bottom;
+  }
   .hero-mockup-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 420px; gap: 20px; padding: 40px; width: 100%; }
-  @media(max-width:640px) { .hero { padding-top: 120px; } .hero-mockup-inner { min-height: 260px; } }
+  @media(max-width:640px) { .hero { padding-top: 120px; } .hero-mockup-wrap { padding: 0 12px; } .hero-mockup-img { max-width: 100%; border-radius: 16px 16px 0 0; } }
 
   /* ── STATS STRIP ───────────────────────────────────────────────────────── */
   .stats-strip { background: var(--cream-dark); padding: 60px 6%; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-  .stats-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 40px; align-items: center; }
-  @media(max-width:900px) { .stats-inner { grid-template-columns: 1fr 1fr; } }
+  .stats-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; gap: 0; align-items: center; justify-items: center; }
+  @media(max-width:900px) { .stats-inner { grid-template-columns: 1fr 1fr; max-width:100%; gap:24px; justify-items:center; } .stat-divider { display:none; } }
   @media(max-width:500px) { .stats-inner { grid-template-columns: 1fr; } }
   .stat-item { text-align: center; }
   .stat-val { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 900; color: var(--ink); line-height: 1; }
   .stat-val span { color: var(--green-mid); }
   .stat-label { font-size: 0.82rem; color: var(--ink-subtle); margin-top: 6px; font-weight: 500; }
-  .stat-divider { width: 1px; height: 60px; background: var(--border); margin: 0 auto; }
+  .stat-divider { width: 1px; height: 60px; background: var(--border); margin: 0 40px; }
   @media(max-width:900px) { .stat-divider { display: none; } }
 
   /* ── FEATURES ─────────────────────────────────────────────────────────── */
@@ -229,7 +264,7 @@ const styles = `
     .hero-btns { flex-direction: row; gap: 10px; flex-wrap: nowrap; }
     .btn-primary, .btn-outline { flex: 1; text-align: center; padding: 13px 12px; font-size: 0.85rem; }
     .stats-strip { padding: 40px 4%; }
-    .stats-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
+    .stats-inner { grid-template-columns: 1fr 1fr; gap: 24px; justify-items: center; }
     .stat-val { font-size: 2rem; }
     .features-section { padding: 60px 4%; }
     .section-header { margin-bottom: 40px; }
@@ -262,7 +297,7 @@ const styles = `
   @media(min-width:481px) and (max-width:768px) {
     .hero { padding: 120px 5% 0; }
     .hero-headline { font-size: 2.8rem; }
-    .stats-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
+    .stats-inner { grid-template-columns: 1fr 1fr; gap: 24px; justify-items: center; }
     .features-grid { grid-template-columns: 1fr 1fr; }
     .wa-inner { grid-template-columns: 1fr; }
     .wa-mockup { display: none; }
@@ -506,11 +541,28 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* App mockup — replace /dashboard-preview.png with your actual dashboard screenshot */}
-          <div className="hero-mockup-wrap">
+          {/* App mockup — 3D tilt on mouse move */}
+          <div
+            className="hero-mockup-wrap"
+            onMouseMove={(e) => {
+              const el = e.currentTarget;
+              const rect = el.getBoundingClientRect();
+              const x = (e.clientX - rect.left) / rect.width - 0.5;
+              const y = (e.clientY - rect.top) / rect.height - 0.5;
+              const img = el.querySelector(".hero-mockup-img");
+              if (img)
+                img.style.transform = `perspective(1000px) rotateY(${x * 12}deg) rotateX(${-y * 8}deg) scale3d(1.02,1.02,1.02)`;
+            }}
+            onMouseLeave={(e) => {
+              const img = e.currentTarget.querySelector(".hero-mockup-img");
+              if (img)
+                img.style.transform =
+                  "perspective(1000px) rotateY(0deg) rotateX(0deg) scale3d(1,1,1)";
+            }}
+          >
             <div className="hero-mockup-inner">
               <img
-                src="/dashboard-preview.png"
+                src="/hero-img.png"
                 alt="Truvllo dashboard"
                 className="hero-mockup-img"
                 onError={(e) => {

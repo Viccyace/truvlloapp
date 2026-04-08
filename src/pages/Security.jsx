@@ -303,7 +303,7 @@ export default function Security() {
               <div className="sec-ai-header">
                 <div className="sec-ai-icon">🤖</div>
                 <div>
-                  <div className="sec-ai-label">Anthropic Claude API</div>
+                  <div className="sec-ai-label">Truvllo</div>
                   <div className="sec-ai-title">
                     What gets sent, and what doesn't
                   </div>
@@ -311,13 +311,13 @@ export default function Security() {
               </div>
               <p className="sec-ai-body">
                 When you use AI features, we send your anonymised expense totals
-                and category breakdown to Anthropic's Claude API. We send{" "}
+                and category breakdown to Truvllo. We send{" "}
                 <strong style={{ color: "var(--cream)" }}>numbers</strong>, not
                 names, descriptions, or any personally identifiable information.
                 <br />
                 <br />
                 Anthropic's API does not train on your data. Every request is
-                stateless — Claude has no memory of previous conversations with
+                stateless, Truvllo has no memory of previous conversations with
                 you.
               </p>
               <div className="sec-ai-badges">
@@ -325,7 +325,7 @@ export default function Security() {
                   ✓ No AI training on your data
                 </span>
                 <span className="sec-ai-badge">
-                  ✓ Stateless — no memory between sessions
+                  ✓ Stateless, no memory between sessions
                 </span>
                 <span className="sec-ai-badge">✓ Anonymised numbers only</span>
               </div>
@@ -349,7 +349,7 @@ export default function Security() {
                   <br />
                   <br />
                   Or email us at{" "}
-                  <a href="mailto:privacy@truvllo.app">privacy@truvllo.app</a> —
+                  <a href="mailto:privacy@truvllo.app">privacy@truvllo.app</a>,
                   we respond within 48 hours on business days.
                 </div>
                 <div className="sec-delete-steps">

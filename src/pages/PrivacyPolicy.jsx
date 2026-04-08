@@ -131,17 +131,17 @@ export default function PrivacyPolicy() {
         <div className="policy-section">
           <h2>4. AI and your data</h2>
           <p>
-            Truvllo uses Claude AI (by Anthropic) to power its AI features. When
-            you use an AI feature, your relevant financial data (anonymised
-            where possible) is sent to Anthropic's API to generate a response.
-            This data is processed in accordance with{" "}
+            Truvllo uses smart inteligence to power its AI features. When you
+            use an AI feature, your relevant financial data (anonymised where
+            possible) is sent to Anthropic's API to generate a response. This
+            data is processed in accordance with{" "}
             <a
               href="https://www.anthropic.com/privacy"
               target="_blank"
               rel="noreferrer"
               style={{ color: "var(--green-light)", fontWeight: 600 }}
             >
-              Anthropic's privacy policy
+              Truvllo privacy policy
             </a>
             .
           </p>
@@ -181,7 +181,7 @@ export default function PrivacyPolicy() {
         <div className="policy-section">
           <h2>7. Cookies</h2>
           <p>
-            Truvllo uses essential cookies only — these are required for the app
+            Truvllo uses essential cookies only, these are required for the app
             to function (e.g. keeping you logged in). We do not use advertising
             or tracking cookies. For more details, see our Cookie Policy.
           </p>
@@ -220,4 +220,3 @@ export default function PrivacyPolicy() {
     </>
   );
 }
-

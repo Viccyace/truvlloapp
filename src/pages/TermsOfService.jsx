@@ -153,11 +153,11 @@ export default function TermsOfService() {
         <div className="policy-section">
           <h2>7. Intellectual property</h2>
           <p>
-            All content, features, and functionality of Truvllo — including but
-            not limited to the design, code, text, graphics, and AI models — are
-            owned by Truvllo and protected by intellectual property laws. You
-            may not copy, modify, or distribute any part of the service without
-            our written permission.
+            All content, features, and functionality of Truvllo, including but
+            not limited to the design, code, text, graphics, and AI models, are
+            owned by ORBITLANE TECHNOLOGIES and protected by intellectual
+            property laws. You may not copy, modify, or distribute any part of
+            the service without our written permission.
           </p>
         </div>
 
@@ -217,4 +217,3 @@ export default function TermsOfService() {
     </>
   );
 }
-

@@ -462,7 +462,7 @@ function SignupForm({ onSwitch }) {
       <div className="trial-callout">
         <span className="trial-callout-icon">🎁</span>
         <div className="trial-callout-text">
-          <strong>{TRIAL_DAYS}-day Premium trial included</strong> — unlocks
+          <strong>{TRIAL_DAYS}-day Premium trial included</strong>, unlocks
           automatically when you log your first expense. No card needed.
         </div>
       </div>

@@ -449,7 +449,7 @@ export default function BankImport({
                       Download your statement from your bank app, then upload it
                       here.
                       <br />
-                      Claude AI will extract all your transactions
+                      Truvllo AI will extract all your transactions
                       automatically.
                     </p>
                     <div className="upload-formats">
@@ -497,7 +497,7 @@ export default function BankImport({
                 <div className="parsing-spinner" />
                 <div className="parsing-title">Reading your statement...</div>
                 <p className="parsing-sub">
-                  Claude AI is extracting your transactions, cleaning up
+                  Truvllo AI is extracting your transactions, cleaning up
                   descriptions, and categorising each expense. This takes 10–30
                   seconds.
                 </p>

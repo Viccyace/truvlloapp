@@ -128,7 +128,7 @@ export default function Contact() {
         <span className="page-hero-label">Get in touch</span>
         <h1 className="page-hero-title">We'd love to hear from you</h1>
         <p className="page-hero-sub">
-          Whether it's a question, a bug, feedback, or just a hello — we read
+          Whether it's a question, a bug, feedback, or just a hello, we read
           every message and reply to all of them.
         </p>
       </section>

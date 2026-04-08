@@ -185,7 +185,7 @@ const FEATURES = [
     icon: "🤖",
     bg: "#D8F3DC",
     title: "AI Spending Analyst",
-    desc: "Plain-English breakdown of your spending patterns — every week, automatically.",
+    desc: "Plain-English breakdown of your spending patterns, every week, automatically.",
   },
   {
     icon: "💬",
@@ -203,7 +203,7 @@ const FEATURES = [
     icon: "🏷️",
     bg: "#F3E5F5",
     title: "Smart Categorisation",
-    desc: "Type a merchant and Truvllo suggests the right category — learns your habits.",
+    desc: "Type a merchant and Truvllo suggests the right category, learns your habits.",
   },
   {
     icon: "📐",
@@ -215,7 +215,7 @@ const FEATURES = [
     icon: "⚠️",
     bg: "#FFF8E1",
     title: "Overspend Explainer",
-    desc: "When you're over pace, AI tells you exactly why — with specific cuts to get back.",
+    desc: "When you're over pace, AI tells you exactly why, with specific cuts to get back.",
   },
   {
     icon: "🎯",
@@ -227,7 +227,7 @@ const FEATURES = [
     icon: "🔁",
     bg: "#E0F7FA",
     title: "Recurring Expenses",
-    desc: "Set rent, subscriptions, and bills once — automatically deducted each cycle.",
+    desc: "Set rent, subscriptions, and bills once, automatically deducted each cycle.",
   },
   {
     icon: "📊",
@@ -239,7 +239,7 @@ const FEATURES = [
     icon: "📤",
     bg: "#E8EAF6",
     title: "CSV Export",
-    desc: "Download your full expense history any time — perfect for tax season.",
+    desc: "Download your full expense history any time, perfect for tax season.",
   },
   {
     icon: "🏆",
@@ -251,7 +251,7 @@ const FEATURES = [
     icon: "⚡",
     bg: "#F1F8E9",
     title: "Priority Support",
-    desc: "Email support with a response within 24 hours — guaranteed.",
+    desc: "Email support with a response within 24 hours, guaranteed.",
   },
 ];
 
@@ -294,7 +294,7 @@ const COMPARE = [
 const FAQS = [
   {
     q: "Do I need a credit card to start?",
-    a: "No. You can sign up and use Truvllo's free plan forever without a card. Your 14-day Premium trial also activates automatically when you log your first expense — no card required for the trial either.",
+    a: "No. You can sign up and use Truvllo's free plan forever without a card. Your 14-day Premium trial also activates automatically when you log your first expense, no card required for the trial either.",
   },
   {
     q: "How does the 14-day free trial work?",
@@ -302,7 +302,7 @@ const FAQS = [
   },
   {
     q: "What happens when my trial ends?",
-    a: "You'll automatically revert to the Free plan. All your data — budgets, expenses, history — stays safe. You just lose access to AI features and premium tools until you upgrade. You'll get a reminder 2 days before.",
+    a: "You'll automatically revert to the Free plan. All your data — budgets, expenses, history, stays safe. You just lose access to AI features and premium tools until you upgrade. You'll get a reminder 2 days before.",
   },
   {
     q: "How does payment work?",
@@ -310,7 +310,7 @@ const FAQS = [
   },
   {
     q: "Can I cancel any time?",
-    a: "Yes, completely. Cancel from your Settings page at any time — no questions asked, no penalty. You'll keep Premium access until the end of your billing period.",
+    a: "Yes, completely. Cancel from your Settings page at any time, no questions asked, no penalty. You'll keep Premium access until the end of your billing period.",
   },
   {
     q: "Is my financial data safe?",

@@ -37,7 +37,7 @@ Context:
 - Nigerian cost of living: Lagos is expensive, other cities less so
 - Common fixed costs: rent, DSTV/Netflix, data bundles, transport
 - Nigerians often have family obligations
-- Goal: realistic, achievable budgets — not perfect theoretical ones
+- Goal: realistic, achievable budgets, not perfect theoretical ones
 
 Return ONLY JSON:
 {

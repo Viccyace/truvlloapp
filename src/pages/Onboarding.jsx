@@ -1,9 +1,8 @@
 ﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
+import { TRIAL_DAYS } from "../lib/config";
 import { useBudget } from "../providers/BudgetProvider";
-
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');`;
 
 const styles = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -15,31 +14,27 @@ const styles = `
     --amber: #D4A017; --white: #FFFFFF; --border: rgba(10,10,10,0.1);
     --shadow-sm: 0 2px 8px rgba(0,0,0,0.06); --shadow-lg: 0 20px 60px rgba(0,0,0,0.15);
   }
-  @keyframes fadeUp       { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes fadeIn       { from{opacity:0} to{opacity:1} }
-  @keyframes scaleIn      { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
-  @keyframes spin         { to{transform:rotate(360deg)} }
-  @keyframes checkPop     { 0%{transform:scale(0);opacity:0} 70%{transform:scale(1.2);opacity:1} 100%{transform:scale(1)} }
-  @keyframes floatUp      { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-8px)} }
+  @keyframes fadeUp    { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn    { from{opacity:0} to{opacity:1} }
+  @keyframes scaleIn   { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+  @keyframes spin      { to{transform:rotate(360deg)} }
+  @keyframes checkPop  { 0%{transform:scale(0);opacity:0} 70%{transform:scale(1.2);opacity:1} 100%{transform:scale(1)} }
+  @keyframes floatUp   { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-8px)} }
   @keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(80px) rotate(720deg);opacity:0} }
-  @keyframes pulse        { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
   .ob-root { min-height:100vh; display:flex; flex-direction:column; background:var(--cream); position:relative; overflow:hidden; }
   .ob-blob { position:fixed; border-radius:50%; filter:blur(100px); pointer-events:none; transition:all 1s ease; }
   .ob-blob-1 { width:500px; height:500px; top:-150px; right:-100px; opacity:0.25; }
   .ob-blob-2 { width:400px; height:400px; bottom:-100px; left:-80px; opacity:0.18; }
-
   .ob-topbar { display:flex; align-items:center; justify-content:space-between; padding:24px 5%; position:relative; z-index:10; }
   .ob-logo { font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:7px; }
   .ob-logo-dot { width:7px; height:7px; border-radius:50%; background:var(--amber); }
-  .ob-skip { font-size:0.85rem; color:var(--ink-subtle); font-weight:600; cursor:pointer; background:none; border:none; font-family:'Plus Jakarta Sans',sans-serif; }
-  .ob-skip:disabled { opacity:0.5; cursor:not-allowed; }
-
+  .ob-skip { font-size:0.85rem; color:var(--ink-subtle); font-weight:600; cursor:pointer; background:none; border:none; }
   .ob-progress { padding:0 5%; margin-bottom:8px; position:relative; z-index:10; }
   .ob-step-circle { width:36px; height:36px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:700; transition:all 0.4s ease; }
-  .ob-step-circle.done     { background:var(--green-light); color:var(--white); box-shadow:0 4px 16px rgba(64,145,108,0.4); }
-  .ob-step-circle.active   { background:var(--ink); color:var(--white); box-shadow:0 4px 16px rgba(10,10,10,0.25); }
-  .ob-step-circle.upcoming { background:var(--cream-dark); color:var(--ink-subtle); border:1.5px solid var(--border); }
+  .ob-step-circle.done    { background:var(--green-light); color:var(--white); box-shadow:0 4px 16px rgba(64,145,108,0.4); }
+  .ob-step-circle.active  { background:var(--ink); color:var(--white); box-shadow:0 4px 16px rgba(10,10,10,0.25); }
+  .ob-step-circle.upcoming{ background:var(--cream-dark); color:var(--ink-subtle); border:1.5px solid var(--border); }
   .ob-step-check { animation:checkPop 0.4s ease; }
   .ob-step-connector { flex:1; height:3px; background:var(--cream-dark); border-radius:100px; overflow:hidden; margin:0 6px; }
   .ob-step-connector-fill { height:100%; background:var(--green-light); border-radius:100px; transition:width 0.5s cubic-bezier(0.4,0,0.2,1); }
@@ -47,24 +42,13 @@ const styles = `
   .ob-step-label.active   { color:var(--ink); }
   .ob-step-label.done     { color:var(--green-mid); }
   .ob-step-label.upcoming { color:var(--ink-subtle); }
-
   .ob-card-wrap { flex:1; display:flex; align-items:flex-start; justify-content:center; padding:24px 5% 40px; position:relative; z-index:10; }
   .ob-card { background:var(--white); border-radius:28px; padding:48px; border:1.5px solid rgba(10,10,10,0.07); box-shadow:var(--shadow-lg); width:100%; max-width:580px; animation:scaleIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
   @media(max-width:600px){ .ob-card{ padding:32px 24px; border-radius:22px; } }
-
   .ob-step-tag { display:inline-flex; align-items:center; gap:7px; background:var(--cream-dark); color:var(--ink-subtle); padding:5px 14px; border-radius:100px; font-size:0.75rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:20px; }
-  .ob-step-tag-dot { width:5px; height:5px; border-radius:50%; background:var(--green-light); animation:pulse 2s ease-in-out infinite; }
+  .ob-step-tag-dot { width:5px; height:5px; border-radius:50%; background:var(--green-light); }
   .ob-card-headline { font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:800; color:var(--ink); line-height:1.18; letter-spacing:-0.015em; margin-bottom:8px; }
   .ob-card-sub { font-size:0.9rem; color:var(--ink-subtle); line-height:1.65; margin-bottom:32px; }
-
-  /* Trust screen */
-  .trust-list { display:flex; flex-direction:column; gap:14px; margin-bottom:36px; }
-  .trust-item { display:flex; gap:14px; align-items:flex-start; background:var(--green-pale); border-radius:14px; padding:14px 16px; }
-  .trust-icon  { font-size:1.3rem; flex-shrink:0; }
-  .trust-title { font-size:0.9rem; font-weight:700; color:var(--green-deep); margin-bottom:3px; }
-  .trust-desc  { font-size:0.8rem; color:var(--green-mid); line-height:1.5; }
-
-  /* Currency */
   .currency-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:32px; }
   @media(max-width:480px){ .currency-grid{ grid-template-columns:repeat(2,1fr); } }
   .currency-card { border:2px solid var(--border); border-radius:16px; padding:18px 14px; cursor:pointer; transition:all 0.22s; text-align:center; background:var(--white); position:relative; overflow:hidden; }
@@ -74,8 +58,6 @@ const styles = `
   .currency-code { font-weight:800; font-size:0.95rem; color:var(--ink); margin-bottom:2px; }
   .currency-name { font-size:0.72rem; color:var(--ink-subtle); font-weight:500; }
   .currency-selected-check { position:absolute; top:8px; right:8px; width:18px; height:18px; border-radius:50%; background:var(--green-light); display:flex; align-items:center; justify-content:center; font-size:0.65rem; color:var(--white); animation:checkPop 0.3s ease; }
-
-  /* Form fields */
   .field-wrap { margin-bottom:20px; }
   .field-label { display:block; font-size:0.82rem; font-weight:600; color:var(--ink-muted); margin-bottom:8px; }
   .input-prefix-wrap { display:flex; align-items:stretch; border:1.5px solid var(--border); border-radius:14px; overflow:hidden; transition:border-color 0.2s,box-shadow 0.2s; background:var(--white); }
@@ -85,8 +67,6 @@ const styles = `
   .plain-input { width:100%; padding:14px 16px; border:1.5px solid var(--border); border-radius:14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:500; color:var(--ink); background:var(--white); outline:none; transition:border-color 0.2s,box-shadow 0.2s; }
   .plain-input:focus { border-color:var(--green-light); box-shadow:0 0 0 3px rgba(64,145,108,0.1); }
   .field-error { font-size:0.75rem; color:#C0392B; margin-top:5px; font-weight:500; }
-
-  /* Period */
   .period-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
   .period-card { border:2px solid var(--border); border-radius:14px; padding:14px 10px; cursor:pointer; transition:all 0.2s; text-align:center; background:var(--white); }
   .period-card:hover { border-color:rgba(64,145,108,0.3); }
@@ -94,55 +74,30 @@ const styles = `
   .period-icon  { font-size:1.2rem; margin-bottom:6px; }
   .period-label { font-size:0.8rem; font-weight:700; color:var(--ink); }
   .period-desc  { font-size:0.7rem; color:var(--ink-subtle); margin-top:2px; }
-
-  /* WhatsApp benefits */
-  .wa-benefits { display:flex; flex-direction:column; gap:10px; margin-bottom:24px; }
-  .wa-benefit { display:flex; gap:12px; align-items:flex-start; background:#F5F3EE; border-radius:12px; padding:12px 14px; }
-  .wa-benefit-icon  { font-size:1.2rem; flex-shrink:0; }
-  .wa-benefit-title { font-size:0.85rem; font-weight:700; color:#0A0A0A; margin-bottom:2px; }
-  .wa-benefit-desc  { font-size:0.78rem; color:#6B6B6B; }
-
-  /* Confirm */
-  .confirm-hero { text-align:center; margin-bottom:28px; }
+  .confirm-hero { text-align:center; margin-bottom:36px; }
   .confirm-emoji { font-size:3.5rem; display:block; margin-bottom:16px; animation:floatUp 3s ease-in-out infinite; }
   .confirm-summary { background:var(--cream-dark); border-radius:18px; padding:24px; display:flex; flex-direction:column; gap:16px; margin-bottom:28px; }
   .confirm-row { display:flex; justify-content:space-between; align-items:center; }
   .confirm-row-label { font-size:0.85rem; color:var(--ink-subtle); font-weight:500; }
   .confirm-row-value { font-size:0.9rem; font-weight:700; color:var(--ink); }
-  .confirm-row-value.wa-connected { color:var(--green-mid); }
-  .confirm-row-value.wa-skipped   { color:var(--ink-subtle); font-weight:500; font-style:italic; }
   .confirm-divider { height:1px; background:var(--border); }
   .confirm-trial { background:var(--green-pale); border:1.5px solid rgba(27,67,50,0.15); border-radius:14px; padding:16px 18px; display:flex; gap:12px; align-items:flex-start; margin-bottom:28px; }
   .confirm-trial-icon { font-size:1.2rem; flex-shrink:0; }
   .confirm-trial-text { font-size:0.85rem; color:var(--green-deep); line-height:1.6; font-weight:500; }
-
-  /* Confetti */
   .confetti-wrap { position:fixed; top:0; left:0; right:0; pointer-events:none; z-index:100; display:flex; justify-content:center; }
   .confetti-piece { width:10px; height:10px; border-radius:2px; position:absolute; animation:confettiFall 1.2s ease forwards; }
-
-  /* Navigation buttons */
   .ob-nav { display:flex; gap:12px; margin-top:28px; }
   .btn-back { flex:0; padding:14px 24px; border:1.5px solid var(--border); border-radius:14px; background:transparent; color:var(--ink-muted); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; font-weight:600; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
-  .btn-back:hover { border-color:rgba(10,10,10,0.2); }
   .btn-next { flex:1; padding:15px; border-radius:14px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:1rem; font-weight:700; cursor:pointer; transition:all 0.25s; box-shadow:0 6px 24px rgba(27,67,50,0.28); display:flex; align-items:center; justify-content:center; gap:8px; }
-  .btn-next:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 8px 28px rgba(27,67,50,0.35); }
   .btn-next:disabled { opacity:0.55; cursor:not-allowed; }
-  .btn-skip-wa { padding:13px 20px; border:1.5px solid rgba(10,10,10,0.1); border-radius:14px; background:transparent; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.9rem; font-weight:600; color:#6B6B6B; cursor:pointer; transition:all 0.2s; flex-shrink:0; }
-  .btn-skip-wa:hover { border-color:rgba(10,10,10,0.2); color:var(--ink); }
-
   .spinner { width:18px; height:18px; border:2.5px solid rgba(255,255,255,0.4); border-top-color:var(--white); border-radius:50%; animation:spin 0.7s linear infinite; }
-
-  /* Success */
   .success-root { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--cream); padding:40px 5%; text-align:center; animation:fadeIn 0.5s ease; }
   .success-check { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 24px; box-shadow:0 12px 40px rgba(27,67,50,0.35); animation:checkPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
   .success-title { font-family:'Playfair Display',serif; font-size:2.4rem; font-weight:900; color:var(--ink); margin-bottom:12px; letter-spacing:-0.02em; }
   .success-sub { font-size:1rem; color:var(--ink-subtle); line-height:1.7; max-width:420px; margin:0 auto 40px; }
   .success-btn { padding:16px 48px; border-radius:14px; border:none; background:linear-gradient(135deg,var(--green-deep),var(--green-light)); color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:1.05rem; font-weight:700; cursor:pointer; box-shadow:0 8px 32px rgba(27,67,50,0.3); }
-
   .error-box { margin-bottom:18px; background:rgba(192,57,43,0.08); border:1.5px solid rgba(192,57,43,0.2); border-radius:12px; padding:12px 16px; font-size:0.875rem; color:#C0392B; line-height:1.5; }
 `;
-
-// ── Constants ─────────────────────────────────────────────────────────────────
 
 const CURRENCIES = [
   { code: "NGN", symbol: "₦", flag: "🇳🇬", name: "Nigerian Naira" },
@@ -151,6 +106,12 @@ const CURRENCIES = [
   { code: "EUR", symbol: "€", flag: "🇪🇺", name: "Euro" },
   { code: "KES", symbol: "KSh", flag: "🇰🇪", name: "Kenyan Shilling" },
   { code: "GHS", symbol: "₵", flag: "🇬🇭", name: "Ghanaian Cedi" },
+];
+
+const PERIODS = [
+  { id: "weekly", icon: "📅", label: "Weekly", desc: "Every 7 days" },
+  { id: "monthly", icon: "🗓️", label: "Monthly", desc: "1st – last day" },
+  { id: "custom", icon: "✏️", label: "Custom", desc: "Pick your dates" },
 ];
 
 const CURRENCY_PHONE = {
@@ -162,12 +123,6 @@ const CURRENCY_PHONE = {
   GHS: { flag: "🇬🇭", dialCode: "+233" },
 };
 
-const PERIODS = [
-  { id: "weekly", icon: "📅", label: "Weekly", desc: "Every 7 days" },
-  { id: "monthly", icon: "🗓️", label: "Monthly", desc: "1st – last day" },
-  { id: "custom", icon: "✏️", label: "Custom", desc: "Pick your dates" },
-];
-
 const CONFETTI_COLORS = [
   "#40916C",
   "#D4A017",
@@ -176,11 +131,6 @@ const CONFETTI_COLORS = [
   "#F0C040",
   "#74C69D",
 ];
-
-// Progress labels for steps 1–4
-const STEP_LABELS = ["Currency", "Budget", "WhatsApp", "Confirm"];
-
-// ── Confetti ──────────────────────────────────────────────────────────────────
 
 function Confetti({ show }) {
   if (!show) return null;
@@ -202,71 +152,253 @@ function Confetti({ show }) {
   );
 }
 
-// ── Step 0: Trust / welcome screen ───────────────────────────────────────────
-
+// ── Step 0: Trust screen (added — does not affect steps 1-4) ──────────────────
 function Step0({ onNext }) {
+  const items = [
+    {
+      icon: "📝",
+      title: "You tell us what you spend",
+      desc: "Log manually or send a bank PDF. We read the numbers, nothing more.",
+      accent: "#1B4332",
+    },
+    {
+      icon: "🔍",
+      title: "We help you understand it",
+      desc: "AI shows you exactly where your money goes in plain English.",
+      accent: "#2D6A4F",
+    },
+    {
+      icon: "🚫",
+      title: "Zero bank access ever",
+      desc: "No credentials, no bank login, no stored PDFs. Period.",
+      accent: "#B45309",
+    },
+    {
+      icon: "🛡️",
+      title: "Your data stays yours",
+      desc: "Delete everything from Settings, anytime, instantly.",
+      accent: "#1B4332",
+    },
+  ];
   return (
-    <>
-      <div className="ob-step-tag">
-        <span className="ob-step-tag-dot" />
-        Welcome to Truvllo
+    <div style={{ overflow: "hidden", borderRadius: 28 }}>
+      {/* Dark hero banner */}
+      <div
+        style={{
+          background:
+            "linear-gradient(160deg,#0D2B1C 0%,#1B4332 60%,#0A0A0A 100%)",
+          padding: "36px 32px 28px",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Radial glow */}
+        <div
+          style={{
+            position: "absolute",
+            top: -60,
+            right: -60,
+            width: 280,
+            height: 280,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle,rgba(64,145,108,0.35) 0%,transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: -40,
+            left: -40,
+            width: 200,
+            height: 200,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle,rgba(212,160,23,0.12) 0%,transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* Grid texture */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)",
+            backgroundSize: "40px 40px",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* Label */}
+        <div
+          style={{
+            position: "relative",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 20,
+          }}
+        >
+          <div style={{ width: 24, height: 1, background: "#D4A017" }} />
+          <span
+            style={{
+              fontSize: "0.65rem",
+              fontWeight: 800,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "#D4A017",
+            }}
+          >
+            Before we begin
+          </span>
+        </div>
+
+        {/* Headline */}
+        <div style={{ position: "relative" }}>
+          <h2
+            style={{
+              fontFamily: "'Playfair Display',serif",
+              fontSize: "2rem",
+              fontWeight: 900,
+              color: "#FAF8F3",
+              lineHeight: 1.08,
+              letterSpacing: "-0.025em",
+              marginBottom: 12,
+            }}
+          >
+            We never touch
+            <br />
+            <em style={{ fontStyle: "italic", color: "#40916C" }}>
+              your money.
+            </em>
+          </h2>
+          <p
+            style={{
+              fontSize: "0.875rem",
+              color: "rgba(250,248,243,0.5)",
+              lineHeight: 1.65,
+              maxWidth: 320,
+            }}
+          >
+            Truvllo is a budgeting tracker not a bank, wallet, or payment app.
+          </p>
+        </div>
       </div>
 
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <div style={{ fontSize: "3rem", marginBottom: 16 }}>🔒</div>
-        <h2 className="ob-card-headline" style={{ fontSize: "1.6rem" }}>
-          We never touch
-          <br />
-          your money
-        </h2>
-        <p className="ob-card-sub" style={{ marginBottom: 0 }}>
-          Truvllo is a budgeting tracker — not a bank, wallet, or payment app.
-        </p>
-      </div>
+      {/* Items — cream background */}
+      <div style={{ background: "#FAF8F3", padding: "4px 0 0" }}>
+        {items.map(({ icon, title, desc, accent }, i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              gap: 16,
+              alignItems: "flex-start",
+              padding: "18px 28px",
+              borderBottom:
+                i < items.length - 1 ? "1px solid rgba(10,10,10,0.06)" : "none",
+              background: "#fff",
+              transition: "background 0.15s",
+              position: "relative",
+            }}
+          >
+            {/* Left accent line */}
+            <div
+              style={{
+                position: "absolute",
+                left: 0,
+                top: "20%",
+                bottom: "20%",
+                width: 3,
+                background: accent,
+                borderRadius: "0 3px 3px 0",
+              }}
+            />
 
-      <div className="trust-list">
-        {[
-          [
-            "📝",
-            "You tell us what you spend",
-            "You log expenses manually or send your bank PDF. We read the numbers.",
-          ],
-          [
-            "🔍",
-            "We help you understand it",
-            "AI analyses your spending and shows you where your money goes.",
-          ],
-          [
-            "🚫",
-            "We never access your bank",
-            "No login credentials, no direct bank connection, no stored PDFs.",
-          ],
-          [
-            "🛡️",
-            "Your data stays yours",
-            "We store only what you give us. You can delete everything anytime.",
-          ],
-        ].map(([icon, title, desc], i) => (
-          <div key={i} className="trust-item">
-            <div className="trust-icon">{icon}</div>
+            {/* Icon chip */}
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 10,
+                background: "rgba(27,67,50,0.06)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "1.1rem",
+                flexShrink: 0,
+              }}
+            >
+              {icon}
+            </div>
+
             <div>
-              <div className="trust-title">{title}</div>
-              <div className="trust-desc">{desc}</div>
+              <div
+                style={{
+                  fontSize: "0.9rem",
+                  fontWeight: 700,
+                  color: "#0A0A0A",
+                  marginBottom: 3,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                {title}
+              </div>
+              <div
+                style={{
+                  fontSize: "0.8rem",
+                  color: "#6B6B6B",
+                  lineHeight: 1.55,
+                }}
+              >
+                {desc}
+              </div>
             </div>
           </div>
         ))}
-      </div>
 
-      <div className="ob-nav">
-        <button className="btn-next" onClick={onNext}>
-          Got it — let's set up my budget →
-        </button>
+        {/* CTA */}
+        <div style={{ padding: "24px 28px 28px", background: "#FAF8F3" }}>
+          <button
+            onClick={onNext}
+            style={{
+              width: "100%",
+              padding: "15px",
+              border: "none",
+              borderRadius: 14,
+              background: "linear-gradient(135deg,#1B4332,#40916C)",
+              color: "#fff",
+              fontFamily: "'Plus Jakarta Sans',sans-serif",
+              fontSize: "1rem",
+              fontWeight: 700,
+              cursor: "pointer",
+              boxShadow: "0 6px 24px rgba(27,67,50,0.28)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+            }}
+          >
+            Got it, set up my budget →
+          </button>
+          <p
+            style={{
+              textAlign: "center",
+              fontSize: "0.72rem",
+              color: "#9B9B9B",
+              marginTop: 10,
+            }}
+          >
+            Takes less than 2 minutes · No card needed
+          </p>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
-
-// ── Step 1: Currency ──────────────────────────────────────────────────────────
 
 function Step1({ data, onChange, onNext }) {
   return (
@@ -283,7 +415,6 @@ function Step1({ data, onChange, onNext }) {
       <p className="ob-card-sub">
         We'll use this across your entire Truvllo experience.
       </p>
-
       <div className="currency-grid">
         {CURRENCIES.map((c) => (
           <div
@@ -300,7 +431,6 @@ function Step1({ data, onChange, onNext }) {
           </div>
         ))}
       </div>
-
       <div className="ob-nav">
         <button className="btn-next" onClick={onNext} disabled={!data.currency}>
           Continue <span>→</span>
@@ -310,11 +440,8 @@ function Step1({ data, onChange, onNext }) {
   );
 }
 
-// ── Step 2: Budget setup ──────────────────────────────────────────────────────
-
 function Step2({ data, onChange, onNext, onBack }) {
   const [errors, setErrors] = useState({});
-
   const currencyObj =
     CURRENCIES.find((c) => c.code === data.currency) || CURRENCIES[0];
   const sym = currencyObj.symbol;
@@ -367,7 +494,7 @@ function Step2({ data, onChange, onNext, onBack }) {
           className="plain-input"
           style={errors.budgetName ? { borderColor: "#C0392B" } : {}}
           type="text"
-          placeholder="e.g. April 2026 Budget"
+          placeholder="e.g. March 2026 Budget"
           value={data.budgetName}
           onChange={(e) => {
             onChange("budgetName", e.target.value);
@@ -420,7 +547,6 @@ function Step2({ data, onChange, onNext, onBack }) {
         </div>
       </div>
 
-      {/* Live budget preview */}
       {data.monthlyBudget && (
         <div
           style={{
@@ -429,6 +555,9 @@ function Step2({ data, onChange, onNext, onBack }) {
             borderRadius: 18,
             padding: "20px 22px",
             marginTop: 24,
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
           }}
         >
           <div
@@ -454,7 +583,7 @@ function Step2({ data, onChange, onNext, onBack }) {
               </div>
               <div
                 style={{
-                  fontFamily: "'Playfair Display',serif",
+                  fontFamily: "'Playfair Display', serif",
                   fontSize: "1.6rem",
                   color: "#fff",
                   fontWeight: 900,
@@ -462,9 +591,7 @@ function Step2({ data, onChange, onNext, onBack }) {
                 }}
               >
                 {sym}
-                {parseInt(
-                  data.monthlyBudget.replace(/,/g, "") || 0,
-                ).toLocaleString()}
+                {parseInt(data.monthlyBudget || 0).toLocaleString()}
               </div>
             </div>
             <div style={{ textAlign: "right" }}>
@@ -481,7 +608,7 @@ function Step2({ data, onChange, onNext, onBack }) {
               </div>
               <div
                 style={{
-                  fontFamily: "'Playfair Display',serif",
+                  fontFamily: "'Playfair Display', serif",
                   fontSize: "1.2rem",
                   color: "rgba(255,255,255,0.9)",
                   fontWeight: 700,
@@ -508,179 +635,7 @@ function Step2({ data, onChange, onNext, onBack }) {
   );
 }
 
-// ── Step 3: WhatsApp ──────────────────────────────────────────────────────────
-
-function Step3({ data, onChange, onNext, onBack }) {
-  const phoneInfo = CURRENCY_PHONE[data.currency] || {
-    flag: "🇳🇬",
-    dialCode: "+234",
-  };
-  const isEUR = data.currency === "EUR";
-
-  const [dialCode, setDialCode] = useState(isEUR ? "" : phoneInfo.dialCode);
-  const [phone, setPhone] = useState(
-    // strip previously stored dial prefix so input shows local digits only
-    data.whatsappNumber ? data.whatsappNumber.replace(/^\+\d{1,4}/, "") : "",
-  );
-  const [error, setError] = useState("");
-
-  const handleNext = () => {
-    if (phone.trim() && phone.trim().length < 7) {
-      setError("Enter a valid WhatsApp number");
-      return;
-    }
-    onChange(
-      "whatsappNumber",
-      phone.trim() ? `${dialCode}${phone.trim()}` : "",
-    );
-    onNext();
-  };
-
-  const handleSkip = () => {
-    onChange("whatsappNumber", "");
-    onNext();
-  };
-
-  return (
-    <>
-      <div className="ob-step-tag">
-        <span className="ob-step-tag-dot" />
-        Step 3 of 4
-      </div>
-
-      <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>💬</div>
-        <h2 className="ob-card-headline" style={{ fontSize: "1.6rem" }}>
-          Connect WhatsApp
-        </h2>
-        <p className="ob-card-sub" style={{ marginBottom: 0 }}>
-          Get instant budget alerts and log expenses directly from WhatsApp.
-          Optional — you can skip and add this later.
-        </p>
-      </div>
-
-      <div className="wa-benefits">
-        {[
-          [
-            "📄",
-            "Send your bank statement PDF",
-            "We import all transactions automatically",
-          ],
-          [
-            "⚡",
-            "Instant spending alerts",
-            "Know when you hit 80% of any budget cap",
-          ],
-          ["📊", "Daily summary at 9pm", "Your spending recap every evening"],
-        ].map(([icon, title, desc], i) => (
-          <div key={i} className="wa-benefit">
-            <div className="wa-benefit-icon">{icon}</div>
-            <div>
-              <div className="wa-benefit-title">{title}</div>
-              <div className="wa-benefit-desc">{desc}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="field-wrap" style={{ marginBottom: 8 }}>
-        <label className="field-label">WhatsApp number (optional)</label>
-        <div style={{ display: "flex", gap: 8 }}>
-          {isEUR ? (
-            <input
-              type="text"
-              placeholder="+49"
-              value={dialCode}
-              onChange={(e) => setDialCode(e.target.value)}
-              style={{
-                width: 72,
-                padding: "13px 10px",
-                border: "1.5px solid rgba(10,10,10,0.12)",
-                borderRadius: 12,
-                background: "#fff",
-                fontFamily: "'Plus Jakarta Sans',sans-serif",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                outline: "none",
-                textAlign: "center",
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                padding: "13px 14px",
-                border: "1.5px solid rgba(10,10,10,0.12)",
-                borderRadius: 12,
-                background: "#fff",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                color: "#3A3A3A",
-                flexShrink: 0,
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              {phoneInfo.flag} {phoneInfo.dialCode}
-            </div>
-          )}
-          <input
-            type="tel"
-            inputMode="numeric"
-            placeholder="812 345 6789"
-            value={phone}
-            onChange={(e) => {
-              setPhone(e.target.value.replace(/[^0-9]/g, ""));
-              setError("");
-            }}
-            style={{
-              flex: 1,
-              padding: "13px 16px",
-              border: `1.5px solid ${error ? "#C0392B" : "rgba(10,10,10,0.12)"}`,
-              borderRadius: 12,
-              background: "#fff",
-              fontFamily: "'Plus Jakarta Sans',sans-serif",
-              fontSize: 16,
-              outline: "none",
-            }}
-          />
-        </div>
-        {error && <div className="field-error">{error}</div>}
-      </div>
-
-      <div
-        style={{
-          fontSize: "0.72rem",
-          color: "#9B9B9B",
-          marginBottom: 28,
-          lineHeight: 1.5,
-        }}
-      >
-        📱 We'll send a quick verification when your trial activates. Standard
-        WhatsApp rates apply.
-      </div>
-
-      <div className="ob-nav">
-        <button className="btn-back" onClick={onBack}>
-          ← Back
-        </button>
-        <button className="btn-skip-wa" onClick={handleSkip}>
-          Skip
-        </button>
-        <button
-          className="btn-next"
-          onClick={handleNext}
-          style={{ flex: "none", padding: "13px 24px" }}
-        >
-          Continue →
-        </button>
-      </div>
-    </>
-  );
-}
-
-// ── Step 4: Confirm everything ────────────────────────────────────────────────
-
-function Step4({ data, onBack, onFinish, loading }) {
+function Step3({ data, onBack, onFinish, loading }) {
   const currencyObj =
     CURRENCIES.find((c) => c.code === data.currency) || CURRENCIES[0];
   const sym = currencyObj.symbol;
@@ -692,18 +647,12 @@ function Step4({ data, onBack, onFinish, loading }) {
       ).toLocaleString()
     : "—";
 
-  const hasWhatsApp = !!data.whatsappNumber;
-  const maskedPhone = hasWhatsApp
-    ? `${data.whatsappNumber.slice(0, Math.min(7, data.whatsappNumber.length))}****`
-    : null;
-
   return (
     <>
       <div className="ob-step-tag">
         <span className="ob-step-tag-dot" />
         Step 4 of 4
       </div>
-
       <div className="confirm-hero">
         <span className="confirm-emoji">🎯</span>
         <h2 className="ob-card-headline">
@@ -715,7 +664,6 @@ function Step4({ data, onBack, onFinish, loading }) {
           Everything looks right? You can edit this later.
         </p>
       </div>
-
       <div className="confirm-summary">
         <div className="confirm-row">
           <span className="confirm-row-label">Currency</span>
@@ -747,24 +695,22 @@ function Step4({ data, onBack, onFinish, loading }) {
         <div className="confirm-divider" />
         <div className="confirm-row">
           <span className="confirm-row-label">WhatsApp</span>
-          {hasWhatsApp ? (
-            <span className="confirm-row-value wa-connected">
-              ✓ {maskedPhone}
-            </span>
-          ) : (
-            <span className="confirm-row-value wa-skipped">Not connected</span>
-          )}
+          <span className="confirm-row-value">
+            {data.whatsappNumber
+              ? `${data.whatsappNumber.slice(0, 6)}****`
+              : "Not connected"}
+          </span>
         </div>
       </div>
-
       <div className="confirm-trial">
         <span className="confirm-trial-icon">🎁</span>
         <div className="confirm-trial-text">
-          <strong>Your 14-day Premium trial activates automatically</strong>{" "}
+          <strong>
+            Your {TRIAL_DAYS}-day Premium trial activates automatically
+          </strong>{" "}
           when you log your first expense.
         </div>
       </div>
-
       <div className="ob-nav">
         <button className="btn-back" onClick={onBack}>
           ← Back
@@ -777,20 +723,252 @@ function Step4({ data, onBack, onFinish, loading }) {
   );
 }
 
-// ── Main Onboarding shell ─────────────────────────────────────────────────────
+function Step4({ data, onChange, onBack, onNext, currency }) {
+  const [phone, setPhone] = useState(data.whatsappNumber || "");
+  const [error, setError] = useState("");
+  const phoneInfo = CURRENCY_PHONE[currency] || {
+    flag: "🇳🇬",
+    dialCode: "+234",
+  };
+  const isEUR = currency === "EUR";
+  const [dialCode, setDialCode] = useState(isEUR ? "" : phoneInfo.dialCode);
+
+  const handleNext = () => {
+    if (phone && phone.trim().length < 10) {
+      setError("Enter a valid WhatsApp number");
+      return;
+    }
+    onChange("whatsappNumber", phone.trim());
+    onNext();
+  };
+
+  return (
+    <>
+      <div className="ob-step-tag">
+        <span className="ob-step-tag-dot" />
+        Step 3 of 4
+      </div>
+      <div style={{ textAlign: "center", marginBottom: 24 }}>
+        <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>💬</div>
+        <h2
+          style={{
+            fontFamily: "'Playfair Display',serif",
+            fontSize: "1.4rem",
+            fontWeight: 800,
+            color: "#0A0A0A",
+            marginBottom: 8,
+          }}
+        >
+          Connect WhatsApp
+        </h2>
+        <p style={{ fontSize: "0.875rem", color: "#6B6B6B", lineHeight: 1.6 }}>
+          Get instant budget alerts and log expenses directly from WhatsApp.
+          Optional, you can add this later.
+        </p>
+      </div>
+
+      {/* Benefits */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          marginBottom: 24,
+        }}
+      >
+        {[
+          [
+            "📄",
+            "Send your bank statement PDF",
+            "We import all transactions automatically",
+          ],
+          [
+            "⚡",
+            "Instant spending alerts",
+            "Know when you hit 80% of any budget cap",
+          ],
+          ["📊", "Daily summary at 9pm", "Your spending recap every evening"],
+        ].map(([icon, title, desc], i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              gap: 12,
+              alignItems: "flex-start",
+              background: "#F5F3EE",
+              borderRadius: 12,
+              padding: "12px 14px",
+            }}
+          >
+            <div style={{ fontSize: "1.2rem", flexShrink: 0 }}>{icon}</div>
+            <div>
+              <div
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: 700,
+                  color: "#0A0A0A",
+                  marginBottom: 2,
+                }}
+              >
+                {title}
+              </div>
+              <div style={{ fontSize: "0.78rem", color: "#6B6B6B" }}>
+                {desc}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Phone input */}
+      <div style={{ marginBottom: 8 }}>
+        <label
+          style={{
+            display: "block",
+            fontSize: "0.8rem",
+            fontWeight: 600,
+            color: "#3A3A3A",
+            marginBottom: 7,
+          }}
+        >
+          WhatsApp number (optional)
+        </label>
+        <div style={{ display: "flex", gap: 8 }}>
+          {isEUR ? (
+            <input
+              type="text"
+              placeholder="+49"
+              value={dialCode}
+              onChange={(e) => setDialCode(e.target.value)}
+              style={{
+                width: 72,
+                padding: "13px 10px",
+                border: "1.5px solid rgba(10,10,10,0.12)",
+                borderRadius: 12,
+                background: "#fff",
+                fontFamily: "'Plus Jakarta Sans',sans-serif",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                outline: "none",
+                textAlign: "center",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                padding: "13px 14px",
+                border: "1.5px solid rgba(10,10,10,0.12)",
+                borderRadius: 12,
+                background: "#fff",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                color: "#3A3A3A",
+                flexShrink: 0,
+              }}
+            >
+              {phoneInfo.flag} {phoneInfo.dialCode}
+            </div>
+          )}
+          <input
+            type="tel"
+            inputMode="numeric"
+            placeholder="812 345 6789"
+            value={phone}
+            onChange={(e) => {
+              setPhone(e.target.value.replace(/[^0-9]/g, ""));
+              setError("");
+            }}
+            style={{
+              flex: 1,
+              padding: "13px 16px",
+              border: `1.5px solid ${error ? "#C0392B" : "rgba(10,10,10,0.12)"}`,
+              borderRadius: 12,
+              background: "#fff",
+              fontFamily: "'Plus Jakarta Sans',sans-serif",
+              fontSize: 16,
+              outline: "none",
+            }}
+          />
+        </div>
+        {error && (
+          <div
+            style={{
+              fontSize: "0.75rem",
+              color: "#C0392B",
+              marginTop: 5,
+              fontWeight: 500,
+            }}
+          >
+            {error}
+          </div>
+        )}
+      </div>
+
+      <div
+        style={{
+          fontSize: "0.72rem",
+          color: "#9B9B9B",
+          marginBottom: 28,
+          lineHeight: 1.5,
+        }}
+      >
+        📱 We'll send a quick verification when your trial activates. Standard
+        WhatsApp rates apply.
+      </div>
+
+      <div className="ob-nav">
+        <button className="btn-back" onClick={onBack}>
+          ← Back
+        </button>
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            flex: 1,
+            justifyContent: "flex-end",
+          }}
+        >
+          <button
+            onClick={() => {
+              onChange(
+                "whatsappNumber",
+                phone.trim() ? `${dialCode}${phone.trim()}` : "",
+              );
+              onNext();
+            }}
+            style={{
+              padding: "13px 20px",
+              border: "1.5px solid rgba(10,10,10,0.1)",
+              borderRadius: 14,
+              background: "transparent",
+              fontFamily: "'Plus Jakarta Sans',sans-serif",
+              fontSize: "0.9rem",
+              fontWeight: 600,
+              color: "#6B6B6B",
+              cursor: "pointer",
+            }}
+          >
+            Skip
+          </button>
+          <button className="btn-next" onClick={handleNext}>
+            Continue →
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const { completeOnboarding } = useAuth();
   const { createBudget } = useBudget();
 
-  // 0 = trust screen, 1-4 = setup steps
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-
   const [data, setData] = useState({
     currency: "NGN",
     budgetName: "",
@@ -805,17 +983,14 @@ export default function Onboarding() {
   };
 
   const blobColor =
-    step === 0
-      ? "rgba(27,67,50,0.2)"
-      : step === 1
-        ? "rgba(64,145,108,0.22)"
-        : step === 2
-          ? "rgba(212,160,23,0.18)"
-          : step === 3
-            ? "rgba(37,99,235,0.15)"
-            : "rgba(27,67,50,0.2)";
+    step === 1
+      ? "rgba(64,145,108,0.22)"
+      : step === 2
+        ? "rgba(212,160,23,0.18)"
+        : step === 3
+          ? "rgba(27,67,50,0.2)"
+          : "rgba(37,99,235,0.15)";
 
-  // ── Finish ────────────────────────────────────────────────────────────────
   const handleFinish = async () => {
     if (loading) return;
     setLoading(true);
@@ -872,7 +1047,6 @@ export default function Onboarding() {
     }
   };
 
-  // ── Skip entire onboarding (visible from step 1 onwards) ─────────────────
   const handleSkip = async () => {
     if (loading) return;
     setLoading(true);
@@ -889,18 +1063,17 @@ export default function Onboarding() {
     }
   };
 
-  // ── Success ───────────────────────────────────────────────────────────────
   if (done) {
     return (
       <>
-        <style>{FONTS + styles}</style>
+        <style>{styles}</style>
         <Confetti show={showConfetti} />
         <div className="success-root">
           <div className="success-check">✓</div>
           <h1 className="success-title">You're all set!</h1>
           <p className="success-sub">
-            Your budget is ready. Start logging expenses to activate your 14-day
-            Premium trial and unlock all AI features instantly.
+            Your budget is ready. Start logging expenses to activate your{" "}
+            {TRIAL_DAYS}-day Premium trial and unlock all AI features instantly.
           </p>
           <button
             className="success-btn"
@@ -913,44 +1086,38 @@ export default function Onboarding() {
     );
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
-      <style>{FONTS + styles}</style>
+      <style>{styles}</style>
       <Confetti show={showConfetti} />
-
       <div className="ob-root">
-        {/* Blobs */}
         <div
           className="ob-blob ob-blob-1"
           style={{
-            background: `radial-gradient(circle,${blobColor} 0%,transparent 70%)`,
+            background: `radial-gradient(circle, ${blobColor} 0%, transparent 70%)`,
           }}
         />
         <div
           className="ob-blob ob-blob-2"
           style={{
             background:
-              "radial-gradient(circle,rgba(212,160,23,0.12) 0%,transparent 70%)",
+              "radial-gradient(circle, rgba(212,160,23,0.12) 0%, transparent 70%)",
           }}
         />
 
-        {/* Top bar */}
         <div className="ob-topbar">
           <div className="ob-logo">
             <span className="ob-logo-dot" />
             Truvllo
           </div>
-          {/* Skip only visible from step 1 onwards */}
-          {step >= 1 && (
+          {step > 0 && (
             <button className="ob-skip" onClick={handleSkip} disabled={loading}>
-              {loading ? "Please wait…" : "Skip for now"}
+              {loading ? "Please wait..." : "Skip for now"}
             </button>
           )}
         </div>
 
-        {/* Progress bar — only on steps 1–4 */}
-        {step >= 1 && (
+        {step > 0 && (
           <div className="ob-progress">
             <div style={{ maxWidth: 520, margin: "0 auto" }}>
               <div
@@ -962,7 +1129,7 @@ export default function Onboarding() {
                     style={{
                       display: "flex",
                       alignItems: "flex-start",
-                      flex: i < 3 ? 1 : "none",
+                      flex: i < 2 ? 1 : "none",
                     }}
                   >
                     <div
@@ -984,7 +1151,13 @@ export default function Onboarding() {
                       <div
                         className={`ob-step-label ${step > s ? "done" : step === s ? "active" : "upcoming"}`}
                       >
-                        {STEP_LABELS[i]}
+                        {s === 1
+                          ? "Currency"
+                          : s === 2
+                            ? "Budget"
+                            : s === 3
+                              ? "WhatsApp"
+                              : "Confirm"}
                       </div>
                     </div>
                     {i < 3 && (
@@ -1011,11 +1184,13 @@ export default function Onboarding() {
           </div>
         )}
 
-        {/* Card */}
         <div className="ob-card-wrap">
-          <div className="ob-card" key={step}>
+          <div
+            className="ob-card"
+            key={step}
+            style={step === 0 ? { padding: 0, overflow: "hidden" } : {}}
+          >
             {errorMsg && <div className="error-box">{errorMsg}</div>}
-
             {step === 0 && <Step0 onNext={() => setStep(1)} />}
             {step === 1 && (
               <Step1
@@ -1033,15 +1208,16 @@ export default function Onboarding() {
               />
             )}
             {step === 3 && (
-              <Step3
+              <Step4
                 data={data}
                 onChange={onChange}
-                onNext={() => setStep(4)}
                 onBack={() => setStep(2)}
+                onNext={() => setStep(4)}
+                currency={data.currency}
               />
             )}
             {step === 4 && (
-              <Step4
+              <Step3
                 data={data}
                 onBack={() => setStep(3)}
                 onFinish={handleFinish}

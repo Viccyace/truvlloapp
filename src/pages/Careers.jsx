@@ -161,7 +161,7 @@ export default function Careers() {
           </p>
           {submitted ? (
             <div className="success-msg">
-              ✓ Got it — we'll be in touch when we're hiring!
+              ✓ Got it, we'll be in touch when we're hiring!
             </div>
           ) : (
             <div className="notify-form">
@@ -197,4 +197,3 @@ export default function Careers() {
     </>
   );
 }
-

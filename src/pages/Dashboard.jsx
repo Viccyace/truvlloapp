@@ -879,8 +879,8 @@ function PaceCard({
           </strong>{" "}
           for day {currentDay}.{" "}
           {spent <= expected
-            ? "You're tracking ahead of pace — great discipline!"
-            : "You're slightly over pace — consider pulling back to avoid end-of-period pressure."}
+            ? "You're tracking ahead of pace, great discipline!"
+            : "You're slightly over pace, consider pulling back to avoid end-of-period pressure."}
         </p>
       </div>
     </div>
@@ -981,7 +981,7 @@ function AIPanel({ type, insight, loading, onRefresh }) {
         )}
       </div>
       <div className="ai-card-footer">
-        <span className="ai-powered">Powered by Claude AI</span>
+        <span className="ai-powered">Powered by Truvllo</span>
         <button className="ai-refresh" onClick={onRefresh}>
           <RefreshCw size={11} /> Refresh
         </button>
@@ -1049,7 +1049,7 @@ function NLEntry({ onAdd, sym }) {
         <div>
           <div className="nl-title">Natural Language Entry</div>
           <div className="nl-sub">
-            Type what you spent — AI parses it instantly
+            Type what you spent, We will log it instantly
           </div>
         </div>
       </div>
@@ -1402,7 +1402,7 @@ export default function Dashboard() {
               Welcome back, <em>{displayName || "there"}</em>
             </div>
             <div className="greeting-date">
-              Here's where your money stands — {today}
+              Here's where your money stands, {today}
             </div>
           </div>
           <div className="greeting-badge">

@@ -102,7 +102,7 @@ export default function About() {
           <p>
             We built Truvllo around one core idea: your safe-to-spend number.
             Every morning you open the app, you know exactly how much you can
-            spend today without blowing your budget. No maths, no spreadsheets —
+            spend today without blowing your budget. No maths, no spreadsheets,
             just a number you can act on.
           </p>
           <p>
@@ -137,7 +137,7 @@ export default function About() {
               <div className="value-icon">🎯</div>
               <div className="value-title">Clarity over complexity</div>
               <p className="value-desc">
-                Finance is already complicated enough. Truvllo makes it simple —
+                Finance is already complicated enough. Truvllo makes it simple,
                 one number, one decision, every day.
               </p>
             </div>
@@ -146,15 +146,15 @@ export default function About() {
               <div className="value-title">AI that works for you</div>
               <p className="value-desc">
                 Our AI doesn't judge your spending. It understands it, explains
-                it, and helps you do better — without the lecture.
+                it, and helps you do better, without the lecture.
               </p>
             </div>
             <div className="value-card">
               <div className="value-icon">🔒</div>
               <div className="value-title">Your data is yours</div>
               <p className="value-desc">
-                We don't sell your financial data. We don't share it. It's yours
-                — and it stays that way.
+                We don't sell your financial data. We don't share it. It's
+                yours, and it stays that way.
               </p>
             </div>
           </div>
@@ -198,4 +198,3 @@ export default function About() {
     </>
   );
 }
-

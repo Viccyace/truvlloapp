@@ -170,27 +170,27 @@ const styles = `
 // ── NAV CONFIG ────────────────────────────────────────────────────────────────
 const NAV_ITEMS = [
   { id: "dashboard", icon: "⊞", label: "Dashboard", badge: null },
-  { id: "expenses",  icon: "₦", label: "Expenses",  badge: null },
-  { id: "budget",    icon: "◎", label: "Budget",    badge: null },
-  { id: "insights",  icon: "↗", label: "Insights",  badge: "PRO" },
-  { id: "settings",  icon: "⚙", label: "Settings",  badge: null },
+  { id: "expenses", icon: "₦", label: "Expenses", badge: null },
+  { id: "budget", icon: "◎", label: "Budget", badge: null },
+  { id: "insights", icon: "↗", label: "Insights", badge: "PRO" },
+  { id: "settings", icon: "⚙", label: "Settings", badge: null },
 ];
 
 const BOTTOM_NAV = [
   { id: "dashboard", icon: "🏠", label: "Home" },
-  { id: "expenses",  icon: "💸", label: "Expenses" },
-  { id: "budget",    icon: "🎯", label: "Budget" },
-  { id: "insights",  icon: "📊", label: "Insights" },
-  { id: "settings",  icon: "⚙️", label: "Settings" },
+  { id: "expenses", icon: "💸", label: "Expenses" },
+  { id: "budget", icon: "🎯", label: "Budget" },
+  { id: "insights", icon: "📊", label: "Insights" },
+  { id: "settings", icon: "⚙️", label: "Settings" },
 ];
 
 const PAGE_META = {
   dashboard: { title: "Dashboard", breadcrumb: "Good morning, Adaeze 👋" },
-  expenses:  { title: "Expenses",  breadcrumb: "Track & manage your spending" },
-  budget:    { title: "Budget",    breadcrumb: "Manage your active budget" },
-  insights:  { title: "Insights",  breadcrumb: "Deep-dive into your patterns" },
-  settings:  { title: "Settings",  breadcrumb: "Preferences & account" },
-  upgrade:   { title: "Upgrade",   breadcrumb: "Unlock Premium features" },
+  expenses: { title: "Expenses", breadcrumb: "Track & manage your spending" },
+  budget: { title: "Budget", breadcrumb: "Manage your active budget" },
+  insights: { title: "Insights", breadcrumb: "Deep-dive into your patterns" },
+  settings: { title: "Settings", breadcrumb: "Preferences & account" },
+  upgrade: { title: "Upgrade", breadcrumb: "Unlock Premium features" },
 };
 
 // ── PAGE STUBS ────────────────────────────────────────────────────────────────
@@ -199,7 +199,9 @@ const PageStubs = {
     <div className="page-stub">
       <div className="page-stub-icon">🏠</div>
       <div className="page-stub-title">Dashboard</div>
-      <p className="page-stub-sub">Summary cards, budget pace, AI panels, quick-add — all coming here.</p>
+      <p className="page-stub-sub">
+        Summary cards, budget pace, AI panels, quick-add, all coming here.
+      </p>
       <span className="page-stub-badge">Next to build →</span>
     </div>
   ),
@@ -207,21 +209,27 @@ const PageStubs = {
     <div className="page-stub">
       <div className="page-stub-icon">💸</div>
       <div className="page-stub-title">Expenses</div>
-      <p className="page-stub-sub">Search, filter, add, edit, delete expenses. CSV export for premium.</p>
+      <p className="page-stub-sub">
+        Search, filter, add, edit, delete expenses. CSV export for premium.
+      </p>
     </div>
   ),
   budget: () => (
     <div className="page-stub">
       <div className="page-stub-icon">🎯</div>
       <div className="page-stub-title">Budget</div>
-      <p className="page-stub-sub">Edit active budget, category caps, recurring expenses.</p>
+      <p className="page-stub-sub">
+        Edit active budget, category caps, recurring expenses.
+      </p>
     </div>
   ),
   insights: () => (
     <div className="page-stub">
       <div className="page-stub-icon">📊</div>
       <div className="page-stub-title">Insights</div>
-      <p className="page-stub-sub">Pie chart, bar chart, trend line, budget breakdown. Premium only.</p>
+      <p className="page-stub-sub">
+        Pie chart, bar chart, trend line, budget breakdown. Premium only.
+      </p>
       <span className="page-stub-badge">⭐ Premium</span>
     </div>
   ),
@@ -229,21 +237,25 @@ const PageStubs = {
     <div className="page-stub">
       <div className="page-stub-icon">⚙️</div>
       <div className="page-stub-title">Settings</div>
-      <p className="page-stub-sub">Profile, password, currency, notifications, plan details.</p>
+      <p className="page-stub-sub">
+        Profile, password, currency, notifications, plan details.
+      </p>
     </div>
   ),
   upgrade: () => (
     <div className="page-stub">
       <div className="page-stub-icon">⭐</div>
       <div className="page-stub-title">Upgrade to Premium</div>
-      <p className="page-stub-sub">Feature list, comparison table, FAQ, Paystack payment button.</p>
+      <p className="page-stub-sub">
+        Feature list, comparison table, FAQ, Paystack payment button.
+      </p>
     </div>
   ),
 };
 
 // ── QUICK ADD MODAL ───────────────────────────────────────────────────────────
 function QuickAddModal({ onClose }) {
-  const [desc,   setDesc]   = useState("");
+  const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
 
   return (
@@ -279,7 +291,9 @@ function QuickAddModal({ onClose }) {
             <option>📱 Airtime</option>
           </select>
         </div>
-        <button className="modal-btn" onClick={onClose}>Log Expense</button>
+        <button className="modal-btn" onClick={onClose}>
+          Log Expense
+        </button>
       </div>
     </div>
   );
@@ -312,7 +326,9 @@ function Sidebar({ activePage, onNavigate, showUpgrade = true }) {
       {showUpgrade && (
         <div className="sidebar-upgrade">
           <div className="upgrade-title">7-day Trial Active</div>
-          <div className="upgrade-sub">5 days remaining. Upgrade to keep all AI features after your trial.</div>
+          <div className="upgrade-sub">
+            5 days remaining. Upgrade to keep all AI features after your trial.
+          </div>
           <button className="upgrade-btn" onClick={() => onNavigate("upgrade")}>
             Upgrade to Premium
           </button>
@@ -336,9 +352,14 @@ function Sidebar({ activePage, onNavigate, showUpgrade = true }) {
 function MobileDrawer({ open, activePage, onNavigate, onClose }) {
   return (
     <>
-      <div className={`drawer-overlay${open ? " open" : ""}`} onClick={onClose} />
+      <div
+        className={`drawer-overlay${open ? " open" : ""}`}
+        onClick={onClose}
+      />
       <div className={`drawer${open ? " open" : ""}`}>
-        <button className="drawer-close" onClick={onClose}>✕</button>
+        <button className="drawer-close" onClick={onClose}>
+          ✕
+        </button>
         <div className="sidebar-logo" style={{ paddingTop: 24 }}>
           <span className="sidebar-logo-dot" />
           Truvllo
@@ -349,7 +370,10 @@ function MobileDrawer({ open, activePage, onNavigate, onClose }) {
             <div
               key={item.id}
               className={`nav-item${activePage === item.id ? " active" : ""}`}
-              onClick={() => { onNavigate(item.id); onClose(); }}
+              onClick={() => {
+                onNavigate(item.id);
+                onClose();
+              }}
             >
               {activePage === item.id && <div className="nav-active-bar" />}
               <span className="nav-icon">{item.icon}</span>
@@ -362,7 +386,13 @@ function MobileDrawer({ open, activePage, onNavigate, onClose }) {
           <div className="sidebar-upgrade">
             <div className="upgrade-title">7-day Trial Active</div>
             <div className="upgrade-sub">5 days remaining.</div>
-            <button className="upgrade-btn" onClick={() => { onNavigate("upgrade"); onClose(); }}>
+            <button
+              className="upgrade-btn"
+              onClick={() => {
+                onNavigate("upgrade");
+                onClose();
+              }}
+            >
               Upgrade to Premium
             </button>
           </div>
@@ -381,16 +411,18 @@ function MobileDrawer({ open, activePage, onNavigate, onClose }) {
 
 // ── APP SHELL ─────────────────────────────────────────────────────────────────
 export default function AppShell() {
-  const [activePage,   setActivePage]   = useState("dashboard");
-  const [drawerOpen,   setDrawerOpen]   = useState(false);
+  const [activePage, setActivePage] = useState("dashboard");
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [searchVal,    setSearchVal]    = useState("");
+  const [searchVal, setSearchVal] = useState("");
 
-  const meta          = PAGE_META[activePage] || PAGE_META.dashboard;
+  const meta = PAGE_META[activePage] || PAGE_META.dashboard;
   const PageComponent = PageStubs[activePage] || PageStubs.dashboard;
 
   useEffect(() => {
-    const handler = () => { if (window.innerWidth > 900) setDrawerOpen(false); };
+    const handler = () => {
+      if (window.innerWidth > 900) setDrawerOpen(false);
+    };
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
   }, []);
@@ -419,10 +451,13 @@ export default function AppShell() {
         <div className="main-content">
           <div className="trial-banner">
             <div className="trial-banner-text">
-              🎁 <strong>5 days left</strong> on your free Premium trial — AI
+              🎁 <strong>5 days left</strong> on your free Premium trial, AI
               features, category caps, and advanced charts are all active.
             </div>
-            <button className="trial-banner-cta" onClick={() => navigate("upgrade")}>
+            <button
+              className="trial-banner-cta"
+              onClick={() => navigate("upgrade")}
+            >
               Upgrade now
             </button>
           </div>
@@ -445,17 +480,25 @@ export default function AppShell() {
                 🔔
                 <div className="notif-dot" />
               </div>
-              <div className="topbar-icon-btn" title="Add expense" onClick={() => setQuickAddOpen(true)}>
+              <div
+                className="topbar-icon-btn"
+                title="Add expense"
+                onClick={() => setQuickAddOpen(true)}
+              >
                 ＋
               </div>
-              <div className="topbar-avatar" title="Account">A</div>
+              <div className="topbar-avatar" title="Account">
+                A
+              </div>
             </div>
           </div>
 
           <div className="mobile-topbar">
             <button
               className="mobile-back-btn"
-              onClick={() => activePage !== "dashboard" ? navigate("dashboard") : null}
+              onClick={() =>
+                activePage !== "dashboard" ? navigate("dashboard") : null
+              }
               style={{ opacity: activePage === "dashboard" ? 0.3 : 1 }}
             >
               ←
@@ -466,7 +509,12 @@ export default function AppShell() {
             </div>
             <div className="mobile-topbar-right">
               <div className="mobile-avatar">A</div>
-              <div className="mobile-menu-btn" onClick={() => setDrawerOpen(true)}>☰</div>
+              <div
+                className="mobile-menu-btn"
+                onClick={() => setDrawerOpen(true)}
+              >
+                ☰
+              </div>
             </div>
           </div>
 
@@ -488,7 +536,9 @@ export default function AppShell() {
           ))}
         </nav>
 
-        <button className="fab" onClick={() => setQuickAddOpen(true)}>＋</button>
+        <button className="fab" onClick={() => setQuickAddOpen(true)}>
+          ＋
+        </button>
       </div>
     </>
   );

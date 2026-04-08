@@ -122,7 +122,7 @@ export function calcPaceStatus(totalSpent, expectedSpend, budget) {
       label: "Slightly Over Pace",
       color: "#F0C040",
       bg: "rgba(240,192,64,0.12)",
-      desc: "A little above pace — pull back slightly to stay on track.",
+      desc: "A little above pace, pull back slightly to stay on track.",
     };
   return {
     key: "over_budget",

@@ -107,17 +107,17 @@ export default function Blog() {
           Coming Soon
         </div>
         <h1 className="coming-title">
-          The Truvllo Blog — <em>money wisdom</em> for real life
+          The Truvllo Blog, <em>money wisdom</em> for real life
         </h1>
         <p className="coming-sub">
           We're writing practical, honest content about money, budgeting, AI,
-          and building better financial habits. No fluff, no jargon — just
-          useful stuff.
+          and building better financial habits. No fluff, no jargon, just useful
+          stuff.
         </p>
 
         {submitted ? (
           <div className="success-msg">
-            ✓ You're on the list — we'll let you know when we launch!
+            ✓ You're on the list, we'll let you know when we launch!
           </div>
         ) : (
           <div className="notify-form">
@@ -158,4 +158,3 @@ export default function Blog() {
     </>
   );
 }
-

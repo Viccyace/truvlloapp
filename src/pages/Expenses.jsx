@@ -333,7 +333,8 @@ export default function ExpensesPage() {
     const q = new URLSearchParams(location.search).get("q");
     if (q) setSearch(decodeURIComponent(q));
   }, [location.search]);
-  const { isPremiumOrTrial, profile, updateProfile, user } = useAuth();
+  const { isPremiumOrTrial, profile, updateProfile, refreshProfile, user } =
+    useAuth();
   const {
     expenses = [],
     recurring = [],
@@ -379,7 +380,10 @@ export default function ExpensesPage() {
       trial_ends_at: endsAt.toISOString(),
     });
     if (!error) {
-      setShowTrialCelebration(true);
+      // Force profile re-fetch so isPremiumOrTrial updates immediately everywhere
+      if (refreshProfile) await refreshProfile();
+      // Small delay ensures profile state has propagated before showing modal
+      setTimeout(() => setShowTrialCelebration(true), 300);
       // Activate referral reward if user came via referral link
       if (user?.id) {
         supabase
@@ -387,7 +391,7 @@ export default function ExpensesPage() {
           .catch(console.error);
       }
     } else console.error("Trial activation failed:", error);
-  }, [profile, updateProfile, user?.id]);
+  }, [profile, updateProfile, refreshProfile, user?.id]);
 
   const filtered = useMemo(() => {
     return expenses.filter((e) => {
@@ -557,108 +561,198 @@ export default function ExpensesPage() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.55)",
-            zIndex: 500,
+            zIndex: 999,
+            background: "rgba(0,0,0,0.65)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             padding: 20,
+            animation: "fadeIn 0.25s ease",
           }}
           onClick={() => setShowTrialCelebration(false)}
         >
+          <style>{`
+            @keyframes celebPop { 0%{opacity:0;transform:scale(0.7) translateY(40px)} 70%{transform:scale(1.04) translateY(-4px)} 100%{opacity:1;transform:scale(1) translateY(0)} }
+            @keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(120px) rotate(720deg);opacity:0} }
+            @keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }
+            .celeb-card { animation: celebPop 0.5s cubic-bezier(0.34,1.4,0.64,1) both; }
+            .celeb-confetti span { position:absolute; animation: confettiFall 1.2s ease-in both; font-size:1.4rem; }
+          `}</style>
+
           <div
+            className="celeb-card"
             style={{
               background: "#FAF8F3",
-              borderRadius: 24,
-              padding: "40px 32px",
+              borderRadius: 28,
+              padding: "36px 28px 28px",
               maxWidth: 380,
               width: "100%",
               textAlign: "center",
-              boxShadow: "0 32px 80px rgba(0,0,0,0.25)",
+              boxShadow:
+                "0 40px 100px rgba(0,0,0,0.35), 0 0 0 1px rgba(27,67,50,0.08)",
               position: "relative",
+              overflow: "hidden",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Confetti top */}
-            <div style={{ fontSize: "3.5rem", marginBottom: 8 }}>🎉</div>
+            {/* Confetti burst */}
+            <div
+              className="celeb-confetti"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 80,
+                pointerEvents: "none",
+              }}
+            >
+              {["🎉", "✨", "🟢", "💛", "🎊", "⭐", "🟡", "💚"].map((e, i) => (
+                <span
+                  key={i}
+                  style={{
+                    left: `${10 + i * 11}%`,
+                    animationDelay: `${i * 0.08}s`,
+                    animationDuration: `${1 + (i % 3) * 0.2}s`,
+                  }}
+                >
+                  {e}
+                </span>
+              ))}
+            </div>
+
+            {/* Green glow top */}
+            <div
+              style={{
+                position: "absolute",
+                top: -40,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: 200,
+                height: 200,
+                borderRadius: "50%",
+                background:
+                  "radial-gradient(circle,rgba(64,145,108,0.2) 0%,transparent 70%)",
+                pointerEvents: "none",
+              }}
+            />
+
+            {/* Badge */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                background: "linear-gradient(135deg,#1B4332,#2D6A4F)",
+                color: "#fff",
+                borderRadius: 100,
+                padding: "6px 16px",
+                fontSize: "0.72rem",
+                fontWeight: 800,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                marginBottom: 20,
+                boxShadow: "0 4px 16px rgba(27,67,50,0.3)",
+              }}
+            >
+              ✦ Premium Trial Activated
+            </div>
+
+            {/* Headline */}
             <div
               style={{
                 fontFamily: "'Playfair Display',serif",
-                fontSize: "1.6rem",
+                fontSize: "1.8rem",
                 fontWeight: 900,
                 color: "#0A0A0A",
+                lineHeight: 1.1,
+                letterSpacing: "-0.025em",
                 marginBottom: 10,
-                letterSpacing: "-0.02em",
               }}
             >
-              Premium Trial Activated!
+              You're in! 🚀
             </div>
             <div
               style={{
-                fontSize: "0.95rem",
+                fontSize: "0.9rem",
                 color: "#6B6B6B",
                 lineHeight: 1.7,
-                marginBottom: 28,
+                marginBottom: 24,
               }}
             >
-              Congratulations! You've unlocked your{" "}
-              <strong style={{ color: "#1B4332" }}>14-day Premium trial</strong>{" "}
-              — all AI features are now yours. Start exploring!
+              Your{" "}
+              <strong style={{ color: "#1B4332" }}>
+                {TRIAL_DAYS}-day Premium trial
+              </strong>{" "}
+              is now live. All AI features unlocked — no card needed.
             </div>
-            {/* Feature list */}
+
+            {/* Feature pills */}
             <div
               style={{
-                background: "#D8F3DC",
-                borderRadius: 14,
-                padding: "16px 20px",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
+                justifyContent: "center",
                 marginBottom: 28,
-                textAlign: "left",
               }}
             >
               {[
-                "🤖 AI Spending Analyst",
-                "💡 AI Savings Coach",
-                "⚡ Natural Language Entry",
-                "🏦 Bank Statement Import",
-                "📊 Advanced Insights",
+                "🤖 AI Analyst",
+                "💡 Savings Coach",
+                "🏦 Bank Import",
+                "📊 Insights",
+                "💬 WhatsApp Agent",
                 "🎯 Category Caps",
               ].map((f, i) => (
-                <div
+                <span
                   key={i}
                   style={{
-                    fontSize: "0.85rem",
-                    fontWeight: 600,
+                    background: "#D8F3DC",
                     color: "#1B4332",
-                    marginBottom: i < 5 ? 8 : 0,
+                    borderRadius: 100,
+                    padding: "5px 12px",
+                    fontSize: "0.75rem",
+                    fontWeight: 700,
+                    border: "1px solid rgba(27,67,50,0.12)",
+                    animation: `shimmer 1.5s ease ${i * 0.15}s infinite`,
                   }}
                 >
-                  {f}{" "}
-                  <span style={{ color: "#40916C", fontWeight: 800 }}>✓</span>
-                </div>
+                  {f}
+                </span>
               ))}
             </div>
+
+            {/* CTA */}
             <button
               onClick={() => setShowTrialCelebration(false)}
               style={{
                 width: "100%",
-                padding: "14px",
+                padding: "15px",
                 background: "linear-gradient(135deg,#1B4332,#40916C)",
                 color: "#fff",
                 border: "none",
-                borderRadius: 12,
+                borderRadius: 14,
                 fontFamily: "'Plus Jakarta Sans',sans-serif",
                 fontSize: "1rem",
                 fontWeight: 700,
                 cursor: "pointer",
-                boxShadow: "0 4px 16px rgba(27,67,50,0.3)",
+                boxShadow: "0 6px 24px rgba(27,67,50,0.35)",
+                transition: "transform 0.15s",
               }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.transform = "translateY(-1px)")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.transform = "translateY(0)")
+              }
             >
-              Let's go! 🚀
+              Start exploring →
             </button>
             <div
-              style={{ fontSize: "0.75rem", color: "#9B9B9B", marginTop: 12 }}
+              style={{ fontSize: "0.75rem", color: "#9B9B9B", marginTop: 10 }}
             >
-              Trial ends in {TRIAL_DAYS} days · No credit card needed
+              Trial ends in {TRIAL_DAYS} days · Cancel anytime
             </div>
           </div>
         </div>

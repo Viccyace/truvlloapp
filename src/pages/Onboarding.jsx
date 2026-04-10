@@ -158,7 +158,7 @@ function Step0({ onNext }) {
     {
       icon: "📝",
       title: "You tell us what you spend",
-      desc: "Log manually or send a bank PDF. We read the numbers, nothing more.",
+      desc: "Log manually or send a bank PDF. We read the numbers — nothing more.",
       accent: "#1B4332",
     },
     {
@@ -169,7 +169,7 @@ function Step0({ onNext }) {
     },
     {
       icon: "🚫",
-      title: "Zero bank access ever",
+      title: "Zero bank access — ever",
       desc: "No credentials, no bank login, no stored PDFs. Period.",
       accent: "#B45309",
     },
@@ -283,7 +283,7 @@ function Step0({ onNext }) {
               maxWidth: 320,
             }}
           >
-            Truvllo is a budgeting tracker not a bank, wallet, or payment app.
+            Truvllo is a budgeting tracker — not a bank, wallet, or payment app.
           </p>
         </div>
       </div>
@@ -382,7 +382,7 @@ function Step0({ onNext }) {
               gap: 8,
             }}
           >
-            Got it, set up my budget →
+            Got it — set up my budget →
           </button>
           <p
             style={{
@@ -763,7 +763,7 @@ function Step4({ data, onChange, onBack, onNext, currency }) {
         </h2>
         <p style={{ fontSize: "0.875rem", color: "#6B6B6B", lineHeight: 1.6 }}>
           Get instant budget alerts and log expenses directly from WhatsApp.
-          Optional, you can add this later.
+          Optional — you can add this later.
         </p>
       </div>
 
@@ -1011,6 +1011,25 @@ export default function Onboarding() {
         );
         setLoading(false);
         return;
+      }
+
+      // Send immediate WhatsApp welcome if number was provided
+      if (data.whatsappNumber) {
+        fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-whatsapp-welcome`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({
+              whatsapp_number: data.whatsappNumber,
+              first_name:
+                profile?.first_name || user?.email?.split("@")[0] || "there",
+            }),
+          },
+        ).catch(console.error); // fire and forget
       }
 
       const amountRaw = parseFloat(

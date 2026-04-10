@@ -1,383 +1,271 @@
-﻿// src/components/InstallPrompt.jsx
-// Handles two things:
-// 1. PWA "Add to Home Screen" install prompt
-// 2. Push notification permission request
-//
-// Shows after user has been on the app for 45 seconds
-// Remembers dismissals in localStorage so it doesn't spam
+﻿import { useState, useEffect } from "react";
 
-import { useState, useEffect, useCallback } from "react";
-import { useLocation } from "react-router-dom";
-import { useAuth } from "../providers/AuthProvider";
-
-// @ts-ignore — side effect import, do not tree-shake
-if (typeof window !== "undefined") window.__truvllo_install_prompt = true;
+const DISMISS_KEY = "truvllo_install_dismissed";
+const IOS_SHOWN_KEY = "truvllo_ios_prompt_shown";
 
 const styles = `
-  @keyframes slideUpPrompt { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes fadeInPrompt  { from{opacity:0} to{opacity:1} }
-
-  .prompt-overlay {
-    position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:300;
-    display:flex; align-items:flex-end; justify-content:center;
-    padding:0 0 env(safe-area-inset-bottom,0);
-    animation:fadeInPrompt 0.2s ease;
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-  @media(min-width:600px){
-    .prompt-overlay { align-items:center; }
-    .prompt-sheet   { border-radius:24px !important; max-width:400px !important; }
+  @keyframes slideUp {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(-20px); }
   }
-
-  .prompt-sheet {
-    background:#FFFFFF; border-radius:20px 20px 0 0;
-    width:100%; max-width:480px; padding:16px 18px 20px;
-    animation:slideUpPrompt 0.35s cubic-bezier(0.34,1.2,0.64,1);
-    position:relative;
+  @keyframes slideInBottom {
+    from { opacity: 0; transform: translateY(100%); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideOutBottom {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(100%); }
   }
 
-  .prompt-handle {
-    width:36px; height:3px; background:rgba(10,10,10,0.1);
-    border-radius:100px; margin:0 auto 14px;
+  .install-prompt {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+    z-index: 9999; width: calc(100% - 32px); max-width: 420px;
+    background: #0A0A0A; border-radius: 18px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.07);
+    animation: slideDown 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
+  }
+  .install-prompt.dismissing { animation: slideUp 0.3s ease forwards; pointer-events: none; }
+
+  .install-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(135deg, #1B4332, #40916C);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-size: 1.2rem;
+    font-weight: 700; color: white; flex-shrink: 0; position: relative;
+  }
+  .install-icon-dot {
+    position: absolute; top: 5px; right: 5px;
+    width: 7px; height: 7px; border-radius: 50%; background: #D4A017;
+  }
+  .install-body { flex: 1; min-width: 0; }
+  .install-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.82rem; font-weight: 700; color: white; margin-bottom: 2px; }
+  .install-sub   { font-size: 0.72rem; color: rgba(255,255,255,0.45); line-height: 1.4; }
+  .install-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+  .install-btn {
+    padding: 8px 14px; border-radius: 100px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.78rem;
+    font-weight: 700; cursor: pointer; transition: all 0.18s;
+    border: none; white-space: nowrap;
+  }
+  .install-btn.primary  { background: #40916C; color: white; }
+  .install-btn.primary:hover { background: #2D6A4F; }
+  .install-btn.ghost    { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
+  .install-btn.ghost:hover { background: rgba(255,255,255,0.14); }
+
+  /* iOS bottom sheet */
+  .ios-sheet {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+    background: #0A0A0A;
+    border-radius: 24px 24px 0 0;
+    padding: 12px 20px 40px;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06);
+    animation: slideInBottom 0.4s cubic-bezier(0.34, 1.1, 0.64, 1);
+    max-width: 480px; margin: 0 auto;
+  }
+  .ios-sheet.dismissing { animation: slideOutBottom 0.3s ease forwards; pointer-events: none; }
+  .ios-sheet-handle {
+    width: 36px; height: 4px; border-radius: 100px;
+    background: rgba(255,255,255,0.15); margin: 0 auto 16px;
+  }
+  .ios-sheet-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .ios-sheet-icon {
+    width: 48px; height: 48px; border-radius: 13px;
+    background: linear-gradient(135deg, #1B4332, #40916C);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-size: 1.3rem;
+    font-weight: 700; color: white; flex-shrink: 0;
+  }
+  .ios-sheet-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; font-weight: 700; color: white; margin-bottom: 2px; }
+  .ios-sheet-sub   { font-size: 0.78rem; color: rgba(255,255,255,0.45); }
+  .ios-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .ios-step  { display: flex; align-items: center; gap: 12px; }
+  .ios-step-num {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(64,145,108,0.2); border: 1px solid rgba(64,145,108,0.3);
+    color: #52B788; font-size: 0.72rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ios-step-text { font-size: 0.85rem; color: rgba(255,255,255,0.65); line-height: 1.4; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .ios-step-text strong { color: rgba(255,255,255,0.9); }
+  .ios-dismiss {
+    width: 100%; padding: 13px; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; background: transparent; color: rgba(255,255,255,0.5);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem;
+    font-weight: 600; cursor: pointer;
   }
 
-  .prompt-icon {
-    width:36px; height:36px; border-radius:10px; margin:0 auto 10px;
-    background:linear-gradient(135deg,#1B4332,#40916C);
-    display:flex; align-items:center; justify-content:center;
-    font-size:1rem;
+  /* Push notification info banner for iOS */
+  .ios-push-info {
+    background: rgba(64,145,108,0.12); border: 1px solid rgba(64,145,108,0.2);
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
+    font-size: 0.78rem; color: rgba(255,255,255,0.55); line-height: 1.5;
   }
-
-  .prompt-title {
-    font-family:'Playfair Display',serif; font-size:1rem; font-weight:800;
-    color:#0A0A0A; text-align:center; margin-bottom:4px; letter-spacing:-0.01em;
-  }
-
-  .prompt-desc {
-    font-size:0.78rem; color:#6B6B6B; text-align:center;
-    line-height:1.4; margin-bottom:12px;
-  }
-
-  .prompt-bullets {
-    display:flex; flex-direction:column; gap:6px; margin-bottom:12px;
-  }
-
-  .prompt-bullet {
-    display:flex; align-items:center; gap:8px;
-    background:#F5F3EE; border-radius:8px; padding:7px 10px;
-  }
-
-  .prompt-bullet-icon {
-    font-size:0.85rem; flex-shrink:0;
-    width:24px; height:24px; border-radius:6px;
-    background:#D8F3DC; display:flex; align-items:center; justify-content:center;
-  }
-
-  .prompt-bullet-text {
-    font-size:0.78rem; font-weight:600; color:#3A3A3A; line-height:1.3;
-  }
-
-  .prompt-btn-primary {
-    width:100%; padding:10px; border-radius:10px; border:none;
-    background:linear-gradient(135deg,#1B4332,#40916C);
-    color:#FFFFFF; font-family:'Plus Jakarta Sans',sans-serif;
-    font-size:0.95rem; font-weight:700; cursor:pointer;
-    transition:all 0.2s; box-shadow:0 4px 16px rgba(27,67,50,0.3);
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    margin-bottom:10px;
-  }
-  .prompt-btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(27,67,50,0.4); }
-
-  .prompt-btn-ghost {
-    width:100%; padding:8px; border-radius:10px;
-    border:1.5px solid rgba(10,10,10,0.1); background:transparent;
-    color:#6B6B6B; font-family:'Plus Jakarta Sans',sans-serif;
-    font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s;
-  }
-  .prompt-btn-ghost:hover { border-color:rgba(10,10,10,0.2); color:#3A3A3A; }
-
-  .prompt-note {
-    text-align:center; font-size:0.68rem; color:#9B9B9B;
-    margin-top:6px; line-height:1.4;
-  }
-
-  .notif-toast {
-    position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
-    z-index:400; background:#1B4332; color:#FFFFFF;
-    padding:12px 20px; border-radius:14px; font-size:0.875rem; font-weight:600;
-    display:flex; align-items:center; gap:9px;
-    box-shadow:0 8px 32px rgba(0,0,0,0.2);
-    animation:slideUpPrompt 0.3s ease; white-space:nowrap;
-  }
+  .ios-push-info strong { color: #52B788; }
 `;
 
-const INSTALL_DISMISSED_KEY = "truvllo_install_dismissed";
-const NOTIF_DISMISSED_KEY = "truvllo_notif_dismissed";
-const NOTIF_ASKED_KEY = "truvllo_notif_asked";
-
-function wasDismissedRecently(key, days = 7) {
-  const ts = localStorage.getItem(key);
-  if (!ts) return false;
-  return Date.now() - Number(ts) < days * 86400000;
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 }
 
-function dismiss(key) {
-  localStorage.setItem(key, String(Date.now()));
+function isIOSSafari() {
+  const ua = navigator.userAgent;
+  return isIOS() && /Safari/.test(ua) && !/CriOS|FxiOS|OPiOS|mercury/.test(ua);
 }
 
-function getNotificationAPI() {
-  if (typeof window === "undefined") return null;
-  if (!("Notification" in window)) return null;
-  return window.Notification;
+function isInStandaloneMode() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true
+  );
 }
 
 export default function InstallPrompt() {
-  const { user } = useAuth();
-  const location = useLocation();
-
-  const [installEvent, setInstallEvent] = useState(null);
-  const [showInstall, setShowInstall] = useState(false);
-  const [showNotif, setShowNotif] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [notifGranted, setNotifGranted] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showAndroid, setShowAndroid] = useState(false);
+  const [showIOS, setShowIOS] = useState(false);
+  const [dismissing, setDismissing] = useState(false);
 
   useEffect(() => {
+    // Already installed — don't show anything
+    if (isInStandaloneMode()) return;
+    // Already dismissed
+    if (localStorage.getItem(DISMISS_KEY)) return;
+
+    if (isIOS()) {
+      // iOS Safari: show after 4s — only if not already shown this session
+      if (!sessionStorage.getItem(IOS_SHOWN_KEY) && isIOSSafari()) {
+        const t = setTimeout(() => {
+          setShowIOS(true);
+          sessionStorage.setItem(IOS_SHOWN_KEY, "1");
+        }, 4000);
+        return () => clearTimeout(t);
+      }
+      return;
+    }
+
+    // Android / Chrome — wait for browser install prompt
     const handler = (e) => {
       e.preventDefault();
-      setInstallEvent(e);
+      setDeferredPrompt(e);
+      setShowAndroid(true);
     };
-
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  useEffect(() => {
-    const appRoutes = [
-      "/dashboard",
-      "/expenses",
-      "/budget",
-      "/insights",
-      "/settings",
-      "/upgrade",
-    ];
+  const dismiss = (permanent = true) => {
+    setDismissing(true);
+    if (permanent) localStorage.setItem(DISMISS_KEY, "1");
+    setTimeout(() => {
+      setShowAndroid(false);
+      setShowIOS(false);
+      setDismissing(false);
+    }, 320);
+  };
 
-    const isAppPage = appRoutes.some((r) => location.pathname.startsWith(r));
-    if (!user || !isAppPage) return;
+  const install = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    dismiss(outcome === "accepted");
+    setDeferredPrompt(null);
+  };
 
-    const timer = setTimeout(() => {
-      const NotificationAPI = getNotificationAPI();
-      const notifPermission = NotificationAPI?.permission ?? "unsupported";
-      const alreadyAsked = localStorage.getItem(NOTIF_ASKED_KEY);
-
-      if (
-        notifPermission === "default" &&
-        !alreadyAsked &&
-        !wasDismissedRecently(NOTIF_DISMISSED_KEY, 3)
-      ) {
-        setShowNotif(true);
-        return;
-      }
-
-      if (installEvent && !wasDismissedRecently(INSTALL_DISMISSED_KEY, 14)) {
-        setShowInstall(true);
-      }
-    }, 45000);
-
-    return () => clearTimeout(timer);
-  }, [user, installEvent, location.pathname]);
-
-  useEffect(() => {
-    if (!showInstall && notifGranted === false) {
-      const NotificationAPI = getNotificationAPI();
-      const notifPermission = NotificationAPI?.permission ?? "unsupported";
-      const alreadyAsked = localStorage.getItem(NOTIF_ASKED_KEY);
-
-      if (
-        notifPermission === "default" &&
-        !alreadyAsked &&
-        !wasDismissedRecently(NOTIF_DISMISSED_KEY, 3)
-      ) {
-        const timer = setTimeout(() => setShowNotif(true), 500);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [showInstall, notifGranted]);
-
-  const requestNotifPermission = useCallback(async () => {
-    localStorage.setItem(NOTIF_ASKED_KEY, "1");
-    setShowNotif(false);
-
-    const NotificationAPI = getNotificationAPI();
-    if (!NotificationAPI) {
-      console.log(
-        "[Notif] Notifications are not supported on this device/browser.",
-      );
-      return;
-    }
-
-    try {
-      const permission = await NotificationAPI.requestPermission();
-
-      if (permission === "granted") {
-        setNotifGranted(true);
-        setToast("🔔 Notifications enabled! We'll keep you updated.");
-        setTimeout(() => setToast(null), 4000);
-
-        if ("serviceWorker" in navigator) {
-          const reg = await navigator.serviceWorker.ready;
-          const vapidKey =
-            "BPXygTbuwsQ5mklz4rFhYyl6LSPX0psGM_gc5tlOcNYkLgK5wjs8y8ojcDzgUwjFyChrP6WlBhisbZXVhNJHiN0";
-
-          if (vapidKey && reg.pushManager) {
-            try {
-              await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(vapidKey),
-              });
-            } catch (e) {
-              console.warn("[Push] Subscription failed:", e);
-            }
-          }
-        }
-      } else {
-        dismiss(NOTIF_DISMISSED_KEY);
-      }
-    } catch (err) {
-      console.warn("[Notif] Permission request failed:", err);
-    }
-  }, []);
-
-  const handleInstall = useCallback(async () => {
-    if (!installEvent) return;
-
-    setShowInstall(false);
-    installEvent.prompt();
-
-    const { outcome } = await installEvent.userChoice;
-    if (outcome === "accepted") {
-      setToast("✅ Truvllo added to your home screen!");
-      setTimeout(() => setToast(null), 4000);
-    }
-
-    setInstallEvent(null);
-  }, [installEvent]);
-
-  const dismissInstall = useCallback(() => {
-    dismiss(INSTALL_DISMISSED_KEY);
-    setShowInstall(false);
-  }, []);
-
-  const dismissNotif = useCallback(() => {
-    dismiss(NOTIF_DISMISSED_KEY);
-    localStorage.setItem(NOTIF_ASKED_KEY, "1");
-    setShowNotif(false);
-  }, []);
-
-  if (!showInstall && !showNotif && !toast) return null;
+  if (!showAndroid && !showIOS) return null;
 
   return (
     <>
       <style>{styles}</style>
 
-      {toast && <div className="notif-toast">{toast}</div>}
-
-      {showNotif && (
-        <div className="prompt-overlay" onClick={dismissNotif}>
-          <div className="prompt-sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="prompt-handle" />
-            <div className="prompt-icon">🔔</div>
-            <div className="prompt-title">Stay on top of your budget</div>
-            <div className="prompt-desc">
-              Get smart alerts so you never overspend without knowing.
+      {/* Android / Chrome */}
+      {showAndroid && (
+        <div
+          className={`install-prompt${dismissing ? " dismissing" : ""}`}
+          role="dialog"
+          aria-label="Install Truvllo"
+        >
+          <div className="install-icon">
+            T<div className="install-icon-dot" />
+          </div>
+          <div className="install-body">
+            <div className="install-title">Install Truvllo</div>
+            <div className="install-sub">
+              Add to home screen for the best experience
             </div>
-
-            <div className="prompt-bullets">
-              <div className="prompt-bullet">
-                <div className="prompt-bullet-icon">⚡</div>
-                <div className="prompt-bullet-text">
-                  Over-pace alerts when you're spending too fast
-                </div>
-              </div>
-              <div className="prompt-bullet">
-                <div className="prompt-bullet-icon">📅</div>
-                <div className="prompt-bullet-text">
-                  Daily spending summary every evening
-                </div>
-              </div>
-              <div className="prompt-bullet">
-                <div className="prompt-bullet-icon">🎯</div>
-                <div className="prompt-bullet-text">
-                  AI savings tips personalised for you
-                </div>
-              </div>
-            </div>
-
+          </div>
+          <div className="install-actions">
             <button
-              className="prompt-btn-primary"
-              onClick={requestNotifPermission}
+              className="install-btn ghost"
+              onClick={() => dismiss(false)}
             >
-              🔔 Enable notifications
+              Later
             </button>
-            <button className="prompt-btn-ghost" onClick={dismissNotif}>
-              Not now
+            <button className="install-btn primary" onClick={install}>
+              Install
             </button>
-            <div className="prompt-note">
-              You can change this any time in Settings · No spam, ever
-            </div>
           </div>
         </div>
       )}
 
-      {showInstall && (
-        <div className="prompt-overlay" onClick={dismissInstall}>
-          <div className="prompt-sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="prompt-handle" />
-            <div className="prompt-icon">📱</div>
-            <div className="prompt-title">Add Truvllo to your home screen</div>
-            <div className="prompt-desc">
-              Get the full app experience — faster, offline-ready, and always
-              one tap away.
-            </div>
-
-            <div className="prompt-bullets">
-              <div className="prompt-bullet">
-                <div className="prompt-bullet-icon">⚡</div>
-                <div className="prompt-bullet-text">
-                  Loads instantly — no browser needed
-                </div>
+      {/* iOS Safari — bottom sheet with clear steps */}
+      {showIOS && (
+        <div
+          className={`ios-sheet${dismissing ? " dismissing" : ""}`}
+          role="dialog"
+          aria-label="Install Truvllo on iOS"
+        >
+          <div className="ios-sheet-handle" />
+          <div className="ios-sheet-header">
+            <div className="ios-sheet-icon">T</div>
+            <div>
+              <div className="ios-sheet-title">
+                Add Truvllo to your Home Screen
               </div>
-              <div className="prompt-bullet">
-                <div className="prompt-bullet-icon">📶</div>
-                <div className="prompt-bullet-text">
-                  Works offline — view budget even without data
-                </div>
+              <div className="ios-sheet-sub">
+                For the best experience + notifications
               </div>
-              <div className="prompt-bullet">
-                <div className="prompt-bullet-icon">🏠</div>
-                <div className="prompt-bullet-text">
-                  Lives on your home screen like a native app
-                </div>
-              </div>
-            </div>
-
-            <button className="prompt-btn-primary" onClick={handleInstall}>
-              📲 Add to Home Screen
-            </button>
-            <button className="prompt-btn-ghost" onClick={dismissInstall}>
-              Maybe later
-            </button>
-            <div className="prompt-note">
-              Free · No app store needed · Works on Android & iOS
             </div>
           </div>
+
+          {/* Push notification note */}
+          <div className="ios-push-info">
+            <strong>🔔 Enable notifications too:</strong> After installing, open
+            the app from your Home Screen → Settings → Enable push
+            notifications. iOS only supports notifications for installed PWAs.
+          </div>
+
+          <div className="ios-steps">
+            <div className="ios-step">
+              <div className="ios-step-num">1</div>
+              <div className="ios-step-text">
+                Tap the <strong>Share button</strong> <strong>⎦↑</strong> at the
+                bottom of Safari
+              </div>
+            </div>
+            <div className="ios-step">
+              <div className="ios-step-num">2</div>
+              <div className="ios-step-text">
+                Scroll down and tap <strong>"Add to Home Screen"</strong>
+              </div>
+            </div>
+            <div className="ios-step">
+              <div className="ios-step-num">3</div>
+              <div className="ios-step-text">
+                Tap <strong>"Add"</strong> in the top right corner
+              </div>
+            </div>
+          </div>
+
+          <button className="ios-dismiss" onClick={() => dismiss(true)}>
+            Maybe later
+          </button>
         </div>
       )}
     </>
   );
-}
-
-function urlBase64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = window.atob(base64);
-  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
 }

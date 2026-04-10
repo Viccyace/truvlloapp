@@ -11,14 +11,6 @@ import {
   Star,
   LayoutGrid,
   LayoutList,
-  Wallet,
-  Car,
-  Home,
-  ShoppingBag,
-  HeartPulse,
-  Smartphone,
-  Clapperboard,
-  Briefcase,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";

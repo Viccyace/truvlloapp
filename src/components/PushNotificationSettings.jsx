@@ -103,13 +103,18 @@ export default function PushNotificationSettings() {
   const [saved, setSaved] = useState(false);
   const [subId, setSubId] = useState(null);
 
+  // Detect iOS
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isStandalone =
+    window.navigator.standalone === true ||
+    window.matchMedia("(display-mode: standalone)").matches;
+
   useEffect(() => {
     // Check current permission
     if ("Notification" in window) {
       setPermission(Notification.permission);
       setEnabled(Notification.permission === "granted");
     }
-
     // Load saved reminder time
     loadSavedTime();
   }, []);
@@ -274,18 +279,36 @@ export default function PushNotificationSettings() {
             </div>
           </div>
           <div
-            className={`toggle-track${enabled ? " on" : ""}`}
-            onClick={toggleNotifications}
+            className={`toggle-track${enabled ? " on" : ""}${isIOS && !isStandalone ? " disabled" : ""}`}
+            style={{
+              opacity: isIOS && !isStandalone ? 0.4 : 1,
+              cursor: isIOS && !isStandalone ? "not-allowed" : "pointer",
+            }}
+            onClick={isIOS && !isStandalone ? undefined : toggleNotifications}
           >
             <div className="toggle-thumb" />
           </div>
         </div>
 
+        {/* iOS not installed as PWA */}
+        {isIOS && !isStandalone && (
+          <div
+            className="push-denied"
+            style={{
+              background: "rgba(27,67,50,0.08)",
+              borderColor: "rgba(27,67,50,0.15)",
+              color: "#1B4332",
+            }}
+          >
+            📱 <strong>iPhone users:</strong> Add Truvllo to your Home Screen
+            first, then open it from there to enable push notifications. iOS
+            only supports notifications for installed apps.
+          </div>
+        )}
         {permission === "denied" && (
           <div className="push-denied">
-            Notifications are blocked in your browser. Go to your browser
-            settings → Site settings → Notifications → allow
-            truvlloapp.vercel.app.
+            Notifications are blocked. Go to Settings → Safari → Truvllo →
+            Notifications → Allow.
           </div>
         )}
 
@@ -406,4 +429,3 @@ function urlBase64ToUint8Array(base64String) {
   const rawData = window.atob(base64);
   return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
 }
-

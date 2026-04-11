@@ -104,10 +104,19 @@ export default function AdminPage() {
   const [lastUpdated, setLastUpdated] = useState(null);
 
   // Guard — only admin
+  // Wait for both user AND profile to load before deciding
   useEffect(() => {
-    if (!loading && (!user || (user.id !== ADMIN_ID && !profile?.is_admin))) {
+    if (loading) return; // still loading — wait
+    if (!user) {
       navigate("/dashboard", { replace: true });
+      return;
     }
+    // Allow if user ID matches ADMIN_ID directly (works even before profile loads)
+    if (user.id === ADMIN_ID) return;
+    // If profile is still null, wait — it may still be loading
+    if (!profile) return;
+    // If profile loaded and is_admin is not set — redirect
+    if (!profile.is_admin) navigate("/dashboard", { replace: true });
   }, [user, profile, loading, navigate]);
 
   const fetchMetrics = useCallback(async () => {
@@ -240,11 +249,11 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (user?.id === ADMIN_ID || profile?.is_admin) fetchMetrics();
+    if (user?.id === ADMIN_ID || profile?.is_admin) fetchMetrics(); // eslint-disable-line
   }, [user, profile, fetchMetrics]);
 
   if (loading || !user) return null;
-  if (user.id !== ADMIN_ID && !profile?.is_admin) return null;
+  if (!user || (user.id !== ADMIN_ID && !profile?.is_admin)) return null;
 
   const PlanBadge = ({ plan }) => (
     <span className={`plan-badge plan-${plan}`}>{plan}</span>

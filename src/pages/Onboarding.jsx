@@ -734,11 +734,14 @@ function Step4({ data, onChange, onBack, onNext, currency }) {
   const [dialCode, setDialCode] = useState(isEUR ? "" : phoneInfo.dialCode);
 
   const handleNext = () => {
-    if (phone && phone.trim().length < 10) {
+    if (phone && phone.trim().length < 6) {
       setError("Enter a valid WhatsApp number");
       return;
     }
-    onChange("whatsappNumber", phone.trim());
+    // Store full international number: dialCode + local number (strip leading 0)
+    const localNum = phone.trim().replace(/^0+/, "");
+    const fullNumber = dialCode ? `${dialCode}${localNum}` : phone.trim();
+    onChange("whatsappNumber", fullNumber);
     onNext();
   };
 

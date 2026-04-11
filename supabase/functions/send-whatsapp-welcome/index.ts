@@ -1,8 +1,8 @@
 // supabase/functions/send-whatsapp-welcome/index.ts
 // Fires immediately after onboarding when user saves WhatsApp number
-// Sends an instant welcome message regardless of trial status
+// Uses approved WhatsApp template for first outbound message
 
-import { sendWhatsApp } from "../_shared/twilio.ts";
+import { sendWhatsAppTemplate, sendWhatsApp } from "../_shared/twilio.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -28,19 +28,23 @@ Deno.serve(async (req) => {
     }
 
     const name = first_name || "there";
+    const templateSid = Deno.env.get("TWILIO_WELCOME_TEMPLATE_SID");
 
-    await sendWhatsApp(
-      whatsapp_number,
-      `👋 *Hey ${name}, welcome to Truvllo!*\n\n` +
-        `Your WhatsApp is now connected. Here's what you can do:\n\n` +
-        `💬 *Log an expense* — just type:\n` +
-        `_"spent 3500 on lunch"_ or _"4500 transport"_\n\n` +
-        `📊 *Check your balance* — type *BALANCE*\n` +
-        `💰 *Today's spending* — type *TODAY*\n` +
-        `📄 *Import bank statement* — send a PDF\n\n` +
-        `Log your first expense to unlock your *14-day AI trial* automatically — no card needed.\n\n` +
-        `_Reply with any question or just start logging_ 🚀`,
-    );
+    if (templateSid) {
+      // Use approved template (required for first outbound message)
+      await sendWhatsAppTemplate(whatsapp_number, templateSid, [name]);
+    } else {
+      // Fallback: freeform (only works if user messaged you in last 24h)
+      await sendWhatsApp(
+        whatsapp_number,
+        `👋 Hey ${name}, welcome to Truvllo!\n\n` +
+          `Your WhatsApp is connected. Log an expense to unlock your 14-day AI trial:\n\n` +
+          `💬 Type: "spent 3500 on lunch"\n` +
+          `📊 Type: BALANCE — budget summary\n` +
+          `💰 Type: TODAY — today's spending\n\n` +
+          `No card needed. Reply with any question 🚀`,
+      );
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

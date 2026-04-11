@@ -11,16 +11,9 @@ import Upgrade from "./pages/Upgrade";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Security from "./pages/Security";
+import AdminPage from "./pages/AdminPage";
 import AuthCallback from "./pages/AuthCallback";
 import { useAuth } from "./providers/AuthProvider";
-
-// Public pages
-import Blog from "./pages/Blog";
-import About from "./pages/About";
-import Careers from "./pages/Careers";
-import Contact from "./pages/Contact";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
 
 function LoadingScreen() {
   return <div style={{ padding: 24 }}>Loading...</div>;
@@ -32,10 +25,13 @@ function ProtectedRoute() {
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/auth" replace />;
 
+  // ── New user: redirect to onboarding if not completed ─────────────────────
+  // Check both column names since DB has both onboarding_complete and onboarding_completed
   const onboardingDone =
     profile?.onboarding_complete === true ||
     profile?.onboarding_completed === true;
 
+  // Only redirect if profile is loaded and onboarding is not done
   if (profile && !onboardingDone) {
     return <Navigate to="/onboarding" replace />;
   }
@@ -52,6 +48,7 @@ function PublicRoute() {
   return <Outlet />;
 }
 
+// Onboarding route — accessible to logged-in users regardless of onboarding status
 function OnboardingRoute() {
   const { user, loading } = useAuth();
 
@@ -62,38 +59,25 @@ function OnboardingRoute() {
 }
 
 export const router = createBrowserRouter([
-  // ── Landing ───────────────────────────────────────────────────────────────
+  // Landing — accessible to everyone
   { path: "/", element: <Landing /> },
-
-  // ── Public marketing pages ────────────────────────────────────────────────
-  { path: "/about", element: <About /> },
-  { path: "/blog", element: <Blog /> },
-  { path: "/careers", element: <Careers /> },
-  { path: "/contact", element: <Contact /> },
   { path: "/security", element: <Security /> },
-
-  // ── Legal — canonical + short aliases ─────────────────────────────────────
-  { path: "/privacy-policy", element: <PrivacyPolicy /> },
-  { path: "/privacy", element: <PrivacyPolicy /> },
-  { path: "/terms-of-service", element: <TermsOfService /> },
-  { path: "/terms", element: <TermsOfService /> },
-
-  // ── Auth callback ─────────────────────────────────────────────────────────
+  { path: "/admin", element: <AdminPage /> },
   { path: "/auth/callback", element: <AuthCallback /> },
 
-  // ── Auth (logged-in users redirect to dashboard) ──────────────────────────
+  // Auth — redirect to dashboard if already logged in
   {
     element: <PublicRoute />,
     children: [{ path: "/auth", element: <Auth /> }],
   },
 
-  // ── Onboarding ────────────────────────────────────────────────────────────
+  // Onboarding — needs login but doesn't require onboarding to be complete
   {
     element: <OnboardingRoute />,
     children: [{ path: "/onboarding", element: <Onboarding /> }],
   },
 
-  // ── Protected app routes ──────────────────────────────────────────────────
+  // Protected app pages — requires login AND completed onboarding
   {
     element: <ProtectedRoute />,
     children: [
@@ -111,8 +95,5 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // ── 404 ───────────────────────────────────────────────────────────────────
   { path: "*", element: <NotFound /> },
 ]);
-
-export default router;

@@ -707,6 +707,24 @@ export default function AppLayout() {
               </button>
             </div>
           )}
+          {(user?.id === "7ec55e7e-6270-436c-bfc9-323ea8971e7a" ||
+            profile?.is_admin) && (
+            <button
+              className="signout-btn"
+              style={{
+                background: "rgba(212,160,23,0.1)",
+                color: "#D4A017",
+                marginBottom: 4,
+              }}
+              onClick={() => {
+                goTo("/admin");
+                setDrawerOpen(false);
+              }}
+            >
+              <span style={{ fontSize: "0.8rem" }}>⚙</span>
+              Admin Dashboard
+            </button>
+          )}
           <button
             className="signout-btn"
             onClick={() => setConfirmLogout(true)}

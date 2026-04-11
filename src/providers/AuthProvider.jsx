@@ -375,6 +375,9 @@ export function AuthProvider({ children }) {
     isPremium,
     isTrialing,
     isPremiumOrTrial,
+    isAdmin:
+      profile?.is_admin === true ||
+      user?.id === "7ec55e7e-6270-436c-bfc9-323ea8971e7a",
     displayName,
     initials,
     trialDaysLeft,

@@ -317,16 +317,48 @@ export function AuthProvider({ children }) {
     async ({ currency, _budgetName, _period, whatsapp_number }) => {
       if (!user) return { error: "Not logged in" };
 
-      const profileUpdate = { currency, onboarding_complete: true };
-      if (whatsapp_number) profileUpdate.whatsapp_number = whatsapp_number;
-      const { error } = await supabase
+      // UPSERT not UPDATE — new users have no profile row yet
+      // If we just UPDATE and the row doesn't exist, it silently does nothing
+      // then createBudget fails with FK violation (no profile row to reference)
+      const profileData = {
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name ?? user.email,
+        first_name: user.user_metadata?.first_name ?? "",
+        last_name: user.user_metadata?.last_name ?? "",
+        currency,
+        plan: "free",
+        onboarding_complete: true,
+        onboarding_completed: true,
+      };
+      if (whatsapp_number) {
+        profileData.whatsapp_number = whatsapp_number;
+        profileData.whatsapp_active = true;
+      }
+
+      const { data: upserted, error } = await supabase
         .from("profiles")
-        .update(profileUpdate)
-        .eq("id", user.id);
+        .upsert(profileData, { onConflict: "id" })
+        .select()
+        .single();
 
-      if (error) return { error };
+      if (error) {
+        console.error("[completeOnboarding] profile upsert error:", error);
+        return { error };
+      }
+      if (!upserted) {
+        console.error("[completeOnboarding] upsert returned no data");
+        return {
+          error: new Error("Profile creation failed — please try again"),
+        };
+      }
 
-      // Clear cache so next render picks up fresh profile
+      // Update local state immediately so budget FK check passes
+      if (upserted) {
+        setProfile(upserted);
+        writeCachedProfile(upserted);
+      }
+
       clearAllCache();
       profileFetchedRef.current = false;
 

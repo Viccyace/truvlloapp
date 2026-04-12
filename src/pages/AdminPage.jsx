@@ -6,7 +6,7 @@ const ADMIN_ID = "7ec55e7e-6270-436c-bfc9-323ea8971e7a";
 
 const styles = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  .admin { min-height: 100vh; background: #0A0A0A; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .admin { min-height: 100vh; background: #0A0A0A; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
 
   /* NAV */
   .admin-nav { height: 64px; border-bottom: 1px solid rgba(250,248,243,0.08); padding: 0 40px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: rgba(10,10,10,0.9); backdrop-filter: blur(12px); z-index: 50; }
@@ -256,7 +256,30 @@ export default function AdminPage() {
     if (authed) fetchMetrics();
   }, [authed, fetchMetrics]);
 
-  if (!authed) return null;
+  if (!authed)
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#0A0A0A",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            border: "2px solid rgba(250,248,243,0.1)",
+            borderTopColor: "#40916C",
+            borderRadius: "50%",
+            animation: "spin 0.7s linear infinite",
+          }}
+        />
+        <style>{"@keyframes spin{to{transform:rotate(360deg)}}"}</style>
+      </div>
+    );
 
   const PlanBadge = ({ plan }) => (
     <span className={`plan-badge plan-${plan}`}>{plan}</span>

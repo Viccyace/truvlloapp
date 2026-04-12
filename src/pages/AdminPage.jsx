@@ -102,25 +102,29 @@ export default function AdminPage() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [authed, setAuthed] = useState(false);
 
-  // Guard — check Supabase session directly, bypass cache entirely
+  // Guard — check user ID directly from localStorage auth token
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session?.user || session.user.id !== ADMIN_ID) {
-        navigate("/dashboard", { replace: true });
-      } else {
+    try {
+      // Read user ID directly from stored auth — fastest, no network needed
+      const raw = localStorage.getItem("truvllo_auth") || "{}";
+      const auth = JSON.parse(raw);
+      const userId = auth?.user?.id || auth?.user_id;
+      if (userId === ADMIN_ID) {
         setAuthed(true);
-        // Clear stale cached profile so is_admin is fresh
-        try {
-          const cached = JSON.parse(
-            localStorage.getItem("truvllo_profile") || "{}",
-          );
-          if (!cached.is_admin) {
-            cached.is_admin = true;
-            localStorage.setItem("truvllo_profile", JSON.stringify(cached));
-          }
-        } catch {}
+        return;
       }
-    });
+    } catch {}
+    // Fallback: check via Supabase
+    supabase.auth
+      .getUser()
+      .then(({ data: { user } }) => {
+        if (user?.id === ADMIN_ID) {
+          setAuthed(true);
+        } else {
+          navigate("/dashboard", { replace: true });
+        }
+      })
+      .catch(() => navigate("/dashboard", { replace: true }));
   }, [navigate]);
 
   const fetchMetrics = useCallback(async () => {

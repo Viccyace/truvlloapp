@@ -100,18 +100,22 @@ export function AuthProvider({ children }) {
   // ── Fetch full profile from Supabase ────────────────────────────────────────
   const fetchProfile = useCallback(async (userId) => {
     if (profileFetchedRef.current) return; // already fetched this session
-    profileFetchedRef.current = true;
+    // Note: set true AFTER success, not before — so we can retry on error
 
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
-      .single();
+      .maybeSingle(); // maybeSingle returns null (not error) when no row found
 
     if (error) {
       console.error("[AuthProvider] fetchProfile error:", error.message);
       // Profile doesn't exist yet — create it
-      if (error.code === "PGRST116" || error.message?.includes("JSON")) {
+      if (
+        error.code === "PGRST116" ||
+        error.message?.includes("JSON") ||
+        error.code === "PGRST100"
+      ) {
         const {
           data: { user: authUser },
         } = await supabase.auth.getUser();
@@ -146,6 +150,13 @@ export function AuthProvider({ children }) {
       return;
     }
 
+    // maybeSingle: data is null when no profile row exists yet (new user)
+    if (!data) {
+      profileFetchedRef.current = false; // allow retry after onboarding creates profile
+      setLoading(false);
+      return;
+    }
+    profileFetchedRef.current = true;
     setProfile(data);
     writeCachedProfile(data);
   }, []);

@@ -405,13 +405,20 @@ function SignupForm({ onSwitch }) {
         localStorage.removeItem("truvllo_ref");
       }
 
-      // If session exists, email confirmation is OFF — go directly to onboarding
-      if (data?.session) {
-        navigate("/onboarding", { replace: true });
+      // Check if email confirmation is required
+      // Supabase signals this by: session=null OR identities=[] OR confirmed_at=null
+      const needsConfirmation =
+        !data?.session ||
+        data?.user?.identities?.length === 0 ||
+        !data?.user?.confirmed_at;
+
+      if (needsConfirmation) {
+        // Show confirmation screen — user must click email link
+        setSubmitted(true);
         return;
       }
-      // Session is null = email confirmation is ON — show confirmation screen
-      setSubmitted(true);
+      // Session exists + email confirmed — go to onboarding
+      navigate("/onboarding", { replace: true });
     } catch (err) {
       setGlobalError(err.message || "Something went wrong. Please try again.");
       setLoading(false);
@@ -462,7 +469,7 @@ function SignupForm({ onSwitch }) {
       <div className="trial-callout">
         <span className="trial-callout-icon">🎁</span>
         <div className="trial-callout-text">
-          <strong>{TRIAL_DAYS}-day Premium trial included</strong>, unlocks
+          <strong>{TRIAL_DAYS}-day Premium trial included</strong> — unlocks
           automatically when you log your first expense. No card needed.
         </div>
       </div>

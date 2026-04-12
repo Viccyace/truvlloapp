@@ -964,7 +964,7 @@ function Step4({ data, onChange, onBack, onNext, currency }) {
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { completeOnboarding } = useAuth();
+  const { completeOnboarding, user, profile } = useAuth();
   const { createBudget } = useBudget();
 
   const [step, setStep] = useState(0);

@@ -186,10 +186,10 @@ export function AuthProvider({ children }) {
   // ── Auth state listener ──────────────────────────────────────────────────────
   useEffect(() => {
     // Get current session immediately (synchronous check inside Supabase SDK)
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
-        fetchProfile(session.user.id);
+        await fetchProfile(session.user.id); // await so profile is set before loading=false
       }
       setLoading(false);
     });
@@ -205,12 +205,7 @@ export function AuthProvider({ children }) {
         setLoading(false);
       }
 
-      if (event === "INITIAL_SESSION" && session?.user) {
-        setUser(session.user);
-        profileFetchedRef.current = false;
-        await fetchProfile(session.user.id);
-        setLoading(false);
-      }
+      // INITIAL_SESSION handled by getSession().then() above
 
       if (event === "SIGNED_OUT") {
         setUser(null);

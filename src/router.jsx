@@ -16,7 +16,40 @@ import AuthCallback from "./pages/AuthCallback";
 import { useAuth } from "./providers/AuthProvider";
 
 function LoadingScreen() {
-  return <div style={{ padding: 24 }}>Loading...</div>;
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#FAF8F3",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        gap: 16,
+      }}
+    >
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          border: "3px solid rgba(27,67,50,0.15)",
+          borderTopColor: "#1B4332",
+          borderRadius: "50%",
+          animation: "spin 0.7s linear infinite",
+        }}
+      />
+      <style>{"@keyframes spin{to{transform:rotate(360deg)}}"}</style>
+      <p
+        style={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontSize: "0.82rem",
+          color: "#9B9B9B",
+        }}
+      >
+        Loading Truvllo...
+      </p>
+    </div>
+  );
 }
 
 function ProtectedRoute() {
@@ -29,8 +62,9 @@ function ProtectedRoute() {
   // No session after loading — go to auth
   if (!user) return <Navigate to="/auth" replace />;
 
-  // Profile still loading — show loading screen, do NOT redirect yet
-  if (!profile) return <LoadingScreen />;
+  // Profile null after loading = new user with no profile row yet
+  // Send to onboarding to create profile
+  if (!profile) return <Navigate to="/onboarding" replace />;
 
   // Check both column names since DB has both
   const onboardingDone =
@@ -55,11 +89,20 @@ function PublicRoute() {
 
 // Onboarding route — accessible to logged-in users regardless of onboarding status
 function OnboardingRoute() {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
 
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/auth" replace />;
 
+  // If profile loaded and onboarding is already done — go to dashboard
+  if (profile) {
+    const done =
+      profile.onboarding_complete === true ||
+      profile.onboarding_completed === true;
+    if (done) return <Navigate to="/dashboard" replace />;
+  }
+
+  // Profile still loading or onboarding not done — show onboarding
   return <Outlet />;
 }
 

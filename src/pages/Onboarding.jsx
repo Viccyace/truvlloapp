@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 import { TRIAL_DAYS } from "../lib/config";
 import { useBudget } from "../providers/BudgetProvider";
+import { supabase } from "../lib/supabase";
 
 const styles = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1047,6 +1048,30 @@ export default function Onboarding() {
       })();
 
       if (amountRaw > 0 && data.budgetName.trim()) {
+        // Verify profile exists in DB before creating budget (FK constraint)
+        const { data: profileCheck } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (!profileCheck) {
+          // Profile upsert from completeOnboarding may have failed — retry it
+          await supabase.from("profiles").upsert(
+            {
+              id: user.id,
+              email: user.email,
+              full_name: user.user_metadata?.full_name ?? user.email,
+              first_name: user.user_metadata?.first_name ?? "",
+              last_name: user.user_metadata?.last_name ?? "",
+              currency: data.currency || "NGN",
+              onboarding_complete: true,
+              onboarding_completed: true,
+            },
+            { onConflict: "id" },
+          ); // no plan field — let DB default handle it
+        }
+
         await createBudget({
           name: data.budgetName.trim(),
           amount: amountRaw,

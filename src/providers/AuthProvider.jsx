@@ -320,8 +320,8 @@ export function AuthProvider({ children }) {
       // UPSERT not UPDATE — new users have no profile row yet
       // If we just UPDATE and the row doesn't exist, it silently does nothing
       // then createBudget fails with FK violation (no profile row to reference)
-      // Get current plan value — don't overwrite with hardcoded "free"
-      // which may violate the profiles_plan_check constraint
+      // Get current plan value — don't overwrite with hardcoded value
+      // Valid values: basic | trial | premium
       const currentPlan = profile?.plan || "basic";
 
       const profileData = {

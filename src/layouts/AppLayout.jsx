@@ -348,19 +348,16 @@ export default function AppLayout() {
 
   const handleSignOut = async () => {
     if (signingOut) return;
+    setSigningOut(true);
+    setConfirmLogout(false);
     try {
-      setSigningOut(true);
-      setConfirmLogout(false);
-      const { error } = await signOut();
-      if (error) {
-        console.error("Sign out error:", error);
-        setSigningOut(false);
-        return;
-      }
-      navigate("/auth", { replace: true });
+      await signOut();
     } catch (err) {
-      console.error("Sign out failed:", err);
-      setSigningOut(false);
+      console.error("Sign out error:", err);
+    } finally {
+      // Always navigate to auth regardless of Supabase errors
+      // Local state is already cleared by signOut()
+      navigate("/auth", { replace: true });
     }
   };
 

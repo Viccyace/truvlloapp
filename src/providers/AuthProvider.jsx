@@ -282,13 +282,20 @@ export function AuthProvider({ children }) {
   // ── Sign out ─────────────────────────────────────────────────────────────────
   const signOut = useCallback(async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      // Clear cache immediately
-      clearAllCache();
+      // Clear all local state first so UI responds immediately
       setUser(null);
       setProfile(null);
       profileFetchedRef.current = false;
-      return { error };
+      clearAllCache();
+      // Clear budget cache too
+      try {
+        Object.keys(localStorage)
+          .filter((k) => k.startsWith("truvllo_budget_cache_"))
+          .forEach((k) => localStorage.removeItem(k));
+      } catch {}
+      // Then sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      return { error: error ?? null };
     } catch (err) {
       return { error: err };
     }
@@ -320,10 +327,6 @@ export function AuthProvider({ children }) {
       // UPSERT not UPDATE — new users have no profile row yet
       // If we just UPDATE and the row doesn't exist, it silently does nothing
       // then createBudget fails with FK violation (no profile row to reference)
-      // Get current plan value — don't overwrite with hardcoded value
-      // Valid values: basic | trial | premium
-      const currentPlan = profile?.plan || "basic";
-
       const profileData = {
         id: user.id,
         email: user.email,
@@ -331,10 +334,11 @@ export function AuthProvider({ children }) {
         first_name: user.user_metadata?.first_name ?? "",
         last_name: user.user_metadata?.last_name ?? "",
         currency,
-        plan: currentPlan,
         onboarding_complete: true,
         onboarding_completed: true,
       };
+      // Only set plan if creating a new row — don't overwrite existing plan
+      if (!profile?.plan) profileData.plan = "basic";
       if (whatsapp_number) {
         profileData.whatsapp_number = whatsapp_number;
         profileData.whatsapp_active = true;
@@ -368,7 +372,7 @@ export function AuthProvider({ children }) {
 
       return { error: null };
     },
-    [user],
+    [user, profile?.plan],
   );
 
   // ── Derived helpers ──────────────────────────────────────────────────────────

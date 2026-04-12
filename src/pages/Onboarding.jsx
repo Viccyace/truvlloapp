@@ -1009,10 +1009,13 @@ export default function Onboarding() {
       });
 
       if (profileError) {
-        setErrorMsg(
-          profileError.message ||
-            "Could not complete onboarding. Please try again.",
-        );
+        const msg =
+          typeof profileError === "string"
+            ? profileError
+            : profileError?.message ||
+              profileError?.details ||
+              JSON.stringify(profileError);
+        setErrorMsg(msg || "Could not complete onboarding. Please try again.");
         setLoading(false);
         return;
       }
@@ -1082,6 +1085,7 @@ export default function Onboarding() {
         });
       }
 
+      setLoading(false);
       setShowConfetti(true);
       setDone(true);
       setTimeout(() => setShowConfetti(false), 1800);

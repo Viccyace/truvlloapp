@@ -348,24 +348,21 @@ export function AuthProvider({ children }) {
         .from("profiles")
         .upsert(profileData, { onConflict: "id" })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("[completeOnboarding] profile upsert error:", error);
         return { error };
       }
-      if (!upserted) {
-        console.error("[completeOnboarding] upsert returned no data");
-        return {
-          error: new Error("Profile creation failed — please try again"),
-        };
-      }
+      // If select returns null (RLS may block it), build profile from what we sent
+      const finalProfile = upserted ?? {
+        ...profileData,
+        plan: profileData.plan ?? profile?.plan ?? "basic",
+      };
 
       // Update local state immediately so budget FK check passes
-      if (upserted) {
-        setProfile(upserted);
-        writeCachedProfile(upserted);
-      }
+      setProfile(finalProfile);
+      writeCachedProfile(finalProfile);
 
       clearAllCache();
       profileFetchedRef.current = false;

@@ -110,6 +110,8 @@ export default function AdminPage() {
       const auth = JSON.parse(raw);
       const userId = auth?.user?.id || auth?.user_id;
       if (userId === ADMIN_ID) {
+        // Refresh session so Supabase client has a valid token
+        supabase.auth.refreshSession().catch(() => {});
         setAuthed(true);
         return;
       }
@@ -130,6 +132,8 @@ export default function AdminPage() {
   const fetchMetrics = useCallback(async () => {
     setFetching(true);
     try {
+      // Refresh session first so token is valid
+      await supabase.auth.refreshSession();
       const [
         // Plan breakdown
         { data: plans },

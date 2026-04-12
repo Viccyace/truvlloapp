@@ -18,7 +18,7 @@ import { supabase } from "../lib/supabase";
 // ── usePaystack ───────────────────────────────────────────────────────────────
 export function usePaystack() {
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState(null);
+  const [error, setError] = useState(null);
 
   /**
    * Initialise a Paystack payment and redirect the user.
@@ -29,15 +29,20 @@ export function usePaystack() {
     setError(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const token = session?.access_token;
       if (!token) throw new Error("Not logged in");
 
       // Call the Edge Function
-      const { data, error: fnErr } = await supabase.functions.invoke("paystack-init", {
-        body: { plan },
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data, error: fnErr } = await supabase.functions.invoke(
+        "paystack-init",
+        {
+          body: { plan },
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (fnErr) throw new Error(fnErr.message);
       if (!data?.payment_url) throw new Error("No payment URL returned");
@@ -48,7 +53,6 @@ export function usePaystack() {
 
       // Redirect to Paystack hosted payment page
       window.location.href = data.payment_url;
-
     } catch (err) {
       setError(err.message);
       setLoading(false);
@@ -72,9 +76,9 @@ export function useUpgradeSuccess() {
   const { refreshProfile } = useAuth(); // from AuthProvider
 
   useEffect(() => {
-    const params   = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(window.location.search);
     const upgraded = params.get("upgrade") === "success";
-    const ref      = params.get("ref");
+    const ref = params.get("ref");
 
     if (!upgraded || !ref) return;
 
@@ -90,12 +94,12 @@ export function useUpgradeSuccess() {
     // by the time they land back here
     const verifyAndRefresh = async () => {
       // Small delay to give the webhook time to process
-      await new Promise(r => setTimeout(r, 1500));
+      await new Promise((r) => setTimeout(r, 1500));
       await refreshProfile?.(); // re-fetch from Supabase, update localStorage cache
     };
 
     verifyAndRefresh();
-  }, []);
+  }, [refreshProfile]);
 }
 
 // ── refreshProfile implementation for AuthProvider ────────────────────────────
@@ -114,7 +118,6 @@ export function useUpgradeSuccess() {
     refreshProfile,
   };
 */
-
 
 // ═════════════════════════════════════════════════════════════════════════════
 // SQL SCHEMA — run in Supabase SQL editor
@@ -176,7 +179,7 @@ SELECT cron.schedule(
   '0 2 * * *',   -- runs at 2am UTC daily
   $$
     UPDATE public.profiles
-    SET plan = 'free'
+    SET plan = 'basic'
     WHERE plan = 'premium'
       AND subscription_ends_at IS NOT NULL
       AND subscription_ends_at < now();
@@ -184,7 +187,6 @@ SELECT cron.schedule(
 );
 */
 `;
-
 
 // ═════════════════════════════════════════════════════════════════════════════
 // WIRING — How to connect everything

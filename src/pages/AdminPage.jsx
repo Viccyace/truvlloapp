@@ -64,7 +64,7 @@ const styles = `
   .plan-badge { display: inline-block; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 100px; letter-spacing: 0.06em; text-transform: uppercase; }
   .plan-premium { background: rgba(212,160,23,0.2); color: #D4A017; border: 1px solid rgba(212,160,23,0.3); }
   .plan-trial   { background: rgba(64,145,108,0.2); color: #52B788; border: 1px solid rgba(64,145,108,0.3); }
-  .plan-free    { background: rgba(250,248,243,0.06); color: rgba(250,248,243,0.4); border: 1px solid rgba(250,248,243,0.1); }
+  .plan-basic    { background: rgba(250,248,243,0.06); color: rgba(250,248,243,0.4); border: 1px solid rgba(250,248,243,0.1); }
 
   /* CHARTS */
   .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -186,7 +186,7 @@ export default function AdminPage() {
       ]);
 
       // Process plans
-      const free = plans?.filter((p) => p.plan === "free").length ?? 0;
+      const free = plans?.filter((p) => p.plan === "basic").length ?? 0;
       const trial = plans?.filter((p) => p.plan === "trial").length ?? 0;
       const premium = plans?.filter((p) => p.plan === "premium").length ?? 0;
       const total = plans?.length ?? 0;
@@ -553,7 +553,7 @@ export default function AdminPage() {
                           {u.email}
                         </td>
                         <td>
-                          <PlanBadge plan={u.plan || "free"} />
+                          <PlanBadge plan={u.plan || "basic"} />
                         </td>
                         <td
                           style={{

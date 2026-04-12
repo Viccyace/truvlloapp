@@ -32,7 +32,7 @@ import { supabase } from "../lib/supabase"; // your supabase client
  *   avatar_url:          string | null
  *   currency:            'NGN' | 'USD' | 'GBP' | 'EUR' | 'KES' | 'GHS'
  *   onboarding_complete: boolean
- *   plan:                'free' | 'trial' | 'premium'
+ *   plan:                'basic' | 'trial' | 'premium'
  *   trial_ends_at:       string | null  (ISO date)
  *   trial_activated:     boolean
  *   created_at:          string
@@ -128,7 +128,7 @@ export function AuthProvider({ children }) {
               first_name: authUser.user_metadata?.first_name ?? "",
               last_name: authUser.user_metadata?.last_name ?? "",
               currency: "NGN",
-              plan: "free",
+              plan: "basic",
               onboarding_completed: false,
               onboarding_complete: false,
             },
@@ -250,7 +250,7 @@ export function AuthProvider({ children }) {
        *   last_name: lastName,
        *   currency: "NGN",
        *   onboarding_complete: false,
-       *   plan: "free",
+       *   plan: "basic",
        * });
        */
 
@@ -320,6 +320,10 @@ export function AuthProvider({ children }) {
       // UPSERT not UPDATE — new users have no profile row yet
       // If we just UPDATE and the row doesn't exist, it silently does nothing
       // then createBudget fails with FK violation (no profile row to reference)
+      // Get current plan value — don't overwrite with hardcoded "free"
+      // which may violate the profiles_plan_check constraint
+      const currentPlan = profile?.plan || "basic";
+
       const profileData = {
         id: user.id,
         email: user.email,
@@ -327,7 +331,7 @@ export function AuthProvider({ children }) {
         first_name: user.user_metadata?.first_name ?? "",
         last_name: user.user_metadata?.last_name ?? "",
         currency,
-        plan: "free",
+        plan: currentPlan,
         onboarding_complete: true,
         onboarding_completed: true,
       };
@@ -447,7 +451,7 @@ create table public.profiles (
   avatar_url          text,
   currency            text not null default 'NGN',
   onboarding_complete boolean not null default false,
-  plan                text not null default 'free',   -- 'free' | 'trial' | 'premium'
+  plan                text not null default 'basic',   -- 'basic' | 'trial' | 'premium'
   trial_ends_at       timestamptz,
   trial_activated     boolean not null default false,
   created_at          timestamptz not null default now()

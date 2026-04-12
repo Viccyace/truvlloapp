@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../providers/AuthProvider";
 import { supabase } from "../lib/supabase";
 
 const ADMIN_ID = "7ec55e7e-6270-436c-bfc9-323ea8971e7a";
@@ -97,27 +96,32 @@ const styles = `
 `;
 
 export default function AdminPage() {
-  const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [fetching, setFetching] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [authed, setAuthed] = useState(false);
 
-  // Guard — only admin
-  // Wait for both user AND profile to load before deciding
+  // Guard — check Supabase session directly, bypass cache entirely
   useEffect(() => {
-    if (loading) return; // still loading — wait
-    if (!user) {
-      navigate("/dashboard", { replace: true });
-      return;
-    }
-    // Allow if user ID matches ADMIN_ID directly (works even before profile loads)
-    if (user.id === ADMIN_ID) return;
-    // If profile is still null, wait — it may still be loading
-    if (!profile) return;
-    // If profile loaded and is_admin is not set — redirect
-    if (!profile.is_admin) navigate("/dashboard", { replace: true });
-  }, [user, profile, loading, navigate]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user || session.user.id !== ADMIN_ID) {
+        navigate("/dashboard", { replace: true });
+      } else {
+        setAuthed(true);
+        // Clear stale cached profile so is_admin is fresh
+        try {
+          const cached = JSON.parse(
+            localStorage.getItem("truvllo_profile") || "{}",
+          );
+          if (!cached.is_admin) {
+            cached.is_admin = true;
+            localStorage.setItem("truvllo_profile", JSON.stringify(cached));
+          }
+        } catch {}
+      }
+    });
+  }, [navigate]);
 
   const fetchMetrics = useCallback(async () => {
     setFetching(true);
@@ -249,11 +253,10 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (user?.id === ADMIN_ID || profile?.is_admin) fetchMetrics(); // eslint-disable-line
-  }, [user, profile, fetchMetrics]);
+    if (authed) fetchMetrics();
+  }, [authed, fetchMetrics]);
 
-  if (loading || !user) return null;
-  if (!user || (user.id !== ADMIN_ID && !profile?.is_admin)) return null;
+  if (!authed) return null;
 
   const PlanBadge = ({ plan }) => (
     <span className={`plan-badge plan-${plan}`}>{plan}</span>

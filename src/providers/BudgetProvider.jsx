@@ -18,24 +18,44 @@ const BudgetContext = createContext(null);
 // Each user gets their own cache keyed by userId
 // TTL: 60 seconds — stale data after that triggers a background refresh
 const CACHE_TTL_MS = 60_000;
-const _cache = new Map(); // userId → { data, timestamp }
+const _cache = new Map(); // userId → { data, timestamp } — in-memory
+const LS_KEY = (uid) => `truvllo_budget_cache_${uid}`;
 
 function getCached(userId) {
-  const entry = _cache.get(userId);
-  if (!entry) return null;
-  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
-    _cache.delete(userId);
+  // 1. Try in-memory first (fastest)
+  const mem = _cache.get(userId);
+  if (mem && Date.now() - mem.timestamp <= CACHE_TTL_MS) return mem.data;
+  // 2. Fall back to localStorage (survives refresh)
+  try {
+    const raw = localStorage.getItem(LS_KEY(userId));
+    if (!raw) return null;
+    const entry = JSON.parse(raw);
+    if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+      localStorage.removeItem(LS_KEY(userId));
+      return null;
+    }
+    // Re-hydrate memory cache
+    _cache.set(userId, entry);
+    return entry.data;
+  } catch {
     return null;
   }
-  return entry.data;
 }
 
 function setCached(userId, data) {
-  _cache.set(userId, { data, timestamp: Date.now() });
+  const entry = { data, timestamp: Date.now() };
+  _cache.set(userId, entry);
+  // Persist to localStorage so values survive hard refresh
+  try {
+    localStorage.setItem(LS_KEY(userId), JSON.stringify(entry));
+  } catch {}
 }
 
 function invalidateCache(userId) {
   _cache.delete(userId);
+  try {
+    localStorage.removeItem(LS_KEY(userId));
+  } catch {}
 }
 
 export function useBudget() {
@@ -122,7 +142,7 @@ export function calcPaceStatus(totalSpent, expectedSpend, budget) {
       label: "Slightly Over Pace",
       color: "#F0C040",
       bg: "rgba(240,192,64,0.12)",
-      desc: "A little above pace, pull back slightly to stay on track.",
+      desc: "A little above pace — pull back slightly to stay on track.",
     };
   return {
     key: "over_budget",

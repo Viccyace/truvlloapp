@@ -22,17 +22,22 @@ function LoadingScreen() {
 function ProtectedRoute() {
   const { user, profile, loading } = useAuth();
 
+  // Always show loading screen while session is being verified
+  // Never redirect while loading — avoids flash redirect on hard refresh
   if (loading) return <LoadingScreen />;
+
+  // No session after loading — go to auth
   if (!user) return <Navigate to="/auth" replace />;
 
-  // ── New user: redirect to onboarding if not completed ─────────────────────
-  // Check both column names since DB has both onboarding_complete and onboarding_completed
-  const onboardingDone =
-    profile?.onboarding_complete === true ||
-    profile?.onboarding_completed === true;
+  // Profile still loading — show loading screen, do NOT redirect yet
+  if (!profile) return <LoadingScreen />;
 
-  // Only redirect if profile is loaded and onboarding is not done
-  if (profile && !onboardingDone) {
+  // Check both column names since DB has both
+  const onboardingDone =
+    profile.onboarding_complete === true ||
+    profile.onboarding_completed === true;
+
+  if (!onboardingDone) {
     return <Navigate to="/onboarding" replace />;
   }
 

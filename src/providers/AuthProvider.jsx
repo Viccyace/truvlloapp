@@ -275,8 +275,17 @@ export function AuthProvider({ children }) {
 
   // ── Sign out ─────────────────────────────────────────────────────────────────
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-    // onAuthStateChange SIGNED_OUT handles state clearing
+    try {
+      const { error } = await supabase.auth.signOut();
+      // Clear cache immediately
+      clearAllCache();
+      setUser(null);
+      setProfile(null);
+      profileFetchedRef.current = false;
+      return { error };
+    } catch (err) {
+      return { error: err };
+    }
   }, []);
 
   // ── Password reset ───────────────────────────────────────────────────────────

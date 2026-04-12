@@ -298,10 +298,20 @@ export function BudgetProvider({ children }) {
   const { user, isLoggedIn, currency } = useAuth();
 
   const [activeBudget, setActiveBudget] = useState(null);
-  const [allBudgets, setAllBudgets] = useState([]);
-  const [expenses, setExpenses] = useState([]);
-  const [categoryCaps, setCategoryCaps] = useState([]);
-  const [recurring, setRecurring] = useState([]);
+  // Seed initial state from localStorage cache — avoids zeros on refresh
+  const _seedCache = (() => {
+    try {
+      const auth = JSON.parse(localStorage.getItem("truvllo_auth") || "{}");
+      const uid = auth?.user?.id;
+      if (uid) return getCached(uid);
+    } catch {}
+    return null;
+  })();
+
+  const [allBudgets, setAllBudgets] = useState(_seedCache?.budgets ?? []);
+  const [expenses, setExpenses] = useState(_seedCache?.expenses ?? []);
+  const [categoryCaps, setCategoryCaps] = useState(_seedCache?.caps ?? []);
+  const [recurring, setRecurring] = useState(_seedCache?.recurring ?? []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastFetchedUid, setLastFetchedUid] = useState(null);

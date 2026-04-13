@@ -23,12 +23,18 @@ function readCache() {
   try {
     const raw = localStorage.getItem(PROFILE_KEY);
     if (!raw) return null;
-    const { data, ts } = JSON.parse(raw);
-    if (Date.now() - ts > CACHE_TTL) {
-      localStorage.removeItem(PROFILE_KEY);
-      return null;
+    const parsed = JSON.parse(raw);
+    // Handle both new format { data, ts } and old format (plain profile object)
+    if (parsed?.data && parsed?.ts) {
+      if (Date.now() - parsed.ts > CACHE_TTL) {
+        localStorage.removeItem(PROFILE_KEY);
+        return null;
+      }
+      return parsed.data;
     }
-    return data;
+    // Old format — plain profile object with id field
+    if (parsed?.id) return parsed;
+    return null;
   } catch {
     return null;
   }

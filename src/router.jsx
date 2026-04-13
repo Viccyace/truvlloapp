@@ -1,3 +1,4 @@
+import React from "react";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import AppLayout from "./layouts/AppLayout";
 import Landing from "./pages/Landing";
@@ -54,18 +55,24 @@ function LoadingScreen() {
 
 function ProtectedRoute() {
   const { user, profile, loading } = useAuth();
+  const [profileTimeout, setProfileTimeout] = React.useState(false);
 
-  // Show spinner while initial session check is in progress
+  // If profile is null after loading, give it 4 seconds then redirect to onboarding
+  React.useEffect(() => {
+    if (!loading && user && !profile) {
+      const t = setTimeout(() => setProfileTimeout(true), 4000);
+      return () => clearTimeout(t);
+    }
+    setProfileTimeout(false);
+  }, [loading, user, profile]);
+
   if (loading) return <LoadingScreen />;
-
-  // No user after loading — go to auth
   if (!user) return <Navigate to="/auth" replace />;
+  if (!profile) {
+    if (profileTimeout) return <Navigate to="/onboarding" replace />;
+    return <LoadingScreen />;
+  }
 
-  // Profile not loaded yet — wait for it (never redirect prematurely)
-  // This covers the race condition where user loads before profile
-  if (!profile) return <LoadingScreen />;
-
-  // Profile loaded — check onboarding
   const done =
     profile.onboarding_complete === true ||
     profile.onboarding_completed === true;

@@ -1,7 +1,3 @@
-// The core fix: single source of truth for loading state
-// loading = true ONLY while the initial session check is in progress
-// After that, profile updates happen silently without affecting loading
-
 import {
   createContext,
   useContext,
@@ -15,7 +11,7 @@ import { supabase } from "../lib/supabase";
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
-// ─── Cache helpers ─────────────────────────────────────────────────────────────
+// Cache helpers
 const PROFILE_KEY = "truvllo_profile";
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
@@ -24,16 +20,16 @@ function readCache() {
     const raw = localStorage.getItem(PROFILE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    // Handle both new format { data, ts } and old format (plain profile object)
-    if (parsed?.data && parsed?.ts) {
+    // New format: { data, ts }
+    if (parsed && parsed.data && parsed.ts) {
       if (Date.now() - parsed.ts > CACHE_TTL) {
         localStorage.removeItem(PROFILE_KEY);
         return null;
       }
       return parsed.data;
     }
-    // Old format — plain profile object with id field
-    if (parsed?.id) return parsed;
+    // Old format: plain profile object with id field
+    if (parsed && parsed.id) return parsed;
     return null;
   } catch {
     return null;
@@ -57,17 +53,16 @@ function clearCache() {
 
 const ADMIN_ID = "7ec55e7e-6270-436c-bfc9-323ea8971e7a";
 
-// ─── Provider ──────────────────────────────────────────────────────────────────
 export function AuthProvider({ children }) {
-  // Seed profile synchronously from cache — no flash on refresh
+  // Seed profile from cache synchronously so there is no blank flash
   const [profile, setProfile] = useState(() => readCache());
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // true until first session check done
+  const [loading, setLoading] = useState(true);
 
-  const fetchingRef = useRef(false); // prevents concurrent fetches
-  const initialised = useRef(false); // prevents double-init from StrictMode
+  const fetchingRef = useRef(false);
+  const initialised = useRef(false);
 
-  // ── Fetch profile from Supabase ──────────────────────────────────────────────
+  // Fetch profile from Supabase
   const fetchProfile = useCallback(async (userId) => {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
@@ -82,45 +77,40 @@ export function AuthProvider({ children }) {
         console.error("[AuthProvider] fetchProfile error:", error.message);
         return;
       }
-
       if (data) {
         setProfile(data);
         writeCache(data);
       }
-      // If data is null — new user, no profile yet. Leave profile as null.
-      // ProtectedRoute will send them to onboarding.
     } finally {
       fetchingRef.current = false;
     }
   }, []);
 
-  // ── Auth state init ───────────────────────────────────────────────────────────
+  // Auth state initialisation
   useEffect(() => {
     if (initialised.current) return;
     initialised.current = true;
 
-    // 1. Check existing session immediately
+    // Check existing session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
+      if (session && session.user) {
         setUser(session.user);
-        // Use cached profile if available and matches user
         const cached = readCache();
-        if (cached?.id === session.user.id) {
-          setProfile(cached); // set from cache immediately
+        if (cached && cached.id === session.user.id) {
+          setProfile(cached);
         } else {
           await fetchProfile(session.user.id);
         }
       }
-      setLoading(false); // always set loading false, no mounted check
+      setLoading(false);
     });
 
-    // 2. Listen for future auth changes
+    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
+      if (event === "SIGNED_IN" && session && session.user) {
         setUser(session.user);
-        // Fetch fresh profile on sign in (not from cache)
         fetchingRef.current = false;
         await fetchProfile(session.user.id);
         setLoading(false);
@@ -134,7 +124,7 @@ export function AuthProvider({ children }) {
         setLoading(false);
       }
 
-      if (event === "TOKEN_REFRESHED" && session?.user) {
+      if (event === "TOKEN_REFRESHED" && session && session.user) {
         setUser(session.user);
       }
     });
@@ -144,7 +134,7 @@ export function AuthProvider({ children }) {
     };
   }, [fetchProfile]);
 
-  // ── Sign up ───────────────────────────────────────────────────────────────────
+  // Sign up
   const signUp = useCallback(
     async ({ email, password, firstName, lastName }) => {
       const { data, error } = await supabase.auth.signUp({
@@ -154,7 +144,7 @@ export function AuthProvider({ children }) {
           data: {
             first_name: firstName,
             last_name: lastName,
-            full_name: `${firstName} ${lastName}`,
+            full_name: firstName + " " + lastName,
           },
         },
       });
@@ -163,7 +153,7 @@ export function AuthProvider({ children }) {
     [],
   );
 
-  // ── Sign in ───────────────────────────────────────────────────────────────────
+  // Sign in
   const signIn = useCallback(async ({ email, password }) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -172,21 +162,20 @@ export function AuthProvider({ children }) {
     return { data, error };
   }, []);
 
-  // ── Google OAuth ──────────────────────────────────────────────────────────────
+  // Google OAuth
   const signInWithGoogle = useCallback(async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         prompt: "select_account",
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: window.location.origin + "/auth/callback",
       },
     });
     return { data, error };
   }, []);
 
-  // ── Sign out ──────────────────────────────────────────────────────────────────
+  // Sign out
   const signOut = useCallback(async () => {
-    // Clear local state immediately so UI responds
     setUser(null);
     setProfile(null);
     clearCache();
@@ -194,15 +183,15 @@ export function AuthProvider({ children }) {
     try {
       await supabase.auth.signOut();
     } catch (err) {
-      console.error("[signOut] Supabase error:", err);
+      console.error("[signOut] error:", err);
     }
     return { error: null };
   }, []);
 
-  // ── Password reset ────────────────────────────────────────────────────────────
+  // Password reset
   const sendPasswordReset = useCallback(async (email) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+      redirectTo: window.location.origin + "/auth/callback?type=recovery",
     });
     return { error };
   }, []);
@@ -212,7 +201,7 @@ export function AuthProvider({ children }) {
     return { error };
   }, []);
 
-  // ── Update profile ────────────────────────────────────────────────────────────
+  // Update profile
   const updateProfile = useCallback(
     async (updates) => {
       if (!user) return { error: "Not logged in" };
@@ -231,14 +220,14 @@ export function AuthProvider({ children }) {
     [user],
   );
 
-  // ── Refresh profile ───────────────────────────────────────────────────────────
+  // Refresh profile
   const refreshProfile = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user || !user.id) return;
     fetchingRef.current = false;
     await fetchProfile(user.id);
-  }, [user?.id, fetchProfile]);
+  }, [user, fetchProfile]);
 
-  // ── Complete onboarding ───────────────────────────────────────────────────────
+  // Complete onboarding
   const completeOnboarding = useCallback(
     async ({ currency, _budgetName, _period, whatsapp_number }) => {
       if (!user) return { error: "Not logged in" };
@@ -246,15 +235,20 @@ export function AuthProvider({ children }) {
       const profileData = {
         id: user.id,
         email: user.email,
-        full_name: user.user_metadata?.full_name ?? user.email,
-        first_name: user.user_metadata?.first_name ?? "",
-        last_name: user.user_metadata?.last_name ?? "",
+        full_name:
+          (user.user_metadata && user.user_metadata.full_name) || user.email,
+        first_name: (user.user_metadata && user.user_metadata.first_name) || "",
+        last_name: (user.user_metadata && user.user_metadata.last_name) || "",
         currency,
         onboarding_complete: true,
         onboarding_completed: true,
       };
-      // Only set plan for new users — don't overwrite existing plan
-      if (!profile?.plan) profileData.plan = "basic";
+
+      // Only set plan for new users - never overwrite existing plan
+      if (!profile || !profile.plan) {
+        profileData.plan = "basic";
+      }
+
       if (whatsapp_number) {
         profileData.whatsapp_number = whatsapp_number;
         profileData.whatsapp_active = true;
@@ -271,27 +265,28 @@ export function AuthProvider({ children }) {
         return { error };
       }
 
-      // If select returns null (RLS may block it), build from what we sent
-      const finalProfile = upserted ?? {
-        ...profileData,
-        plan: profileData.plan ?? profile?.plan ?? "basic",
-      };
+      const finalProfile =
+        upserted ||
+        Object.assign({}, profileData, {
+          plan: profileData.plan || (profile && profile.plan) || "basic",
+        });
       setProfile(finalProfile);
       writeCache(finalProfile);
 
       return { error: null };
     },
-    [user, profile?.plan],
+    [user, profile],
   );
 
-  // ── Derived state ─────────────────────────────────────────────────────────────
+  // Derived state
   const isLoggedIn = !!user;
-  const isPremium = profile?.plan === "premium";
-  const isTrialing = profile?.plan === "trial";
-  const isPremiumOrTrial = isPremium || isTrialing;
+  const isPremium = profile && profile.plan === "premium";
+  const isTrialing = profile && profile.plan === "trial";
+  const isPremiumOrTrial = !!(isPremium || isTrialing);
   const displayName = profile
-    ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
-      profile.email
+    ? ((profile.first_name || "") + " " + (profile.last_name || "")).trim() ||
+      profile.email ||
+      ""
     : "";
   const initials = displayName
     ? displayName
@@ -302,7 +297,7 @@ export function AuthProvider({ children }) {
         .slice(0, 2)
     : "?";
   const trialDaysLeft = (() => {
-    if (!profile?.trial_ends_at) return 0;
+    if (!profile || !profile.trial_ends_at) return 0;
     const diff = new Date(profile.trial_ends_at) - new Date();
     return Math.max(0, Math.ceil(diff / 86400000));
   })();
@@ -324,11 +319,12 @@ export function AuthProvider({ children }) {
     isPremium,
     isTrialing,
     isPremiumOrTrial,
-    isAdmin: profile?.is_admin === true || user?.id === ADMIN_ID,
+    isAdmin:
+      (profile && profile.is_admin === true) || (user && user.id === ADMIN_ID),
     displayName,
     initials,
     trialDaysLeft,
-    currency: profile?.currency ?? "NGN",
+    currency: (profile && profile.currency) || "NGN",
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

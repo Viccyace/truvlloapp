@@ -99,28 +99,25 @@ export function AuthProvider({ children }) {
     if (initialised.current) return;
     initialised.current = true;
 
-    let mounted = true;
-
     // 1. Check existing session immediately
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mounted) return;
       if (session?.user) {
         setUser(session.user);
-        // Only fetch if cache is stale or empty
+        // Use cached profile if available and matches user
         const cached = readCache();
-        if (!cached || cached.id !== session.user.id) {
+        if (cached?.id === session.user.id) {
+          setProfile(cached); // set from cache immediately
+        } else {
           await fetchProfile(session.user.id);
         }
       }
-      if (mounted) setLoading(false);
+      setLoading(false); // always set loading false, no mounted check
     });
 
     // 2. Listen for future auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-
       if (event === "SIGNED_IN" && session?.user) {
         setUser(session.user);
         // Fetch fresh profile on sign in (not from cache)
@@ -143,7 +140,6 @@ export function AuthProvider({ children }) {
     });
 
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
   }, [fetchProfile]);

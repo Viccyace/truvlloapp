@@ -56,7 +56,6 @@ function LoadingScreen() {
 
 function ProtectedRoute() {
   const { user, profile, loading } = useAuth();
-  const [timedOut, setTimedOut] = React.useState(false);
   const [localProfile, setLocalProfile] = React.useState(() => {
     // Read directly from localStorage as a fallback
     try {

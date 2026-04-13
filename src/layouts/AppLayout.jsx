@@ -297,6 +297,7 @@ export default function AppLayout() {
     trialDaysLeft,
     signOut,
     user,
+    isAdmin,
   } = useAuth();
   const isPremium = isPremiumOrTrial && !isTrialing;
 
@@ -704,8 +705,7 @@ export default function AppLayout() {
               </button>
             </div>
           )}
-          {(user?.id === "7ec55e7e-6270-436c-bfc9-323ea8971e7a" ||
-            profile?.is_admin) && (
+          {isAdmin && (
             <button
               className="signout-btn"
               style={{

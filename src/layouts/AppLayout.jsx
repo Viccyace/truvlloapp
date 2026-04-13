@@ -348,12 +348,21 @@ export default function AppLayout() {
   };
 
   const handleSignOut = async () => {
-    if (signingOut) return;
-    setSigningOut(true);
     setConfirmLogout(false);
-    await signOut();
-    // Force full page reload to guarantee clean state
-    window.location.replace("/auth");
+    setSigningOut(true);
+    try {
+      // Clear localStorage directly - don't wait for Supabase
+      localStorage.removeItem("truvllo_profile");
+      localStorage.removeItem("truvllo_auth");
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("truvllo_"))
+        .forEach((k) => localStorage.removeItem(k));
+      // Call signOut but don't wait
+      signOut().catch(() => {});
+    } finally {
+      // Always navigate - no matter what
+      window.location.replace("/auth");
+    }
   };
 
   return (

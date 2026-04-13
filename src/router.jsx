@@ -41,7 +41,7 @@ function LoadingScreen() {
       <style>{"@keyframes spin{to{transform:rotate(360deg)}}"}</style>
       <p
         style={{
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontFamily: "\'Plus Jakarta Sans\', sans-serif",
           fontSize: "0.82rem",
           color: "#9B9B9B",
         }}
@@ -55,46 +55,40 @@ function LoadingScreen() {
 function ProtectedRoute() {
   const { user, profile, loading } = useAuth();
 
-  // Always show loading screen while session is being verified
-  // Never redirect while loading — avoids flash redirect on hard refresh
+  // Show spinner while initial session check is in progress
   if (loading) return <LoadingScreen />;
 
-  // No session after loading — go to auth
+  // No user after loading — go to auth
   if (!user) return <Navigate to="/auth" replace />;
 
-  // Profile null after loading = new user with no profile row yet
-  // Send to onboarding to create profile
-  if (!profile) return <Navigate to="/onboarding" replace />;
+  // Profile not loaded yet — wait for it (never redirect prematurely)
+  // This covers the race condition where user loads before profile
+  if (!profile) return <LoadingScreen />;
 
-  // Check both column names since DB has both
-  const onboardingDone =
+  // Profile loaded — check onboarding
+  const done =
     profile.onboarding_complete === true ||
     profile.onboarding_completed === true;
-
-  if (!onboardingDone) {
-    return <Navigate to="/onboarding" replace />;
-  }
+  if (!done) return <Navigate to="/onboarding" replace />;
 
   return <Outlet />;
 }
 
 function PublicRoute() {
   const { user, loading } = useAuth();
-
   if (loading) return <LoadingScreen />;
   if (user) return <Navigate to="/dashboard" replace />;
-
   return <Outlet />;
 }
 
-// Onboarding route — accessible to logged-in users regardless of onboarding status
 function OnboardingRoute() {
   const { user, profile, loading } = useAuth();
 
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/auth" replace />;
 
-  // If profile loaded and onboarding is already done — go to dashboard
+  // Profile loaded and onboarding complete — go to dashboard
+  // Only redirect when profile is FULLY loaded — not while null
   if (profile) {
     const done =
       profile.onboarding_complete === true ||
@@ -102,30 +96,26 @@ function OnboardingRoute() {
     if (done) return <Navigate to="/dashboard" replace />;
   }
 
-  // Profile still loading or onboarding not done — show onboarding
+  // Profile null or onboarding not done — show onboarding
   return <Outlet />;
 }
 
 export const router = createBrowserRouter([
-  // Landing — accessible to everyone
   { path: "/", element: <Landing /> },
   { path: "/security", element: <Security /> },
   { path: "/admin", element: <AdminPage /> },
   { path: "/auth/callback", element: <AuthCallback /> },
 
-  // Auth — redirect to dashboard if already logged in
   {
     element: <PublicRoute />,
     children: [{ path: "/auth", element: <Auth /> }],
   },
 
-  // Onboarding — needs login but doesn't require onboarding to be complete
   {
     element: <OnboardingRoute />,
     children: [{ path: "/onboarding", element: <Onboarding /> }],
   },
 
-  // Protected app pages — requires login AND completed onboarding
   {
     element: <ProtectedRoute />,
     children: [

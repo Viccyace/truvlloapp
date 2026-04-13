@@ -15,6 +15,7 @@ import Security from "./pages/Security";
 import AdminPage from "./pages/AdminPage";
 import AuthCallback from "./pages/AuthCallback";
 import { useAuth } from "./providers/AuthProvider";
+import { supabase } from "./lib/supabase";
 
 function LoadingScreen() {
   return (
@@ -42,7 +43,7 @@ function LoadingScreen() {
       <style>{"@keyframes spin{to{transform:rotate(360deg)}}"}</style>
       <p
         style={{
-          fontFamily: "\'Plus Jakarta Sans\', sans-serif",
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontSize: "0.82rem",
           color: "#9B9B9B",
         }}
@@ -55,27 +56,51 @@ function LoadingScreen() {
 
 function ProtectedRoute() {
   const { user, profile, loading } = useAuth();
-  const [profileTimeout, setProfileTimeout] = React.useState(false);
+  const [timedOut, setTimedOut] = React.useState(false);
+  const [localProfile, setLocalProfile] = React.useState(() => {
+    // Read directly from localStorage as a fallback
+    try {
+      const raw = localStorage.getItem("truvllo_profile");
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.data && parsed.id === undefined) return parsed.data;
+      if (parsed && parsed.id) return parsed;
+      return null;
+    } catch {
+      return null;
+    }
+  });
 
-  // If profile is null after loading, give it 4 seconds then redirect to onboarding
+  // Fallback: if AuthProvider profile is null, try fetching directly
   React.useEffect(() => {
-    if (!loading && user && !profile) {
-      const t = setTimeout(() => setProfileTimeout(true), 4000);
+    if (!loading && user && !profile && !localProfile) {
+      // Fetch directly from Supabase bypassing AuthProvider
+      supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) setLocalProfile(data);
+        });
+
+      // Hard timeout - reload after 5s if still stuck
+      const t = setTimeout(() => {
+        window.location.reload();
+      }, 5000);
       return () => clearTimeout(t);
     }
-    setProfileTimeout(false);
-  }, [loading, user, profile]);
+  }, [loading, user, profile, localProfile]);
 
-  if (loading) return <LoadingScreen />;
-  if (!user) return <Navigate to="/auth" replace />;
-  if (!profile) {
-    if (profileTimeout) return <Navigate to="/onboarding" replace />;
-    return <LoadingScreen />;
-  }
+  const effectiveProfile = profile || localProfile;
+
+  if (loading && !effectiveProfile) return <LoadingScreen />;
+  if (!user && !loading) return <Navigate to="/auth" replace />;
+  if (!effectiveProfile) return <LoadingScreen />;
 
   const done =
-    profile.onboarding_complete === true ||
-    profile.onboarding_completed === true;
+    effectiveProfile.onboarding_complete === true ||
+    effectiveProfile.onboarding_completed === true;
   if (!done) return <Navigate to="/onboarding" replace />;
 
   return <Outlet />;
@@ -90,20 +115,14 @@ function PublicRoute() {
 
 function OnboardingRoute() {
   const { user, profile, loading } = useAuth();
-
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/auth" replace />;
-
-  // Profile loaded and onboarding complete — go to dashboard
-  // Only redirect when profile is FULLY loaded — not while null
   if (profile) {
     const done =
       profile.onboarding_complete === true ||
       profile.onboarding_completed === true;
     if (done) return <Navigate to="/dashboard" replace />;
   }
-
-  // Profile null or onboarding not done — show onboarding
   return <Outlet />;
 }
 

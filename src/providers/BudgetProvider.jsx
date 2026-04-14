@@ -18,6 +18,7 @@ const BudgetContext = createContext(null);
 // Each user gets their own cache keyed by userId
 // TTL: 60 seconds — stale data after that triggers a background refresh
 const CACHE_TTL_MS = 60_000;
+const LS_TTL_MS = 24 * 60 * 60000; // 24 hours — cache survives a full day
 const _cache = new Map(); // userId → { data, timestamp } — in-memory
 const LS_KEY = (uid) => `truvllo_budget_cache_${uid}`;
 
@@ -30,7 +31,7 @@ function getCached(userId) {
     const raw = localStorage.getItem(LS_KEY(userId));
     if (!raw) return null;
     const entry = JSON.parse(raw);
-    if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+    if (Date.now() - entry.timestamp > LS_TTL_MS) {
       localStorage.removeItem(LS_KEY(userId));
       return null;
     }
@@ -295,7 +296,7 @@ async function checkAndInsertNotifications(supabase, userId) {
 }
 
 export function BudgetProvider({ children }) {
-  const { user, isLoggedIn, currency } = useAuth();
+  const { user, isLoggedIn, currency, signOut } = useAuth();
 
   const [activeBudget, setActiveBudget] = useState(null);
   // Seed initial state from localStorage cache — avoids zeros on refresh
@@ -384,7 +385,17 @@ export function BudgetProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (isLoggedIn && user?.id && user.id !== lastFetchedUid) fetchAll(user.id);
+    if (isLoggedIn && user?.id && user.id !== lastFetchedUid) {
+      // Check if cache has expired — if so, sign out to avoid showing zeros
+      const cached = getCached(user.id);
+      if (!cached && lastFetchedUid === user.id) {
+        // Cache expired for a user we already loaded — sign out cleanly
+        signOut();
+        window.location.replace("/auth");
+        return;
+      }
+      fetchAll(user.id);
+    }
     if (!isLoggedIn) {
       setActiveBudget(null);
       setAllBudgets([]);
@@ -393,7 +404,7 @@ export function BudgetProvider({ children }) {
       setRecurring([]);
       setLastFetchedUid(null);
     }
-  }, [isLoggedIn, user?.id, lastFetchedUid, fetchAll]);
+  }, [isLoggedIn, user?.id, lastFetchedUid, fetchAll, signOut]);
 
   useEffect(() => {
     if (!user?.id) return;

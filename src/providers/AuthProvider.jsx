@@ -57,6 +57,8 @@ export function AuthProvider({ children }) {
   // Seed profile from cache synchronously so there is no blank flash
   const [profile, setProfile] = useState(() => readCache());
   const [user, setUser] = useState(null);
+  // Start with loading=false if we have cached profile AND valid auth token
+  // This prevents spinner on browser reopen when session is cached
   const [loading, setLoading] = useState(true);
 
   const fetchingRef = useRef(false);
@@ -236,9 +238,19 @@ export function AuthProvider({ children }) {
         id: user.id,
         email: user.email,
         full_name:
-          (user.user_metadata && user.user_metadata.full_name) || user.email,
-        first_name: (user.user_metadata && user.user_metadata.first_name) || "",
-        last_name: (user.user_metadata && user.user_metadata.last_name) || "",
+          user.user_metadata?.full_name ||
+          user.user_metadata?.name ||
+          user.email,
+        first_name:
+          user.user_metadata?.first_name ||
+          user.user_metadata?.given_name ||
+          (user.user_metadata?.full_name || "").split(" ")[0] ||
+          "",
+        last_name:
+          user.user_metadata?.last_name ||
+          user.user_metadata?.family_name ||
+          (user.user_metadata?.full_name || "").split(" ").slice(1).join(" ") ||
+          "",
         currency,
         onboarding_complete: true,
         onboarding_completed: true,
@@ -283,19 +295,33 @@ export function AuthProvider({ children }) {
   const isPremium = profile && profile.plan === "premium";
   const isTrialing = profile && profile.plan === "trial";
   const isPremiumOrTrial = !!(isPremium || isTrialing);
+  // For Google users, user_metadata has full_name/name if profile fields are empty
+  const googleName =
+    user?.user_metadata?.full_name || user?.user_metadata?.name || "";
   const displayName = profile
     ? ((profile.first_name || "") + " " + (profile.last_name || "")).trim() ||
+      googleName ||
       profile.email ||
       ""
-    : "";
-  const initials = displayName
-    ? displayName
-        .split(" ")
-        .map((w) => w[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "?";
+    : googleName;
+  const initials =
+    displayName && displayName !== profile?.email
+      ? displayName
+          .split(" ")
+          .filter(Boolean)
+          .map((w) => w[0])
+          .join("")
+          .toUpperCase()
+          .slice(0, 2)
+      : googleName
+        ? googleName
+            .split(" ")
+            .filter(Boolean)
+            .map((w) => w[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2)
+        : "?";
   const trialDaysLeft = (() => {
     if (!profile || !profile.trial_ends_at) return 0;
     const diff = new Date(profile.trial_ends_at) - new Date();

@@ -302,8 +302,12 @@ export function BudgetProvider({ children }) {
   // Seed initial state from localStorage cache — avoids zeros on refresh
   const _seedCache = (() => {
     try {
-      const auth = JSON.parse(localStorage.getItem("truvllo_auth") || "{}");
-      const uid = auth?.user?.id;
+      // Try truvllo_auth first, then Supabase's own storage key
+      const auth1 = JSON.parse(localStorage.getItem("truvllo_auth") || "{}");
+      const auth2 = JSON.parse(
+        localStorage.getItem("sb-ztmljabxhzfmovjsfqbk-auth-token") || "{}",
+      );
+      const uid = auth1?.user?.id || auth2?.user?.id;
       if (uid) return getCached(uid);
     } catch {}
     return null;

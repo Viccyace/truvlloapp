@@ -142,7 +142,7 @@ const styles = `
   .rec-add-btn { width:100%; padding:11px; border:1.5px dashed var(--border); border-radius:12px; background:transparent; color:var(--ink-subtle); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.82rem; font-weight:600; cursor:pointer; transition:all 0.2s; margin-top:4px; }
   .rec-add-btn:hover { border-color:var(--green-light); color:var(--green-mid); background:var(--green-pale); }
 
-  .gate-wrap { position:relative; }
+  .gate-wrap { position:relative; overflow:hidden; border-radius:16px; }
   .gate-blur { filter:blur(3px); opacity:0.5; pointer-events:none; user-select:none; }
   .gate-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:5; }
   .gate-card { background:var(--ink); border-radius:16px; padding:20px 24px; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.22); max-width:260px; }
@@ -252,7 +252,7 @@ function calcEndDate(period, startDate) {
   return s.toISOString().split("T")[0];
 }
 
-function BudgetModal({ budget, onSave, onClose, sym = "₦" }) {
+function BudgetModal({ budget, onSave, onClose }) {
   const isEdit = !!budget?.id;
   const [name, setName] = useState(budget?.name ?? "");
   const [amount, setAmount] = useState(
@@ -956,19 +956,15 @@ export default function BudgetPage() {
       <style>{FONTS + styles}</style>
 
       {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+
       {modal === "new_budget" && (
-        <BudgetModal
-          onSave={saveBudget}
-          onClose={() => setModal(null)}
-          sym={sym}
-        />
+        <BudgetModal onSave={saveBudget} onClose={() => setModal(null)} />
       )}
       {modal === "edit_budget" && currentBudget && (
         <BudgetModal
           budget={currentBudget}
           onSave={saveBudget}
           onClose={() => setModal(null)}
-          sym={sym}
         />
       )}
       {modal === "new_recurring" && (
@@ -1373,4 +1369,3 @@ export default function BudgetPage() {
     </>
   );
 }
-

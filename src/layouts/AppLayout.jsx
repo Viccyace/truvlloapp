@@ -53,10 +53,10 @@ const styles = `
   .nav-badge { margin-left:auto; background:var(--amber); color:var(--ink); font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:100px; }
   .nav-active-bar { position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:60%; background:var(--green-light); border-radius:0 4px 4px 0; }
   .sidebar-bottom { padding:16px 12px; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
-  .sidebar-profile { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; transition:all 0.18s; }
+  .sidebar-profile { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; transition:all 0.18s; min-width:0; overflow:hidden; }
   .sidebar-profile:hover { background:rgba(255,255,255,0.06); }
   .profile-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--green-mid),var(--green-light)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:var(--white); flex-shrink:0; }
-  .profile-name { font-size:0.875rem; font-weight:700; color:var(--white); }
+  .profile-name { font-size:0.875rem; font-weight:700; color:var(--white); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:130px; }
   .profile-chevron { margin-left:auto; color:rgba(255,255,255,0.3); font-size:0.7rem; }
   .premium-pill { display:inline-flex; align-items:center; gap:4px; font-size:0.65rem; font-weight:800; padding:2px 8px; border-radius:100px; border:1px solid rgba(212,160,23,0.25); margin-top:2px; }
   .sidebar-upgrade { margin:0 12px 12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px; }
@@ -783,7 +783,7 @@ export default function AppLayout() {
           <div className="sidebar-bottom">
             <div className="sidebar-profile">
               <div className="profile-avatar">{initials}</div>
-              <div>
+              <div style={{ minWidth: 0, flex: 1, overflow: "hidden" }}>
                 <div className="profile-name">
                   {displayName || "My Account"}
                 </div>

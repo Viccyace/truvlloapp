@@ -104,36 +104,57 @@ export default function AdminPage() {
 
   // Guard — check user ID directly from localStorage auth token
   useEffect(() => {
+    console.log("[Admin] Auth check started");
     try {
       // Read user ID directly from stored auth — fastest, no network needed
       const raw = localStorage.getItem("truvllo_auth") || "{}";
       const auth = JSON.parse(raw);
       const userId = auth?.user?.id || auth?.user_id;
+      console.log("[Admin] Stored user ID:", userId);
+      console.log("[Admin] Required admin ID:", ADMIN_ID);
       if (userId === ADMIN_ID) {
+        console.log("[Admin] User is admin, setting authed to true");
         // Refresh session so Supabase client has a valid token
         supabase.auth.refreshSession().catch(() => {});
         setAuthed(true);
         return;
+      } else {
+        console.log("[Admin] User is not admin, redirecting");
       }
-    } catch {}
+    } catch (e) {
+      console.error("[Admin] Error parsing auth:", e);
+    }
     // Fallback: check via Supabase
     supabase.auth
       .getUser()
       .then(({ data: { user } }) => {
+        console.log("[Admin] Supabase user:", user?.id);
         if (user?.id === ADMIN_ID) {
+          console.log(
+            "[Admin] User is admin (via Supabase), setting authed to true",
+          );
           setAuthed(true);
         } else {
+          console.log("[Admin] User is not admin (via Supabase), redirecting");
           navigate("/dashboard", { replace: true });
         }
       })
-      .catch(() => navigate("/dashboard", { replace: true }));
+      .catch((e) => {
+        console.error("[Admin] Supabase auth error:", e);
+        navigate("/dashboard", { replace: true });
+      });
   }, [navigate]);
 
   const fetchMetrics = useCallback(async () => {
+    console.log("[Admin] fetchMetrics started");
     setFetching(true);
     try {
       // Refresh session first so token is valid
+      console.log("[Admin] refreshing session...");
       await supabase.auth.refreshSession();
+      console.log("[Admin] session refreshed");
+
+      console.log("[Admin] starting queries...");
       const [
         // Plan breakdown
         plansRes,
@@ -185,6 +206,10 @@ export default function AdminPage() {
           .limit(10),
       ]);
 
+      console.log("[Admin] queries completed");
+      console.log("[Admin] plansRes:", plansRes);
+      console.log("[Admin] dailyRes:", dailyRes);
+
       // Check for errors in each response
       if (plansRes.error)
         throw new Error(`Plans query: ${plansRes.error.message}`);
@@ -205,6 +230,9 @@ export default function AdminPage() {
       const { data: atRisk } = atRiskRes;
       const { data: categories } = categoriesRes;
       const { data: recentUsers } = recentUsersRes;
+
+      console.log("[Admin] plans data count:", plans?.length);
+      console.log("[Admin] daily data count:", daily?.length);
 
       // Process plans
       const free = plans?.filter((p) => p.plan === "basic").length ?? 0;
@@ -253,6 +281,13 @@ export default function AdminPage() {
         .slice(0, 6);
       const maxCat = topCats[0]?.[1] ?? 1;
 
+      console.log("[Admin] setting data...", {
+        total,
+        free,
+        trial,
+        premium,
+      });
+
       setData({
         total,
         free,
@@ -274,6 +309,7 @@ export default function AdminPage() {
         maxExp: Math.max(...last7.map((d) => d.expenses), 1),
       });
       setLastUpdated(new Date().toLocaleTimeString());
+      console.log("[Admin] data set successfully");
     } catch (err) {
       console.error("[Admin] fetch error:", err);
       console.error("Full error:", err);
@@ -299,12 +335,17 @@ export default function AdminPage() {
         maxExp: 1,
       });
     } finally {
+      console.log("[Admin] finally block - setting fetching to false");
       setFetching(false);
     }
   }, []);
 
   useEffect(() => {
-    if (authed) fetchMetrics();
+    console.log("[Admin] useEffect check - authed:", authed);
+    if (authed) {
+      console.log("[Admin] authed is true, calling fetchMetrics");
+      fetchMetrics();
+    }
   }, [authed, fetchMetrics]);
 
   if (!authed)

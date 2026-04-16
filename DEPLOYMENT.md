@@ -195,8 +195,11 @@ Dashboard → Authentication → URL Configuration:
 # Anthropic API key (from console.anthropic.com)
 supabase secrets set ANTHROPIC_API_KEY=sk-ant-api03-...
 
-# Paystack secret key (from dashboard.paystack.com → Settings → API Keys)
-supabase secrets set PAYSTACK_SECRET_KEY=sk_live_...
+# Flutterwave secret key (from dashboard.flutterwave.com → Settings → API Keys)
+supabase secrets set FLUTTERWAVE_SECRET_KEY=FLW_SECRET_KEY
+
+# Flutterwave webhook hash (from dashboard.flutterwave.com → Webhooks)
+supabase secrets set FLUTTERWAVE_WEBHOOK_HASH=your_webhook_hash
 
 # Your production URL (update after Vercel deploy)
 supabase secrets set SITE_URL=https://truvllo.vercel.app
@@ -219,8 +222,8 @@ supabase functions deploy ai-budget-advisor
 supabase functions deploy ai-overspend-explainer
 
 # Deploy payment functions
-supabase functions deploy paystack-init
-supabase functions deploy paystack-webhook
+supabase functions deploy flutterwave-init
+supabase functions deploy flutterwave-webhook
 
 # Verify all functions deployed
 supabase functions list

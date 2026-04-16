@@ -1,4 +1,4 @@
-﻿import { Fragment, useEffect, useState } from "react";
+﻿import { Fragment, useEffect, useRef, useState } from "react";
 import DOMPurify from "dompurify";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
@@ -38,7 +38,6 @@ const styles = `
   .hero-blob-2 { width:300px; height:300px; bottom:-100px; left:-60px; background:rgba(212,160,23,0.12); }
   .hero-blob-3 { width:200px; height:200px; top:40px; left:40%; background:rgba(255,255,255,0.04); }
 
-  /* ── FIXED: mobile overflow ─────────────────────────────────────── */
   .hero-inner {
     position:relative; z-index:1;
     display:grid; grid-template-columns:1fr auto; gap:40px; align-items:center;
@@ -53,7 +52,6 @@ const styles = `
   .hero-headline em { font-style:italic; color:rgba(255,255,255,0.65); }
   .hero-sub { font-size:1rem; color:rgba(255,255,255,0.65); line-height:1.7; max-width:480px; margin-bottom:32px; }
 
-  /* ── FIXED: removed min-width, added max-width and width:100% ───── */
   .hero-price-card {
     background:rgba(255,255,255,0.1); backdrop-filter:blur(12px);
     border:1px solid rgba(255,255,255,0.18); border-radius:20px;
@@ -77,7 +75,6 @@ const styles = `
 
   .hero-cta-main { display:flex; flex-direction:column; gap:10px; }
 
-  /* ── FIXED: added max-width:100% ────────────────────────────────── */
   .hero-btn-primary {
     display:inline-flex; align-items:center; gap:10px; padding:15px 32px;
     background:var(--white); color:var(--green-deep); border:none; border-radius:14px;
@@ -87,6 +84,9 @@ const styles = `
   }
   .hero-btn-primary:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 36px rgba(0,0,0,0.25); }
   .hero-btn-primary:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
+
+  .payment-divider { display:flex; align-items:center; gap:10px; color:rgba(255,255,255,0.25); font-size:0.72rem; }
+  .payment-divider::before, .payment-divider::after { content:""; flex:1; height:1px; background:rgba(255,255,255,0.1); }
 
   .hero-notes { display:flex; gap:16px; flex-wrap:wrap; }
   .hero-note { display:flex; align-items:center; gap:6px; font-size:0.78rem; color:rgba(255,255,255,0.55); }
@@ -166,9 +166,9 @@ const styles = `
   .bottom-cta-note { font-size:0.75rem; color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px; }
   .bottom-cta-note::before { content:"✓"; color:rgba(255,255,255,0.5); font-weight:800; }
 
-  .paystack-trust { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:20px; flex-wrap:wrap; }
-  .paystack-logo { background:var(--white); border-radius:8px; padding:4px 12px; font-size:0.72rem; font-weight:800; color:#00C3F7; letter-spacing:0.02em; }
-  .paystack-text { font-size:0.72rem; color:rgba(255,255,255,0.3); }
+  .flw-trust { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:20px; flex-wrap:wrap; }
+  .flw-logo { background:var(--white); border-radius:8px; padding:4px 12px; font-size:0.72rem; font-weight:800; color:#F5A623; letter-spacing:0.02em; }
+  .flw-text { font-size:0.72rem; color:rgba(255,255,255,0.3); }
 
   .toast {
     position:fixed; bottom:24px; right:24px; z-index:200;
@@ -181,78 +181,18 @@ const styles = `
 `;
 
 const FEATURES = [
-  {
-    icon: "🤖",
-    bg: "#D8F3DC",
-    title: "AI Spending Analyst",
-    desc: "Plain-English breakdown of your spending patterns, every week, automatically.",
-  },
-  {
-    icon: "💬",
-    bg: "#FFF3E0",
-    title: "Natural Language Entry",
-    desc: 'Type "spent 4500 on lunch" and Truvllo logs it instantly. No forms, no friction.',
-  },
-  {
-    icon: "🎯",
-    bg: "#E3F2FD",
-    title: "AI Savings Coach",
-    desc: "One specific, actionable tip each week based on your actual spending data.",
-  },
-  {
-    icon: "🏷️",
-    bg: "#F3E5F5",
-    title: "Smart Categorisation",
-    desc: "Type a merchant and Truvllo suggests the right category, learns your habits.",
-  },
-  {
-    icon: "📐",
-    bg: "#FCE4EC",
-    title: "AI Budget Advisor",
-    desc: "Tell us your income and goal. Get a realistic monthly budget breakdown instantly.",
-  },
-  {
-    icon: "⚠️",
-    bg: "#FFF8E1",
-    title: "Overspend Explainer",
-    desc: "When you're over pace, AI tells you exactly why, with specific cuts to get back.",
-  },
-  {
-    icon: "🎯",
-    bg: "#E8F5E9",
-    title: "Category Spending Caps",
-    desc: "Set per-category limits. Get warned before you overshoot food, transport, and more.",
-  },
-  {
-    icon: "🔁",
-    bg: "#E0F7FA",
-    title: "Recurring Expenses",
-    desc: "Set rent, subscriptions, and bills once, automatically deducted each cycle.",
-  },
-  {
-    icon: "📊",
-    bg: "#F9FBE7",
-    title: "Advanced Charts",
-    desc: "Pie charts, bar charts, trend lines, and month-over-month comparisons.",
-  },
-  {
-    icon: "📤",
-    bg: "#E8EAF6",
-    title: "CSV Export",
-    desc: "Download your full expense history any time, perfect for tax season.",
-  },
-  {
-    icon: "🏆",
-    bg: "#FFF3E0",
-    title: "Habit Streaks",
-    desc: "Daily logging streaks that build a real money habit over time.",
-  },
-  {
-    icon: "⚡",
-    bg: "#F1F8E9",
-    title: "Priority Support",
-    desc: "Email support with a response within 24 hours, guaranteed.",
-  },
+  { icon: "🤖", bg: "#D8F3DC", title: "AI Spending Analyst", desc: "Plain-English breakdown of your spending patterns — every week, automatically." },
+  { icon: "💬", bg: "#FFF3E0", title: "Natural Language Entry", desc: 'Type "spent 4500 on lunch" and Truvllo logs it instantly. No forms, no friction.' },
+  { icon: "🎯", bg: "#E3F2FD", title: "AI Savings Coach", desc: "One specific, actionable tip each week based on your actual spending data." },
+  { icon: "🏷️", bg: "#F3E5F5", title: "Smart Categorisation", desc: "Type a merchant and Truvllo suggests the right category — learns your habits." },
+  { icon: "📐", bg: "#FCE4EC", title: "AI Budget Advisor", desc: "Tell us your income and goal. Get a realistic monthly budget breakdown instantly." },
+  { icon: "⚠️", bg: "#FFF8E1", title: "Overspend Explainer", desc: "When you're over pace, AI tells you exactly why — with specific cuts to get back." },
+  { icon: "🎯", bg: "#E8F5E9", title: "Category Spending Caps", desc: "Set per-category limits. Get warned before you overshoot food, transport, and more." },
+  { icon: "🔁", bg: "#E0F7FA", title: "Recurring Expenses", desc: "Set rent, subscriptions, and bills once — automatically deducted each cycle." },
+  { icon: "📊", bg: "#F9FBE7", title: "Advanced Charts", desc: "Pie charts, bar charts, trend lines, and month-over-month comparisons." },
+  { icon: "📤", bg: "#E8EAF6", title: "CSV Export", desc: "Download your full expense history any time — perfect for tax season." },
+  { icon: "🏆", bg: "#FFF3E0", title: "Habit Streaks", desc: "Daily logging streaks that build a real money habit over time." },
+  { icon: "⚡", bg: "#F1F8E9", title: "Priority Support", desc: "Email support with a response within 24 hours — guaranteed." },
 ];
 
 const COMPARE = [
@@ -294,23 +234,23 @@ const COMPARE = [
 const FAQS = [
   {
     q: "Do I need a credit card to start?",
-    a: "No. You can sign up and use Truvllo's free plan forever without a card. Your 14-day Premium trial also activates automatically when you log your first expense, no card required for the trial either.",
+    a: "No. You can sign up and use Truvllo's free plan forever without a card. Your 7-day Premium trial also activates automatically when you log your first expense — no card required for the trial either.",
   },
   {
-    q: "How does the 14-day free trial work?",
-    a: "The moment you log your very first expense, Truvllo automatically activates a full 14-day Premium trial on your account. No buttons to click, no card to enter. You just start using the app and Premium unlocks instantly.",
+    q: "How does the 7-day free trial work?",
+    a: "The moment you log your very first expense, Truvllo automatically activates a full 7-day Premium trial on your account. No buttons to click, no card to enter. You just start using the app and Premium unlocks instantly.",
   },
   {
     q: "What happens when my trial ends?",
-    a: "You'll automatically revert to the Free plan. All your data — budgets, expenses, history, stays safe. You just lose access to AI features and premium tools until you upgrade. You'll get a reminder 2 days before.",
+    a: "You'll automatically revert to the Free plan. All your data — budgets, expenses, history — stays safe. You just lose access to AI features and premium tools until you upgrade. You'll get a reminder 2 days before.",
   },
   {
     q: "How does payment work?",
-    a: "Payments are processed securely by <strong>Paystack</strong>, Nigeria's most trusted payment infrastructure. You can pay with your Nigerian debit card, credit card, or bank transfer. All transactions are encrypted.",
+    a: "Payments are processed securely by <strong>Flutterwave</strong>, a leading African payment infrastructure. You can pay with your Nigerian debit card, credit card, bank transfer, or USSD. All transactions are encrypted.",
   },
   {
     q: "Can I cancel any time?",
-    a: "Yes, completely. Cancel from your Settings page at any time, no questions asked, no penalty. You'll keep Premium access until the end of your billing period.",
+    a: "Yes, completely. Cancel from your Settings page at any time — no questions asked, no penalty. You'll keep Premium access until the end of your billing period.",
   },
   {
     q: "Is my financial data safe?",
@@ -337,8 +277,7 @@ function Toast({ msg, onDone }) {
 export default function UpgradePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, isLoggedIn, isPremium, isTrialing, profile, ensureProfile } =
-    useAuth();
+  const { user, isLoggedIn, isPremium, isTrialing, profile, ensureProfile } = useAuth();
 
   const [billing, setBilling] = useState("monthly");
   const [faqOpen, setFaqOpen] = useState(null);
@@ -346,96 +285,89 @@ export default function UpgradePage() {
   const [verifying, setVerifying] = useState(false);
   const [toast, setToast] = useState(null);
 
-  const reference = searchParams.get("reference");
-  const trxref = searchParams.get("trxref");
-  const paymentReference = reference || trxref;
+  // ── Parse redirect params ─────────────────────────────────────────────────
+  const flwRef = searchParams.get("ref");
+  const provider = searchParams.get("provider");
+  const upgradeStatus = searchParams.get("upgrade");
 
-  // Amounts are now determined server-side — not used in client
-  const price = billing === "monthly" ? "6,500" : "4,875";
-  const annualTotal = billing === "annual" ? "58,500" : null;
+  // ── Verify Flutterwave redirect (runs once on mount) ──────────────────────
+  // NOTE: `verifying` is intentionally excluded from deps to prevent an
+  // infinite loop — it is local state, not a trigger for re-running.
+  const hasVerified = useRef(false);
 
   useEffect(() => {
-    const verifyPayment = async () => {
-      if (!paymentReference || verifying) return;
+    if (hasVerified.current) return;
+    if (upgradeStatus !== "success" || provider !== "flutterwave" || !flwRef) return;
+
+    hasVerified.current = true;
+
+    // Flutterwave Premium activation is handled entirely server-side via the
+    // webhook. The redirect here just refreshes the user profile so the UI
+    // reflects the new plan without a full page reload.
+    const refreshProfile = async () => {
       setVerifying(true);
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const token = session?.access_token;
-
-        const res = await fetch("/api/paystack/verify", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-          body: JSON.stringify({ reference: paymentReference }),
-        });
-        const result = await res.json();
-        if (!res.ok)
-          throw new Error(result?.error || "Payment verification failed.");
         if (user) await ensureProfile(user);
-        setToast("Payment verified. Premium activated successfully.");
-        setSearchParams({}, { replace: true });
+        setToast("Payment received. Premium activated successfully.");
       } catch (err) {
-        console.error("Paystack verification error:", err);
-        setToast(err?.message || "Could not verify payment.");
+        console.error("[upgrade] Profile refresh error:", err);
+        setToast("Payment received — refresh the page if Premium hasn't activated.");
       } finally {
         setVerifying(false);
+        // Clean URL params regardless of outcome
+        setSearchParams({}, { replace: true });
       }
     };
-    verifyPayment();
-  }, [paymentReference, verifying, setSearchParams, user, ensureProfile]);
 
-  const startUpgrade = async () => {
+    refreshProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [upgradeStatus, provider, flwRef]);
+
+  // ── Prices (display only — amounts are enforced server-side) ─────────────
+  const price = billing === "monthly" ? "6,500" : "4,875";
+  const annualTotal = "58,500";
+
+  // ── Start Flutterwave checkout ────────────────────────────────────────────
+  const startFlutterwave = async () => {
     if (loading || verifying) return;
-    if (!isLoggedIn) {
-      navigate("/auth");
-      return;
-    }
-    if (isPremium) {
-      navigate("/settings");
-      return;
-    }
+    if (!isLoggedIn) { navigate("/auth"); return; }
+    if (isPremium) { navigate("/settings"); return; }
+
     setLoading(true);
     try {
-      // Get JWT from Supabase session
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
       if (!token) throw new Error("You must be logged in to upgrade.");
 
-      const res = await fetch("/api/paystack/initialize", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const { data: flwData, error: flwErr } = await supabase.functions.invoke(
+        "flutterwave-init",
+        {
+          body: { billingCycle: billing },
+          headers: { Authorization: `Bearer ${token}` },
         },
-        body: JSON.stringify({
-          billingCycle: billing,
-          // amount is determined server-side — not sent from client
-        }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result?.error || "Could not start payment.");
-      if (!result?.authorization_url)
-        throw new Error("Missing Paystack authorization URL.");
-      window.location.href = result.authorization_url;
+      );
+
+      if (flwErr) throw new Error(flwErr.message);
+      if (!flwData?.payment_url) throw new Error("Missing Flutterwave payment URL.");
+
+      window.location.href = flwData.payment_url;
     } catch (err) {
-      console.error("Paystack initialize error:", err);
-      setToast(err?.message || "Could not start upgrade.");
+      console.error("[upgrade] Flutterwave init error:", err);
+      setToast(err?.message || "Could not start upgrade. Please try again.");
       setLoading(false);
     }
   };
 
+  // ── CTA copy ─────────────────────────────────────────────────────────────
   const ctaText = isPremium
     ? "Manage subscription"
     : isTrialing
-      ? "Upgrade to keep Premium"
-      : "Start 14-day free trial";
+    ? "Upgrade to keep Premium"
+    : "Start 7-day free trial";
+
   const priceButtonText = isPremium ? "Manage plan" : `Upgrade — ₦${price}/mo`;
+
+  const anyBusy = loading || verifying;
 
   return (
     <>
@@ -443,7 +375,7 @@ export default function UpgradePage() {
       {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
 
       <div className="page">
-        {/* ── HERO ───────────────────────────────────────────────────── */}
+        {/* ── HERO ─────────────────────────────────────────────────────── */}
         <div className="hero">
           <div className="hero-blob hero-blob-1" />
           <div className="hero-blob hero-blob-2" />
@@ -464,31 +396,27 @@ export default function UpgradePage() {
 
               <p className="hero-sub">
                 Unlock six AI-powered tools, advanced charts, category caps, and
-                habit streaks. Everything you need to actually stick to a
-                budget.
+                habit streaks. Everything you need to actually stick to a budget.
               </p>
 
               <div className="hero-cta-main">
                 <button
                   className="hero-btn-primary"
-                  onClick={startUpgrade}
-                  disabled={loading || verifying}
+                  onClick={startFlutterwave}
+                  disabled={anyBusy}
                 >
-                  {loading || verifying ? (
+                  {anyBusy ? (
                     <>
                       <div className="spinner" />
-                      {verifying ? "Verifying…" : "Processing…"}
+                      {verifying ? "Verifying..." : "Processing..."}
                     </>
                   ) : (
-                    <>{ctaText} →</>
+                    <>{ctaText} -&gt;</>
                   )}
                 </button>
+
                 <div className="hero-notes">
-                  {[
-                    "Secure checkout",
-                    "Cancel any time",
-                    "Instant activation",
-                  ].map((n) => (
+                  {["Secure checkout", "Cancel any time", "Instant activation"].map((n) => (
                     <div key={n} className="hero-note">
                       <span className="hero-note-check">✓</span>
                       {n}
@@ -501,9 +429,7 @@ export default function UpgradePage() {
             <div className="hero-price-card">
               <div className="hero-price-label">Premium Plan</div>
               <div className="hero-price">
-                <sup>₦</sup>
-                {price}
-                <sub>/mo</sub>
+                <sup>₦</sup>{price}<sub>/mo</sub>
               </div>
               {billing === "annual" ? (
                 <div className="hero-price-annual">
@@ -511,74 +437,56 @@ export default function UpgradePage() {
                 </div>
               ) : (
                 <div className="hero-price-annual">
-                  or{" "}
-                  <strong style={{ color: "var(--amber-light)" }}>
-                    ₦4,875/mo
-                  </strong>{" "}
-                  billed annually
+                  or <strong style={{ color: "var(--amber-light)" }}>₦4,875/mo</strong> billed annually
                 </div>
               )}
               <button
                 className="hero-cta-btn"
-                onClick={startUpgrade}
-                disabled={loading || verifying}
+                onClick={startFlutterwave}
+                disabled={anyBusy}
               >
-                {loading || verifying ? "Processing…" : priceButtonText}
+                {anyBusy ? "Processing..." : priceButtonText}
               </button>
               <div className="hero-cta-note">
                 {isLoggedIn
-                  ? `Signed in as ${user?.email || profile?.email || "user"}`
+                  ? `Signed in as ${user?.email ?? profile?.email ?? "user"}`
                   : "Sign in required before payment"}
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── INFO BANNER ──────────────────────────────────────────────
+        {/* ── INFO BANNER ──────────────────────────────────────────────── */}
         <div className="info-banner">
           <div className="info-banner-icon">ℹ️</div>
           <div className="info-banner-text">
-            <strong>Checkout is live:</strong> upgrade opens Paystack securely,
-            then returns here for payment verification and Premium activation.
+            <strong>Checkout is live:</strong> pay with card, bank transfer, or USSD
+            via Flutterwave — redirects securely and returns here for instant Premium activation.
           </div>
-        </div> */}
+        </div>
 
-        {/* ── BILLING TOGGLE ─────────────────────────────────────────── */}
+        {/* ── BILLING TOGGLE ───────────────────────────────────────────── */}
         <div className="billing-toggle-wrap">
-          <span
-            className={`billing-label${billing === "monthly" ? " active" : ""}`}
-          >
-            Monthly
-          </span>
+          <span className={`billing-label${billing === "monthly" ? " active" : ""}`}>Monthly</span>
           <button
             className={`billing-switch ${billing}`}
-            onClick={() =>
-              setBilling((b) => (b === "monthly" ? "annual" : "monthly"))
-            }
+            onClick={() => setBilling((b) => (b === "monthly" ? "annual" : "monthly"))}
           >
             <div className="billing-knob" />
           </button>
-          <span
-            className={`billing-label${billing === "annual" ? " active" : ""}`}
-          >
-            Annual
-          </span>
+          <span className={`billing-label${billing === "annual" ? " active" : ""}`}>Annual</span>
           <span className="billing-save-pill">Save 25%</span>
         </div>
 
-        {/* ── FEATURES ───────────────────────────────────────────────── */}
+        {/* ── FEATURES ─────────────────────────────────────────────────── */}
         <div className="features-section">
           <div className="section-label">What you unlock</div>
           <div className="section-headline">12 features. One price.</div>
-          <div className="section-sub">
-            Everything in the Free plan, plus all of this.
-          </div>
+          <div className="section-sub">Everything in the Free plan, plus all of this.</div>
           <div className="features-grid">
             {FEATURES.map((f, i) => (
               <div key={i} className="feature-card">
-                <div className="feature-icon" style={{ background: f.bg }}>
-                  {f.icon}
-                </div>
+                <div className="feature-icon" style={{ background: f.bg }}>{f.icon}</div>
                 <div className="feature-title">{f.title}</div>
                 <p className="feature-desc">{f.desc}</p>
               </div>
@@ -586,24 +494,18 @@ export default function UpgradePage() {
           </div>
         </div>
 
-        {/* ── COMPARE TABLE ──────────────────────────────────────────── */}
+        {/* ── COMPARE TABLE ────────────────────────────────────────────── */}
         <div className="compare-section">
           <div className="section-label">Compare plans</div>
           <div className="section-headline">Free vs Premium</div>
-          <div className="section-sub" style={{ marginBottom: 24 }}>
-            See exactly what each plan includes.
-          </div>
+          <div className="section-sub" style={{ marginBottom: 24 }}>See exactly what each plan includes.</div>
           <div style={{ overflowX: "auto" }}>
             <table className="compare-table">
               <thead>
                 <tr>
                   <th style={{ width: "55%" }}>Feature</th>
-                  <th className="plan-col" style={{ width: "20%" }}>
-                    Free
-                  </th>
-                  <th className="plan-col premium-col" style={{ width: "25%" }}>
-                    ✦ Premium
-                  </th>
+                  <th className="plan-col" style={{ width: "20%" }}>Free</th>
+                  <th className="plan-col premium-col" style={{ width: "25%" }}>✦ Premium</th>
                 </tr>
               </thead>
               <tbody>
@@ -616,18 +518,10 @@ export default function UpgradePage() {
                       <tr key={`${cat.cat}-${i}`}>
                         <td className="feature-name">{row.f}</td>
                         <td className="plan-col">
-                          {row.free ? (
-                            <span className="check-yes">✓</span>
-                          ) : (
-                            <span className="check-no">—</span>
-                          )}
+                          {row.free ? <span className="check-yes">✓</span> : <span className="check-no">—</span>}
                         </td>
                         <td className="plan-col premium-highlight">
-                          {row.premium ? (
-                            <span className="check-yes">✓</span>
-                          ) : (
-                            <span className="check-no">—</span>
-                          )}
+                          {row.premium ? <span className="check-yes">✓</span> : <span className="check-no">—</span>}
                         </td>
                       </tr>
                     ))}
@@ -635,57 +529,26 @@ export default function UpgradePage() {
                 ))}
                 <tr>
                   <td></td>
-                  <td
-                    className="plan-col"
-                    style={{ paddingTop: 20, paddingBottom: 20 }}
-                  >
-                    <div
-                      style={{
-                        fontSize: "0.82rem",
-                        fontWeight: 700,
-                        color: "var(--ink-subtle)",
-                      }}
-                    >
-                      Free forever
-                    </div>
+                  <td className="plan-col" style={{ paddingTop: 20, paddingBottom: 20 }}>
+                    <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--ink-subtle)" }}>Free forever</div>
                   </td>
-                  <td
-                    className="plan-col premium-highlight"
-                    style={{ paddingTop: 20, paddingBottom: 20 }}
-                  >
+                  <td className="plan-col premium-highlight" style={{ paddingTop: 20, paddingBottom: 20 }}>
                     <button
-                      onClick={startUpgrade}
-                      disabled={loading || verifying}
+                      onClick={startFlutterwave}
+                      disabled={anyBusy}
                       style={{
-                        background:
-                          "linear-gradient(135deg,var(--green-deep),var(--green-light))",
-                        color: "var(--white)",
-                        border: "none",
-                        borderRadius: 10,
-                        padding: "10px 20px",
-                        fontFamily: "'Plus Jakarta Sans',sans-serif",
-                        fontSize: "0.85rem",
-                        fontWeight: 800,
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                        boxShadow: "0 4px 14px rgba(27,67,50,0.3)",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 7,
-                        margin: "0 auto",
+                        background: "linear-gradient(135deg,var(--green-deep),var(--green-light))",
+                        color: "var(--white)", border: "none", borderRadius: 10,
+                        padding: "10px 20px", fontFamily: "'Plus Jakarta Sans',sans-serif",
+                        fontSize: "0.85rem", fontWeight: 800, cursor: "pointer",
+                        transition: "all 0.2s", boxShadow: "0 4px 14px rgba(27,67,50,0.3)",
+                        display: "flex", alignItems: "center", gap: 7, margin: "0 auto",
                       }}
                     >
-                      {loading || verifying ? (
-                        <div
-                          className="spinner"
-                          style={{
-                            borderTopColor: "var(--white)",
-                            borderColor: "rgba(255,255,255,0.25)",
-                          }}
-                        />
-                      ) : (
-                        <>{priceButtonText}</>
-                      )}
+                      {anyBusy
+                        ? <div className="spinner" style={{ borderTopColor: "var(--white)", borderColor: "rgba(255,255,255,0.25)" }} />
+                        : <>{priceButtonText}</>
+                      }
                     </button>
                   </td>
                 </tr>
@@ -694,23 +557,15 @@ export default function UpgradePage() {
           </div>
         </div>
 
-        {/* ── FAQ ────────────────────────────────────────────────────── */}
+        {/* ── FAQ ──────────────────────────────────────────────────────── */}
         <div className="faq-section">
           <div className="section-label">FAQs</div>
           <div className="section-headline">Common questions</div>
-          <div className="section-sub" style={{ marginBottom: 24 }}>
-            Everything you need to know before upgrading.
-          </div>
+          <div className="section-sub" style={{ marginBottom: 24 }}>Everything you need to know before upgrading.</div>
           <div className="faq-list">
             {FAQS.map((faq, i) => (
-              <div
-                key={i}
-                className={`faq-item${faqOpen === i ? " open" : ""}`}
-              >
-                <div
-                  className="faq-q"
-                  onClick={() => setFaqOpen(faqOpen === i ? null : i)}
-                >
+              <div key={i} className={`faq-item${faqOpen === i ? " open" : ""}`}>
+                <div className="faq-q" onClick={() => setFaqOpen(faqOpen === i ? null : i)}>
                   <div className="faq-q-text">{faq.q}</div>
                   <div className="faq-chevron">▾</div>
                 </div>
@@ -730,57 +585,38 @@ export default function UpgradePage() {
           </div>
         </div>
 
-        {/* ── BOTTOM CTA ─────────────────────────────────────────────── */}
+        {/* ── BOTTOM CTA ───────────────────────────────────────────────── */}
         <div className="bottom-cta">
           <div className="bottom-cta-blob bottom-cta-blob-1" />
           <div className="bottom-cta-blob bottom-cta-blob-2" />
           <span className="bottom-cta-icon">🚀</span>
           <h2 className="bottom-cta-title">Ready to take control?</h2>
           <p className="bottom-cta-sub">
-            Join thousands of people who finally understand their money. Start
-            your free trial today.
+            Join thousands of people who finally understand their money. Start your free trial today.
           </p>
           <button
             className="bottom-cta-btn"
-            onClick={startUpgrade}
-            disabled={loading || verifying}
+            onClick={startFlutterwave}
+            disabled={anyBusy}
           >
-            {loading || verifying ? (
+            {anyBusy ? (
               <>
-                <div
-                  className="spinner"
-                  style={{
-                    borderTopColor: "var(--white)",
-                    borderColor: "rgba(255,255,255,0.25)",
-                  }}
-                />
+                <div className="spinner" style={{ borderTopColor: "var(--white)", borderColor: "rgba(255,255,255,0.25)" }} />
                 {verifying ? "Verifying…" : "Processing…"}
               </>
             ) : (
-              <>
-                {isPremium
-                  ? "Manage subscription"
-                  : `Start upgrade — ₦${price}/mo`}
-              </>
+              <>{isPremium ? "Manage subscription" : `Start upgrade — ₦${price}/mo`}</>
             )}
           </button>
           <div className="bottom-cta-notes">
-            {[
-              "Secure Paystack checkout",
-              "Cancel any time",
-              "Instant activation",
-            ].map((n) => (
-              <div key={n} className="bottom-cta-note">
-                {n}
-              </div>
+            {["Secure checkout", "Cancel any time", "Instant activation"].map((n) => (
+              <div key={n} className="bottom-cta-note">{n}</div>
             ))}
           </div>
-          <div className="paystack-trust">
-            <span className="paystack-text">Payments secured by</span>
-            <span className="paystack-logo">Paystack</span>
-            <span className="paystack-text">
-              · SSL encrypted · PCI DSS compliant
-            </span>
+          <div className="flw-trust">
+            <span className="flw-text">Secured by</span>
+            <span className="flw-logo">Flutterwave</span>
+            <span className="flw-text">— SSL encrypted — PCI DSS compliant</span>
           </div>
         </div>
       </div>

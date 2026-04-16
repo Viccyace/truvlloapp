@@ -1,16 +1,14 @@
 // supabase/functions/flutterwave-webhook/index.ts
 // Handles Flutterwave v3 payment webhooks to activate Premium
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, verif-hash",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { resolveCorsHeaders } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  const origin = req.headers.get("origin");
+  const corsHeaders = resolveCorsHeaders(origin);
+
+  if (req.method === "OPTIONS")
+    return new Response("ok", { headers: corsHeaders });
 
   try {
     // ── 1. Pull required secrets ──────────────────────────────────────────────
@@ -43,7 +41,7 @@ Deno.serve(async (req) => {
       console.log("[flw-webhook] Ignored event:", event);
       return new Response(JSON.stringify({ received: true }), {
         status: 200,
-        headers: { ...CORS, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -53,42 +51,63 @@ Deno.serve(async (req) => {
       console.log("[flw-webhook] Non-successful charge status:", data?.status);
       return new Response(JSON.stringify({ received: true }), {
         status: 200,
-        headers: { ...CORS, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     // ── 4. Extract metadata ───────────────────────────────────────────────────
     const txRef: string = data?.tx_ref ?? "";
-    const userId: string | undefined = data?.meta?.user_id;
-    const plan: string = data?.meta?.plan ?? "monthly";
+    const metaUserId: string | undefined = data?.meta?.user_id;
+    const metaPlan: string = data?.meta?.plan ?? "monthly";
     const amount: number = data?.amount ?? 0;
     const flwTransactionId = Number(data?.id);
 
-    if (!userId) {
-      console.error("[flw-webhook] No user_id in meta — cannot activate");
-      return new Response("Missing user_id", { status: 400 });
-    }
-
     if (!txRef) {
       console.error("[flw-webhook] No tx_ref in payload");
-      return new Response(
-        JSON.stringify({ error: "Missing tx_ref" }),
-        {
-          status: 400,
-          headers: { ...CORS, "Content-Type": "application/json" },
-        },
-      );
+      return new Response(JSON.stringify({ error: "Missing tx_ref" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     if (!flwTransactionId) {
       console.error("[flw-webhook] No Flutterwave transaction id in payload");
-      return new Response(
-        JSON.stringify({ error: "Missing transaction id" }),
-        {
-          status: 400,
-          headers: { ...CORS, "Content-Type": "application/json" },
-        },
+      return new Response(JSON.stringify({ error: "Missing transaction id" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── 4.5 CRITICAL: Verify tx_ref was initiated by us ──────────────────────
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    const { data: storedTx } = await supabase
+      .from("payment_transactions")
+      .select("user_id, plan")
+      .eq("reference", txRef)
+      .maybeSingle();
+
+    if (!storedTx) {
+      console.error(
+        "[flw-webhook] tx_ref not found in payment_transactions:",
+        txRef,
       );
+      return new Response(JSON.stringify({ error: "tx_ref not recognised" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Use stored user_id and plan, NOT webhook metadata (prevents tampering)
+    const userId: string = storedTx.user_id;
+    const plan: string = storedTx.plan;
+
+    if (!userId) {
+      console.error("[flw-webhook] No user_id in stored transaction:", txRef);
+      return new Response("Missing user_id", { status: 400 });
     }
 
     // ── 5. Re-verify transaction with Flutterwave (server-to-server) ──────────
@@ -109,10 +128,6 @@ Deno.serve(async (req) => {
     }
 
     // ── 6. Idempotency guard — skip if tx_ref already processed ───────────────
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
 
     const { data: existing } = await supabase
       .from("payment_transactions")
@@ -183,13 +198,13 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
-      headers: { ...CORS, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("[flw-webhook] Unexpected error:", e);
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
-      headers: { ...CORS, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

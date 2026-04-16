@@ -86,21 +86,7 @@ export default async function handler(req, res) {
     const currency = payment.currency || "NGN";
 
     if (!userId || !reference) {
-      return res
-        .status(400)
-        .json({ error: "Missing required payment metadata" });
-    }
-
-    if (!["monthly", "annual"].includes(billingCycle)) {
-      return res.status(400).json({ error: "Invalid billing cycle" });
-    }
-
-    if (plan !== "premium") {
-      return res.status(400).json({ error: "Invalid plan metadata" });
-    }
-
-    if (source !== "truvllo_upgrade") {
-      return res.status(400).json({ error: "Invalid payment source" });
+      return res.status(400).json({ error: "Missing reference in payment" });
     }
 
     if (payment.status !== "success") {
@@ -119,6 +105,44 @@ export default async function handler(req, res) {
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
+    // ── CRITICAL: Verify payment was initiated by THIS user ────────────────────
+    // Fetch the stored payment metadata to verify user_id and plan
+    const { data: storedPayment, error: storedPaymentError } = await supabase
+      .from("payment_transactions")
+      .select("user_id, plan")
+      .eq("reference", reference)
+      .single();
+
+    if (storedPaymentError || !storedPayment) {
+      // This reference was never initiated by our system
+      console.warn(
+        "[paystack-webhook] Payment reference not found in DB:",
+        reference,
+      );
+      return res.status(400).json({ error: "Payment reference not found" });
+    }
+
+    // Verify the stored user_id matches the metadata user_id (double-check for tampering)
+    if (storedPayment.user_id !== userId) {
+      console.error("[paystack-webhook] User ID mismatch:", {
+        stored: storedPayment.user_id,
+        webhook: userId,
+      });
+      return res.status(403).json({ error: "User ID mismatch" });
+    }
+
+    // Verify the stored plan matches the webhook plan
+    if (
+      storedPayment.plan !== (billingCycle === "annual" ? "annual" : "monthly")
+    ) {
+      console.error("[paystack-webhook] Plan mismatch:", {
+        stored: storedPayment.plan,
+        webhook: billingCycle,
+      });
+      return res.status(403).json({ error: "Plan mismatch" });
+    }
+
+    // Check if already processed
     const { data: existingPayment, error: existingPaymentError } =
       await supabase
         .from("payments")

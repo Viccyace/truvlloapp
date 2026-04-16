@@ -136,17 +136,17 @@ export default function AdminPage() {
       await supabase.auth.refreshSession();
       const [
         // Plan breakdown
-        { data: plans },
+        plansRes,
         // Daily activity last 14 days
-        { data: daily },
+        dailyRes,
         // Feature usage last 7 days
-        { data: features },
+        featuresRes,
         // At-risk users
-        { data: atRisk },
+        atRiskRes,
         // Top categories
-        { data: categories },
+        categoriesRes,
         // Recent signups
-        { data: recentUsers },
+        recentUsersRes,
       ] = await Promise.all([
         supabase
           .from("profiles")
@@ -184,6 +184,27 @@ export default function AdminPage() {
           .order("created_at", { ascending: false })
           .limit(10),
       ]);
+
+      // Check for errors in each response
+      if (plansRes.error)
+        throw new Error(`Plans query: ${plansRes.error.message}`);
+      if (dailyRes.error)
+        throw new Error(`Daily query: ${dailyRes.error.message}`);
+      if (featuresRes.error)
+        throw new Error(`Features query: ${featuresRes.error.message}`);
+      if (atRiskRes.error)
+        throw new Error(`At-risk query: ${atRiskRes.error.message}`);
+      if (categoriesRes.error)
+        throw new Error(`Categories query: ${categoriesRes.error.message}`);
+      if (recentUsersRes.error)
+        throw new Error(`Recent users query: ${recentUsersRes.error.message}`);
+
+      const { data: plans } = plansRes;
+      const { data: daily } = dailyRes;
+      const { data: features } = featuresRes;
+      const { data: atRisk } = atRiskRes;
+      const { data: categories } = categoriesRes;
+      const { data: recentUsers } = recentUsersRes;
 
       // Process plans
       const free = plans?.filter((p) => p.plan === "basic").length ?? 0;
@@ -255,6 +276,28 @@ export default function AdminPage() {
       setLastUpdated(new Date().toLocaleTimeString());
     } catch (err) {
       console.error("[Admin] fetch error:", err);
+      console.error("Full error:", err);
+      // Set empty data so UI stops loading
+      setData({
+        total: 0,
+        free: 0,
+        trial: 0,
+        premium: 0,
+        everTrialled: 0,
+        waConnected: 0,
+        convPct: 0,
+        todaySignups: 0,
+        wkExpenses: 0,
+        wkWA: 0,
+        wkTrials: 0,
+        last7: [],
+        topCats: [],
+        maxCat: 0,
+        atRisk: [],
+        recentUsers: [],
+        maxDau: 1,
+        maxExp: 1,
+      });
     } finally {
       setFetching(false);
     }

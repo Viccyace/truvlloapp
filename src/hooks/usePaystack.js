@@ -35,16 +35,35 @@ export function usePaystack() {
       const token = session?.access_token;
       if (!token) throw new Error("Not logged in");
 
-      // Call the Edge Function
-      const { data, error: fnErr } = await supabase.functions.invoke(
-        "paystack-init",
-        {
-          body: { plan },
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      // Get the Edge Function URL from Supabase
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const functionUrl = `${supabaseUrl}/functions/v1/paystack-init`;
 
-      if (fnErr) throw new Error(fnErr.message);
+      // Use fetch for better error handling
+      const response = await fetch(functionUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ plan }),
+      });
+
+      // Handle rate limiting and other errors
+      if (response.status === 429) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error ||
+            "Too many payment attempts. Please wait a few minutes and try again.",
+        );
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Payment initialization failed");
+      }
+
+      const data = await response.json();
       if (!data?.payment_url) throw new Error("No payment URL returned");
 
       // Store reference in sessionStorage so we can verify on return

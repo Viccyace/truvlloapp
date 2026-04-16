@@ -1,13 +1,18 @@
 // supabase/functions/flutterwave-init/index.ts
 // Initialises a Flutterwave v3 payment and returns a hosted payment URL
+// Secrets needed:
+//   SUPABASE_SERVICE_ROLE_KEY
+//   FLUTTERWAVE_SECRET_KEY
+//   SITE_URL
+//   UPSTASH_REDIS_REST_URL
+//   UPSTASH_REDIS_REST_TOKEN
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { resolveCorsHeaders } from "../_shared/cors.ts";
+import { requireAuth } from "../_shared/auth.ts";
+import {
+  checkPaymentRateLimit,
+  paymentRateLimitResponse,
+} from "../_shared/paymentRateLimit.ts";
 
 const MONTHLY_NGN = 6500;
 const ANNUAL_NGN = 4875 * 12; // 58_500
@@ -27,9 +32,9 @@ const FLW_ERROR_MESSAGES: Record<string, string> = {
     "This payment authorization has already been used. Please start again.",
   EXPIRED_TRANSACTION:
     "This payment session has expired. Refresh the page and try again.",
-  INVALID_CARD: "Your card was declined. Please use another card or payment method.",
-  INACTIVE_ACCOUNT:
-    "Payment service is unavailable. Please contact support.",
+  INVALID_CARD:
+    "Your card was declined. Please use another card or payment method.",
+  INACTIVE_ACCOUNT: "Payment service is unavailable. Please contact support.",
 };
 
 function flwErrorMessage(code?: string, fallback?: string): string {
@@ -38,7 +43,11 @@ function flwErrorMessage(code?: string, fallback?: string): string {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  const origin = req.headers.get("origin");
+  const corsHeaders = resolveCorsHeaders(origin);
+
+  if (req.method === "OPTIONS")
+    return new Response("ok", { headers: corsHeaders });
 
   try {
     const FLW_SECRET = Deno.env.get("FLUTTERWAVE_SECRET_KEY");
@@ -51,45 +60,36 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: "Payment service is not configured." }),
         {
           status: 503,
-          headers: { ...CORS, "Content-Type": "application/json" },
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
     }
 
     // ── Authenticate user via JWT ─────────────────────────────────────────────
-    const authHeader = req.headers.get("Authorization") || "";
-    const token = authHeader.replace("Bearer ", "").trim();
+    const { user, supabase } = await requireAuth(req);
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } },
-    );
-
-    const {
-      data: { user },
-      error: authErr,
-    } = await supabase.auth.getUser(token);
-
-    if (authErr || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...CORS, "Content-Type": "application/json" },
-      });
-    }
+    const rateLimit = await checkPaymentRateLimit(user.id, "flutterwave-init");
+    if (!rateLimit.allowed)
+      return paymentRateLimitResponse(rateLimit, corsHeaders);
 
     if (!user.email) {
       return new Response(
         JSON.stringify({ error: "Authenticated user has no email address." }),
         {
           status: 400,
-          headers: { ...CORS, "Content-Type": "application/json" },
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
     }
 
     // ── Parse body ────────────────────────────────────────────────────────────
     const { billingCycle = "monthly" } = await req.json();
+
+    // ── STRICT billing cycle validation ────────────────────────────────────────
+    if (!["monthly", "annual"].includes(billingCycle)) {
+      throw new Error("billingCycle must be 'monthly' or 'annual'");
+    }
+
     const isAnnual = billingCycle === "annual";
     const amount = isAnnual ? ANNUAL_NGN : MONTHLY_NGN;
     const plan: string = isAnnual ? "annual" : "monthly";
@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
       });
       return new Response(JSON.stringify({ error: message, code: errorCode }), {
         status: 502,
-        headers: { ...CORS, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ payment_url: flwData.data.link, reference: txRef }),
       {
         status: 200,
-        headers: { ...CORS, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       },
     );
   } catch (e) {
@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: "An unexpected error occurred. Please retry." }),
       {
         status: 500,
-        headers: { ...CORS, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       },
     );
   }

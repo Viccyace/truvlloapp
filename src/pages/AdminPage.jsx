@@ -149,10 +149,22 @@ export default function AdminPage() {
     console.log("[Admin] fetchMetrics started");
     setFetching(true);
     try {
-      // Refresh session first so token is valid
+      // Refresh session first so token is valid (with timeout)
       console.log("[Admin] refreshing session...");
-      await supabase.auth.refreshSession();
-      console.log("[Admin] session refreshed");
+      try {
+        const sessionPromise = supabase.auth.refreshSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Session refresh timeout")), 5000),
+        );
+        await Promise.race([sessionPromise, timeoutPromise]);
+        console.log("[Admin] session refreshed");
+      } catch (sessionErr) {
+        console.warn(
+          "[Admin] session refresh failed (continuing anyway):",
+          sessionErr,
+        );
+        // Continue anyway - we might have a valid token already
+      }
 
       console.log("[Admin] starting queries...");
       const [

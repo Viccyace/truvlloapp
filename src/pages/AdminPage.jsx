@@ -149,104 +149,33 @@ export default function AdminPage() {
     console.log("[Admin] fetchMetrics started");
     setFetching(true);
     try {
-      // Refresh session first so token is valid (with timeout)
-      console.log("[Admin] refreshing session...");
-      try {
-        const sessionPromise = supabase.auth.refreshSession();
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Session refresh timeout")), 5000),
-        );
-        await Promise.race([sessionPromise, timeoutPromise]);
-        console.log("[Admin] session refreshed");
-      } catch (sessionErr) {
-        console.warn(
-          "[Admin] session refresh failed (continuing anyway):",
-          sessionErr,
-        );
-        // Continue anyway - we might have a valid token already
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not logged in");
+
+      console.log("[Admin] invoking admin-metrics function");
+      const { data, error } = await supabase.functions.invoke("admin-metrics", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (error) {
+        throw new Error(error.message || "Failed to load admin metrics");
+      }
+      if (!data) {
+        throw new Error("No admin metrics returned");
       }
 
-      console.log("[Admin] starting queries...");
-      const [
-        // Plan breakdown
-        plansRes,
-        // Daily activity last 14 days
-        dailyRes,
-        // Feature usage last 7 days
-        featuresRes,
-        // At-risk users
-        atRiskRes,
-        // Top categories
-        categoriesRes,
-        // Recent signups
-        recentUsersRes,
-      ] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("plan, trial_activated, whatsapp_number, created_at"),
-        supabase
-          .from("expenses")
-          .select("user_id, created_at")
-          .gte(
-            "created_at",
-            new Date(Date.now() - 14 * 86400000).toISOString(),
-          ),
-        supabase
-          .from("expenses")
-          .select("user_id, created_at")
-          .gte("created_at", new Date(Date.now() - 7 * 86400000).toISOString()),
-        supabase
-          .from("profiles")
-          .select("id, email, first_name, trial_ends_at, whatsapp_number")
-          .eq("plan", "trial")
-          .lte(
-            "trial_ends_at",
-            new Date(Date.now() + 3 * 86400000).toISOString(),
-          )
-          .gte("trial_ends_at", new Date().toISOString()),
-        supabase
-          .from("expenses")
-          .select("category")
-          .gte(
-            "created_at",
-            new Date(Date.now() - 30 * 86400000).toISOString(),
-          ),
-        supabase
-          .from("profiles")
-          .select("id, email, first_name, plan, created_at, trial_activated")
-          .order("created_at", { ascending: false })
-          .limit(10),
-      ]);
+      console.log("[Admin] admin metrics received", data);
 
-      console.log("[Admin] queries completed");
-      console.log("[Admin] plansRes:", plansRes);
-      console.log("[Admin] dailyRes:", dailyRes);
+      const plans = data.plans ?? [];
+      const daily = data.daily ?? [];
+      const features = data.features ?? [];
+      const atRisk = data.atRisk ?? [];
+      const categories = data.categories ?? [];
+      const recentUsers = data.recentUsers ?? [];
 
-      // Check for errors in each response
-      if (plansRes.error)
-        throw new Error(`Plans query: ${plansRes.error.message}`);
-      if (dailyRes.error)
-        throw new Error(`Daily query: ${dailyRes.error.message}`);
-      if (featuresRes.error)
-        throw new Error(`Features query: ${featuresRes.error.message}`);
-      if (atRiskRes.error)
-        throw new Error(`At-risk query: ${atRiskRes.error.message}`);
-      if (categoriesRes.error)
-        throw new Error(`Categories query: ${categoriesRes.error.message}`);
-      if (recentUsersRes.error)
-        throw new Error(`Recent users query: ${recentUsersRes.error.message}`);
-
-      const { data: plans } = plansRes;
-      const { data: daily } = dailyRes;
-      const { data: features } = featuresRes;
-      const { data: atRisk } = atRiskRes;
-      const { data: categories } = categoriesRes;
-      const { data: recentUsers } = recentUsersRes;
-
-      console.log("[Admin] plans data count:", plans?.length);
-      console.log("[Admin] daily data count:", daily?.length);
-
-      // Process plans
       const free = plans?.filter((p) => p.plan === "basic").length ?? 0;
       const trial = plans?.filter((p) => p.plan === "trial").length ?? 0;
       const premium = plans?.filter((p) => p.plan === "premium").length ?? 0;
@@ -255,13 +184,10 @@ export default function AdminPage() {
       const waConnected = plans?.filter((p) => p.whatsapp_number).length ?? 0;
       const convPct =
         everTrialled > 0 ? Math.round((premium / everTrialled) * 100) : 0;
-
-      // Today's signups
       const todayStr = new Date().toISOString().split("T")[0];
       const todaySignups =
         plans?.filter((p) => p.created_at?.startsWith(todayStr)).length ?? 0;
 
-      // Daily DAU + expenses (last 7 days)
       const last7 = [];
       for (let i = 6; i >= 0; i--) {
         const d = new Date(Date.now() - i * 86400000);
@@ -273,17 +199,6 @@ export default function AdminPage() {
         last7.push({ day: dayLabel, dau, expenses: dayExpenses.length });
       }
 
-      // Feature usage
-      const wkExpenses = features?.length ?? 0;
-      const wkWA = plans?.filter((p) => p.whatsapp_number).length ?? 0;
-      const wkTrials =
-        plans?.filter(
-          (p) =>
-            p.trial_activated &&
-            p.created_at > new Date(Date.now() - 7 * 86400000).toISOString(),
-        ).length ?? 0;
-
-      // Category breakdown
       const catMap = {};
       categories?.forEach((e) => {
         catMap[e.category] = (catMap[e.category] ?? 0) + 1;
@@ -292,13 +207,6 @@ export default function AdminPage() {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 6);
       const maxCat = topCats[0]?.[1] ?? 1;
-
-      console.log("[Admin] setting data...", {
-        total,
-        free,
-        trial,
-        premium,
-      });
 
       setData({
         total,
@@ -309,14 +217,19 @@ export default function AdminPage() {
         waConnected,
         convPct,
         todaySignups,
-        wkExpenses,
-        wkWA,
-        wkTrials,
+        wkExpenses: features?.length ?? 0,
+        wkWA: waConnected,
+        wkTrials:
+          plans?.filter(
+            (p) =>
+              p.trial_activated &&
+              p.created_at > new Date(Date.now() - 7 * 86400000).toISOString(),
+          ).length ?? 0,
         last7,
         topCats,
         maxCat,
-        atRisk: atRisk ?? [],
-        recentUsers: recentUsers ?? [],
+        atRisk,
+        recentUsers,
         maxDau: Math.max(...last7.map((d) => d.dau), 1),
         maxExp: Math.max(...last7.map((d) => d.expenses), 1),
       });
@@ -325,7 +238,6 @@ export default function AdminPage() {
     } catch (err) {
       console.error("[Admin] fetch error:", err);
       console.error("Full error:", err);
-      // Set empty data so UI stops loading
       setData({
         total: 0,
         free: 0,

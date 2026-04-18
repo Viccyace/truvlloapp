@@ -592,7 +592,10 @@ function Step2({ data, onChange, onNext, onBack }) {
                 }}
               >
                 {sym}
-                {parseInt(data.monthlyBudget || 0).toLocaleString()}
+                {parseInt(
+                  String(data.monthlyBudget || "0").replace(/,/g, ""),
+                  10,
+                ).toLocaleString()}
               </div>
             </div>
             <div style={{ textAlign: "right" }}>

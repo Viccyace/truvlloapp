@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
       profile.first_name || profile.full_name?.split(" ")[0] || "there";
     const userId = profile.id;
 
-    // Check plan — free users get canned response only, zero AI calls
+    // Check plan — free users get limited responses, but can log expenses to activate trial
     if (profile.plan === "free") {
       const cmd2 = (params.get("Body") ?? "").trim().toLowerCase();
       // Allow basic logging commands — regex only, no Claude
@@ -87,20 +87,31 @@ Deno.serve(async (req) => {
           from,
           `👋 Hi ${name}! I'm your Truvllo agent.\n\n` +
             `You're on the free plan. To unlock AI insights, bank import, and full WhatsApp features:\n\n` +
-            `🚀 Start your 14-day free trial by logging your first expense:\n👉 truvllo.app/expenses\n\n` +
+            `🚀 Start your free 14-day trial by logging your first expense:\n👉 truvllo.app/expenses\n\n` +
             `Once your trial activates, I can do a lot more! 💪`,
         );
+      } else if (isExpenseMessage(cmd2)) {
+        // Allow expense logging for free users to activate trial
+        await handleLogExpense(supabase, userId, from, name, body);
       } else {
         await sendWhatsApp(
           from,
           `⭐ This feature requires a Truvllo trial or Premium plan.\n\n` +
-            `Start your free 14-day trial at truvllo.app — no card needed.`,
+            `Start your free 14-day trial by logging an expense first:\n\n` +
+            `Try: "spent 4500 on lunch" or "paid 2000 for uber"\n\n` +
+            `Once your trial activates, I can do a lot more! 💪`,
         );
       }
       return ok();
     }
 
     if (!profile.whatsapp_active) {
+      // Allow expense logging even if WhatsApp is not active yet
+      const cmd = body.toLowerCase().trim();
+      if (isExpenseMessage(cmd)) {
+        await handleLogExpense(supabase, userId, from, name, body);
+        return ok();
+      }
       await sendWhatsApp(
         from,
         `👋 Hi ${name}! Your WhatsApp agent isn't active yet.\n\nLog your first expense on Truvllo to activate your free trial.\n\n👉 truvllo.app/dashboard`,
@@ -738,6 +749,43 @@ Try:
   if (error) {
     await sendWhatsApp(from, `❌ Failed to save expense. Try again.`);
     return;
+  }
+
+  // Check if this is the first expense and activate trial if needed
+  const { data: expenseCount } = await supabase
+    .from("expenses")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  const isFirstExpense = expenseCount === 1;
+
+  if (isFirstExpense) {
+    // Activate trial
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 14); // 14-day trial
+
+    await supabase
+      .from("profiles")
+      .update({
+        plan: "trial",
+        trial_activated: true,
+        trial_ends_at: trialEndsAt.toISOString(),
+        whatsapp_active: true, // Activate WhatsApp
+      })
+      .eq("id", userId);
+
+    // Send congratulations message
+    await sendWhatsApp(
+      from,
+      `🎉 *Congratulations, ${name}!* Your free 14-day Premium trial has been activated!\n\n` +
+        `You now have access to:\n` +
+        `🤖 All 6 AI features\n` +
+        `📄 Bank statement import\n` +
+        `📊 Advanced charts & insights\n` +
+        `🎯 Category spending caps\n` +
+        `📱 Full WhatsApp automation\n\n` +
+        `Keep logging expenses to make the most of your trial! 💪`,
+    );
   }
 
   // Get updated remaining

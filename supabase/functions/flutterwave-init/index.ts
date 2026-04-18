@@ -14,8 +14,17 @@ import {
   paymentRateLimitResponse,
 } from "../_shared/paymentRateLimit.ts";
 
-const MONTHLY_NGN = 6500;
-const ANNUAL_NGN = 4875 * 12; // 58_500
+const PRICING: Record<string, { monthly: number; annual: number }> = {
+  NGN: { monthly: 6500, annual: 4875 * 12 },
+  GHS: { monthly: 6500, annual: 4875 * 12 },
+  KES: { monthly: 6500, annual: 4875 * 12 },
+  ZAR: { monthly: 6500, annual: 4875 * 12 },
+  UGX: { monthly: 6500, annual: 4875 * 12 },
+  TZS: { monthly: 6500, annual: 4875 * 12 },
+  USD: { monthly: 14, annual: 10 * 12 },
+  GBP: { monthly: 11, annual: 8 * 12 },
+  EUR: { monthly: 13, annual: 9 * 12 },
+};
 
 // ── Flutterwave error-code → user-friendly messages ──────────────────────────
 const FLW_ERROR_MESSAGES: Record<string, string> = {
@@ -83,15 +92,22 @@ Deno.serve(async (req) => {
     }
 
     // ── Parse body ────────────────────────────────────────────────────────────
-    const { billingCycle = "monthly" } = await req.json();
+    const { billingCycle = "monthly", currency = "NGN" } = await req.json();
+    const currencyCode = String(currency).toUpperCase();
 
     // ── STRICT billing cycle validation ────────────────────────────────────────
     if (!["monthly", "annual"].includes(billingCycle)) {
       throw new Error("billingCycle must be 'monthly' or 'annual'");
     }
 
+    if (!PRICING[currencyCode]) {
+      throw new Error(`Unsupported currency: ${currencyCode}`);
+    }
+
     const isAnnual = billingCycle === "annual";
-    const amount = isAnnual ? ANNUAL_NGN : MONTHLY_NGN;
+    const amount = isAnnual
+      ? PRICING[currencyCode].annual
+      : PRICING[currencyCode].monthly;
     const plan: string = isAnnual ? "annual" : "monthly";
 
     // ── Idempotency: stable tx_ref tied to user + timestamp ───────────────────
@@ -120,7 +136,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         tx_ref: txRef,
         amount,
-        currency: "NGN",
+        currency: currencyCode,
         payment_options: "card,banktransfer,ussd",
         redirect_url: `${SITE_URL}/upgrade?upgrade=success&provider=flutterwave&ref=${txRef}`,
         customer: {

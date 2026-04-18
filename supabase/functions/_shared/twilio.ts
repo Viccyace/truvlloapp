@@ -4,9 +4,13 @@
 function normaliseNumber(to: string): string {
   let num = to.trim().replace(/^whatsapp:/, "");
   if (!num.startsWith("+")) {
-    if (num.startsWith("0")) num = "+234" + num.slice(1);
-    else if (num.startsWith("234")) num = "+" + num;
-    else num = "+234" + num;
+    // Only add +234 prefix if it looks like a Nigerian number (starts with 0 or doesn't have country code)
+    if (num.startsWith("0") && num.length === 11) {
+      num = "+234" + num.slice(1);
+    } else if (!num.startsWith("+")) {
+      // For international numbers, assume they need + prefix
+      num = "+" + num;
+    }
   }
   return "whatsapp:" + num.replace(/[\s\-]/g, "");
 }
@@ -22,6 +26,8 @@ export async function sendWhatsApp(to: string, body: string): Promise<void> {
 
   const toNumber = normaliseNumber(to);
   console.log(`[Twilio] Freeform to: ${toNumber.slice(0, 15)}...`);
+  console.log(`[Twilio] From: ${from}`);
+  console.log(`[Twilio] To normalized: ${toNumber}`);
 
   const res = await fetch(
     `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
@@ -64,6 +70,8 @@ export async function sendWhatsAppTemplate(
   console.log(
     `[Twilio] Template ${templateSid} to: ${toNumber.slice(0, 15)}...`,
   );
+  console.log(`[Twilio] Template From: ${from}`);
+  console.log(`[Twilio] Template To normalized: ${toNumber}`);
 
   // Build ContentVariables JSON: {"1":"value1","2":"value2"}
   const contentVariables = JSON.stringify(

@@ -101,53 +101,59 @@ export default function AdminPage() {
   const [fetching, setFetching] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [authed, setAuthed] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
-  // Guard — check user ID directly from localStorage auth token
   useEffect(() => {
-    console.log("[Admin] Auth check started");
-    try {
-      // Read user ID directly from stored auth — fastest, no network needed
-      const raw = localStorage.getItem("truvllo_auth") || "{}";
-      const auth = JSON.parse(raw);
-      const userId = auth?.user?.id || auth?.user_id;
-      console.log("[Admin] Stored user ID:", userId);
-      console.log("[Admin] Required admin ID:", ADMIN_ID);
-      if (userId === ADMIN_ID) {
-        console.log("[Admin] User is admin, setting authed to true");
-        // Refresh session so Supabase client has a valid token
-        supabase.auth.refreshSession().catch(() => {});
-        setAuthed(true);
-        return;
-      } else {
-        console.log("[Admin] User is not admin, redirecting");
-      }
-    } catch (e) {
-      console.error("[Admin] Error parsing auth:", e);
-    }
-    // Fallback: check via Supabase
-    supabase.auth
-      .getUser()
-      .then(({ data: { user } }) => {
-        console.log("[Admin] Supabase user:", user?.id);
-        if (user?.id === ADMIN_ID) {
-          console.log(
-            "[Admin] User is admin (via Supabase), setting authed to true",
-          );
-          setAuthed(true);
-        } else {
-          console.log("[Admin] User is not admin (via Supabase), redirecting");
-          navigate("/dashboard", { replace: true });
+    const verifyAdmin = async () => {
+      console.log("[Admin] Auth check started");
+      try {
+        const { data: sessionData, error: sessionError } =
+          await supabase.auth.getSession();
+
+        if (sessionError) {
+          console.warn("[Admin] getSession error:", sessionError);
         }
-      })
-      .catch((e) => {
-        console.error("[Admin] Supabase auth error:", e);
+
+        const userId = sessionData?.session?.user?.id;
+        console.log("[Admin] Session user ID:", userId);
+        console.log("[Admin] Required admin ID:", ADMIN_ID);
+
+        if (userId === ADMIN_ID) {
+          console.log("[Admin] User is admin, setting authed to true");
+          await supabase.auth.refreshSession().catch(() => {});
+          setAuthed(true);
+          return;
+        }
+
+        const raw = localStorage.getItem("truvllo_auth") || "{}";
+        const auth = JSON.parse(raw);
+        const cachedUserId = auth?.user?.id || auth?.user_id;
+        console.log("[Admin] Cached user ID:", cachedUserId);
+
+        if (cachedUserId === ADMIN_ID) {
+          console.log("[Admin] Cached auth is admin, setting authed to true");
+          setAuthed(true);
+          return;
+        }
+
+        console.log("[Admin] User is not admin, redirecting");
         navigate("/dashboard", { replace: true });
-      });
+      } catch (e) {
+        console.error("[Admin] Auth check failed:", e);
+        navigate("/dashboard", { replace: true });
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+
+    verifyAdmin();
   }, [navigate]);
 
   const fetchMetrics = useCallback(async () => {
     console.log("[Admin] fetchMetrics started");
     setFetching(true);
+    setErrorMessage(null);
     try {
       const {
         data: { session },
@@ -156,15 +162,20 @@ export default function AdminPage() {
       if (!token) throw new Error("Not logged in");
 
       console.log("[Admin] invoking admin-metrics function");
-      const { data, error } = await supabase.functions.invoke("admin-metrics", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data, error, status } = await supabase.functions.invoke(
+        "admin-metrics",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (error) {
         throw new Error(error.message || "Failed to load admin metrics");
       }
       if (!data) {
-        throw new Error("No admin metrics returned");
+        throw new Error(
+          `No admin metrics returned from function (status=${status})`,
+        );
       }
 
       console.log("[Admin] admin metrics received", data);
@@ -237,7 +248,7 @@ export default function AdminPage() {
       console.log("[Admin] data set successfully");
     } catch (err) {
       console.error("[Admin] fetch error:", err);
-      console.error("Full error:", err);
+      setErrorMessage(err?.message || "Unable to load admin metrics.");
       setData({
         total: 0,
         free: 0,
@@ -265,14 +276,19 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    console.log("[Admin] useEffect check - authed:", authed);
+    console.log(
+      "[Admin] useEffect check - authed:",
+      authed,
+      "authChecked:",
+      authChecked,
+    );
     if (authed) {
       console.log("[Admin] authed is true, calling fetchMetrics");
       fetchMetrics();
     }
-  }, [authed, fetchMetrics]);
+  }, [authed, authChecked, fetchMetrics]);
 
-  if (!authed)
+  if (!authChecked)
     return (
       <div
         style={{
@@ -293,7 +309,42 @@ export default function AdminPage() {
             animation: "spin 0.7s linear infinite",
           }}
         />
+        <span
+          style={{
+            marginLeft: 12,
+            color: "rgba(250,248,243,0.45)",
+            fontSize: 14,
+          }}
+        >
+          Checking admin access...
+        </span>
         <style>{"@keyframes spin{to{transform:rotate(360deg)}}"}</style>
+      </div>
+    );
+
+  if (!authed)
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#0A0A0A",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "rgba(250,248,243,0.6)",
+          padding: 24,
+          textAlign: "center",
+        }}
+      >
+        <div>
+          <div style={{ marginBottom: 12, fontSize: 18, fontWeight: 700 }}>
+            Admin access required
+          </div>
+          <div style={{ maxWidth: 360, lineHeight: 1.6 }}>
+            You do not have permission to view this page. If you should have
+            access, please sign in again or return to the dashboard.
+          </div>
+        </div>
       </div>
     );
 
@@ -342,6 +393,21 @@ export default function AdminPage() {
             </div>
             {lastUpdated && (
               <div className="admin-updated">Last updated: {lastUpdated}</div>
+            )}
+            {errorMessage && (
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: "12px 16px",
+                  borderRadius: 12,
+                  background: "rgba(229, 62, 62, 0.12)",
+                  color: "#F8D7DA",
+                  border: "1px solid rgba(229, 62, 62, 0.2)",
+                  maxWidth: 640,
+                }}
+              >
+                {errorMessage}
+              </div>
             )}
           </div>
 

@@ -181,18 +181,78 @@ const styles = `
 `;
 
 const FEATURES = [
-  { icon: "🤖", bg: "#D8F3DC", title: "AI Spending Analyst", desc: "Plain-English breakdown of your spending patterns — every week, automatically." },
-  { icon: "💬", bg: "#FFF3E0", title: "Natural Language Entry", desc: 'Type "spent 4500 on lunch" and Truvllo logs it instantly. No forms, no friction.' },
-  { icon: "🎯", bg: "#E3F2FD", title: "AI Savings Coach", desc: "One specific, actionable tip each week based on your actual spending data." },
-  { icon: "🏷️", bg: "#F3E5F5", title: "Smart Categorisation", desc: "Type a merchant and Truvllo suggests the right category — learns your habits." },
-  { icon: "📐", bg: "#FCE4EC", title: "AI Budget Advisor", desc: "Tell us your income and goal. Get a realistic monthly budget breakdown instantly." },
-  { icon: "⚠️", bg: "#FFF8E1", title: "Overspend Explainer", desc: "When you're over pace, AI tells you exactly why — with specific cuts to get back." },
-  { icon: "🎯", bg: "#E8F5E9", title: "Category Spending Caps", desc: "Set per-category limits. Get warned before you overshoot food, transport, and more." },
-  { icon: "🔁", bg: "#E0F7FA", title: "Recurring Expenses", desc: "Set rent, subscriptions, and bills once — automatically deducted each cycle." },
-  { icon: "📊", bg: "#F9FBE7", title: "Advanced Charts", desc: "Pie charts, bar charts, trend lines, and month-over-month comparisons." },
-  { icon: "📤", bg: "#E8EAF6", title: "CSV Export", desc: "Download your full expense history any time — perfect for tax season." },
-  { icon: "🏆", bg: "#FFF3E0", title: "Habit Streaks", desc: "Daily logging streaks that build a real money habit over time." },
-  { icon: "⚡", bg: "#F1F8E9", title: "Priority Support", desc: "Email support with a response within 24 hours — guaranteed." },
+  {
+    icon: "🤖",
+    bg: "#D8F3DC",
+    title: "AI Spending Analyst",
+    desc: "Plain-English breakdown of your spending patterns — every week, automatically.",
+  },
+  {
+    icon: "💬",
+    bg: "#FFF3E0",
+    title: "Natural Language Entry",
+    desc: 'Type "spent 4500 on lunch" and Truvllo logs it instantly. No forms, no friction.',
+  },
+  {
+    icon: "🎯",
+    bg: "#E3F2FD",
+    title: "AI Savings Coach",
+    desc: "One specific, actionable tip each week based on your actual spending data.",
+  },
+  {
+    icon: "🏷️",
+    bg: "#F3E5F5",
+    title: "Smart Categorisation",
+    desc: "Type a merchant and Truvllo suggests the right category — learns your habits.",
+  },
+  {
+    icon: "📐",
+    bg: "#FCE4EC",
+    title: "AI Budget Advisor",
+    desc: "Tell us your income and goal. Get a realistic monthly budget breakdown instantly.",
+  },
+  {
+    icon: "⚠️",
+    bg: "#FFF8E1",
+    title: "Overspend Explainer",
+    desc: "When you're over pace, AI tells you exactly why — with specific cuts to get back.",
+  },
+  {
+    icon: "🎯",
+    bg: "#E8F5E9",
+    title: "Category Spending Caps",
+    desc: "Set per-category limits. Get warned before you overshoot food, transport, and more.",
+  },
+  {
+    icon: "🔁",
+    bg: "#E0F7FA",
+    title: "Recurring Expenses",
+    desc: "Set rent, subscriptions, and bills once — automatically deducted each cycle.",
+  },
+  {
+    icon: "📊",
+    bg: "#F9FBE7",
+    title: "Advanced Charts",
+    desc: "Pie charts, bar charts, trend lines, and month-over-month comparisons.",
+  },
+  {
+    icon: "📤",
+    bg: "#E8EAF6",
+    title: "CSV Export",
+    desc: "Download your full expense history any time — perfect for tax season.",
+  },
+  {
+    icon: "🏆",
+    bg: "#FFF3E0",
+    title: "Habit Streaks",
+    desc: "Daily logging streaks that build a real money habit over time.",
+  },
+  {
+    icon: "⚡",
+    bg: "#F1F8E9",
+    title: "Priority Support",
+    desc: "Email support with a response within 24 hours — guaranteed.",
+  },
 ];
 
 const COMPARE = [
@@ -274,10 +334,53 @@ function Toast({ msg, onDone }) {
   return <div className="toast">✓ {msg}</div>;
 }
 
+const UPGRADE_CURRENCY_CONFIG = {
+  NGN: {
+    symbol: "₦",
+    monthly: "6,500",
+    annual: "4,875",
+    annualTotal: "58,500",
+  },
+  GHS: {
+    symbol: "₵",
+    monthly: "6,500",
+    annual: "4,875",
+    annualTotal: "58,500",
+  },
+  KES: {
+    symbol: "KSh",
+    monthly: "6,500",
+    annual: "4,875",
+    annualTotal: "58,500",
+  },
+  ZAR: {
+    symbol: "R",
+    monthly: "6,500",
+    annual: "4,875",
+    annualTotal: "58,500",
+  },
+  UGX: {
+    symbol: "USh",
+    monthly: "6,500",
+    annual: "4,875",
+    annualTotal: "58,500",
+  },
+  TZS: {
+    symbol: "TSh",
+    monthly: "6,500",
+    annual: "4,875",
+    annualTotal: "58,500",
+  },
+  USD: { symbol: "$", monthly: "14", annual: "10", annualTotal: "120" },
+  GBP: { symbol: "£", monthly: "11", annual: "8", annualTotal: "96" },
+  EUR: { symbol: "€", monthly: "13", annual: "9", annualTotal: "108" },
+};
+
 export default function UpgradePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, isLoggedIn, isPremium, isTrialing, profile, ensureProfile } = useAuth();
+  const { user, isLoggedIn, isPremium, isTrialing, profile, ensureProfile } =
+    useAuth();
 
   const [billing, setBilling] = useState("monthly");
   const [faqOpen, setFaqOpen] = useState(null);
@@ -297,7 +400,8 @@ export default function UpgradePage() {
 
   useEffect(() => {
     if (hasVerified.current) return;
-    if (upgradeStatus !== "success" || provider !== "flutterwave" || !flwRef) return;
+    if (upgradeStatus !== "success" || provider !== "flutterwave" || !flwRef)
+      return;
 
     hasVerified.current = true;
 
@@ -311,7 +415,9 @@ export default function UpgradePage() {
         setToast("Payment received. Premium activated successfully.");
       } catch (err) {
         console.error("[upgrade] Profile refresh error:", err);
-        setToast("Payment received — refresh the page if Premium hasn't activated.");
+        setToast(
+          "Payment received — refresh the page if Premium hasn't activated.",
+        );
       } finally {
         setVerifying(false);
         // Clean URL params regardless of outcome
@@ -320,35 +426,49 @@ export default function UpgradePage() {
     };
 
     refreshProfile();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [upgradeStatus, provider, flwRef]);
 
   // ── Prices (display only — amounts are enforced server-side) ─────────────
-  const price = billing === "monthly" ? "6,500" : "4,875";
-  const annualTotal = "58,500";
+  const selectedCurrency = String(profile?.currency || "NGN").toUpperCase();
+  const currencyConfig =
+    UPGRADE_CURRENCY_CONFIG[selectedCurrency] || UPGRADE_CURRENCY_CONFIG.NGN;
+  const price =
+    billing === "monthly" ? currencyConfig.monthly : currencyConfig.annual;
+  const annualTotal = currencyConfig.annualTotal;
+  const currencySymbol = currencyConfig.symbol;
 
   // ── Start Flutterwave checkout ────────────────────────────────────────────
   const startFlutterwave = async () => {
     if (loading || verifying) return;
-    if (!isLoggedIn) { navigate("/auth"); return; }
-    if (isPremium) { navigate("/settings"); return; }
+    if (!isLoggedIn) {
+      navigate("/auth");
+      return;
+    }
+    if (isPremium) {
+      navigate("/settings");
+      return;
+    }
 
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const token = session?.access_token;
       if (!token) throw new Error("You must be logged in to upgrade.");
 
       const { data: flwData, error: flwErr } = await supabase.functions.invoke(
         "flutterwave-init",
         {
-          body: { billingCycle: billing },
+          body: { billingCycle: billing, currency: selectedCurrency },
           headers: { Authorization: `Bearer ${token}` },
         },
       );
 
       if (flwErr) throw new Error(flwErr.message);
-      if (!flwData?.payment_url) throw new Error("Missing Flutterwave payment URL.");
+      if (!flwData?.payment_url)
+        throw new Error("Missing Flutterwave payment URL.");
 
       window.location.href = flwData.payment_url;
     } catch (err) {
@@ -362,10 +482,12 @@ export default function UpgradePage() {
   const ctaText = isPremium
     ? "Manage subscription"
     : isTrialing
-    ? "Upgrade to keep Premium"
-    : "Start 7-day free trial";
+      ? "Upgrade to keep Premium"
+      : "Start 7-day free trial";
 
-  const priceButtonText = isPremium ? "Manage plan" : `Upgrade — ₦${price}/mo`;
+  const priceButtonText = isPremium
+    ? "Manage plan"
+    : `Upgrade — ${currencySymbol}${price}/mo`;
 
   const anyBusy = loading || verifying;
 
@@ -396,7 +518,8 @@ export default function UpgradePage() {
 
               <p className="hero-sub">
                 Unlock six AI-powered tools, advanced charts, category caps, and
-                habit streaks. Everything you need to actually stick to a budget.
+                habit streaks. Everything you need to actually stick to a
+                budget.
               </p>
 
               <div className="hero-cta-main">
@@ -416,7 +539,11 @@ export default function UpgradePage() {
                 </button>
 
                 <div className="hero-notes">
-                  {["Secure checkout", "Cancel any time", "Instant activation"].map((n) => (
+                  {[
+                    "Secure checkout",
+                    "Cancel any time",
+                    "Instant activation",
+                  ].map((n) => (
                     <div key={n} className="hero-note">
                       <span className="hero-note-check">✓</span>
                       {n}
@@ -429,15 +556,23 @@ export default function UpgradePage() {
             <div className="hero-price-card">
               <div className="hero-price-label">Premium Plan</div>
               <div className="hero-price">
-                <sup>₦</sup>{price}<sub>/mo</sub>
+                <sup>{currencySymbol}</sup>
+                {price}
+                <sub>/mo</sub>
               </div>
               {billing === "annual" ? (
                 <div className="hero-price-annual">
-                  ₦{annualTotal}/yr · <strong>Save 25%</strong>
+                  {currencySymbol}
+                  {annualTotal}/yr · <strong>Save 25%</strong>
                 </div>
               ) : (
                 <div className="hero-price-annual">
-                  or <strong style={{ color: "var(--amber-light)" }}>₦4,875/mo</strong> billed annually
+                  or{" "}
+                  <strong style={{ color: "var(--amber-light)" }}>
+                    {currencySymbol}
+                    {currencyConfig.annual}/mo
+                  </strong>{" "}
+                  billed annually
                 </div>
               )}
               <button
@@ -460,21 +595,32 @@ export default function UpgradePage() {
         <div className="info-banner">
           <div className="info-banner-icon">ℹ️</div>
           <div className="info-banner-text">
-            <strong>Checkout is live:</strong> pay with card, bank transfer, or USSD
-            via Flutterwave — redirects securely and returns here for instant Premium activation.
+            <strong>Checkout is live:</strong> pay with card, bank transfer, or
+            USSD via Flutterwave — redirects securely and returns here for
+            instant Premium activation.
           </div>
         </div>
 
         {/* ── BILLING TOGGLE ───────────────────────────────────────────── */}
         <div className="billing-toggle-wrap">
-          <span className={`billing-label${billing === "monthly" ? " active" : ""}`}>Monthly</span>
+          <span
+            className={`billing-label${billing === "monthly" ? " active" : ""}`}
+          >
+            Monthly
+          </span>
           <button
             className={`billing-switch ${billing}`}
-            onClick={() => setBilling((b) => (b === "monthly" ? "annual" : "monthly"))}
+            onClick={() =>
+              setBilling((b) => (b === "monthly" ? "annual" : "monthly"))
+            }
           >
             <div className="billing-knob" />
           </button>
-          <span className={`billing-label${billing === "annual" ? " active" : ""}`}>Annual</span>
+          <span
+            className={`billing-label${billing === "annual" ? " active" : ""}`}
+          >
+            Annual
+          </span>
           <span className="billing-save-pill">Save 25%</span>
         </div>
 
@@ -482,11 +628,15 @@ export default function UpgradePage() {
         <div className="features-section">
           <div className="section-label">What you unlock</div>
           <div className="section-headline">12 features. One price.</div>
-          <div className="section-sub">Everything in the Free plan, plus all of this.</div>
+          <div className="section-sub">
+            Everything in the Free plan, plus all of this.
+          </div>
           <div className="features-grid">
             {FEATURES.map((f, i) => (
               <div key={i} className="feature-card">
-                <div className="feature-icon" style={{ background: f.bg }}>{f.icon}</div>
+                <div className="feature-icon" style={{ background: f.bg }}>
+                  {f.icon}
+                </div>
                 <div className="feature-title">{f.title}</div>
                 <p className="feature-desc">{f.desc}</p>
               </div>
@@ -498,14 +648,20 @@ export default function UpgradePage() {
         <div className="compare-section">
           <div className="section-label">Compare plans</div>
           <div className="section-headline">Free vs Premium</div>
-          <div className="section-sub" style={{ marginBottom: 24 }}>See exactly what each plan includes.</div>
+          <div className="section-sub" style={{ marginBottom: 24 }}>
+            See exactly what each plan includes.
+          </div>
           <div style={{ overflowX: "auto" }}>
             <table className="compare-table">
               <thead>
                 <tr>
                   <th style={{ width: "55%" }}>Feature</th>
-                  <th className="plan-col" style={{ width: "20%" }}>Free</th>
-                  <th className="plan-col premium-col" style={{ width: "25%" }}>✦ Premium</th>
+                  <th className="plan-col" style={{ width: "20%" }}>
+                    Free
+                  </th>
+                  <th className="plan-col premium-col" style={{ width: "25%" }}>
+                    ✦ Premium
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -518,10 +674,18 @@ export default function UpgradePage() {
                       <tr key={`${cat.cat}-${i}`}>
                         <td className="feature-name">{row.f}</td>
                         <td className="plan-col">
-                          {row.free ? <span className="check-yes">✓</span> : <span className="check-no">—</span>}
+                          {row.free ? (
+                            <span className="check-yes">✓</span>
+                          ) : (
+                            <span className="check-no">—</span>
+                          )}
                         </td>
                         <td className="plan-col premium-highlight">
-                          {row.premium ? <span className="check-yes">✓</span> : <span className="check-no">—</span>}
+                          {row.premium ? (
+                            <span className="check-yes">✓</span>
+                          ) : (
+                            <span className="check-no">—</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -529,26 +693,57 @@ export default function UpgradePage() {
                 ))}
                 <tr>
                   <td></td>
-                  <td className="plan-col" style={{ paddingTop: 20, paddingBottom: 20 }}>
-                    <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--ink-subtle)" }}>Free forever</div>
+                  <td
+                    className="plan-col"
+                    style={{ paddingTop: 20, paddingBottom: 20 }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "0.82rem",
+                        fontWeight: 700,
+                        color: "var(--ink-subtle)",
+                      }}
+                    >
+                      Free forever
+                    </div>
                   </td>
-                  <td className="plan-col premium-highlight" style={{ paddingTop: 20, paddingBottom: 20 }}>
+                  <td
+                    className="plan-col premium-highlight"
+                    style={{ paddingTop: 20, paddingBottom: 20 }}
+                  >
                     <button
                       onClick={startFlutterwave}
                       disabled={anyBusy}
                       style={{
-                        background: "linear-gradient(135deg,var(--green-deep),var(--green-light))",
-                        color: "var(--white)", border: "none", borderRadius: 10,
-                        padding: "10px 20px", fontFamily: "'Plus Jakarta Sans',sans-serif",
-                        fontSize: "0.85rem", fontWeight: 800, cursor: "pointer",
-                        transition: "all 0.2s", boxShadow: "0 4px 14px rgba(27,67,50,0.3)",
-                        display: "flex", alignItems: "center", gap: 7, margin: "0 auto",
+                        background:
+                          "linear-gradient(135deg,var(--green-deep),var(--green-light))",
+                        color: "var(--white)",
+                        border: "none",
+                        borderRadius: 10,
+                        padding: "10px 20px",
+                        fontFamily: "'Plus Jakarta Sans',sans-serif",
+                        fontSize: "0.85rem",
+                        fontWeight: 800,
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        boxShadow: "0 4px 14px rgba(27,67,50,0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 7,
+                        margin: "0 auto",
                       }}
                     >
-                      {anyBusy
-                        ? <div className="spinner" style={{ borderTopColor: "var(--white)", borderColor: "rgba(255,255,255,0.25)" }} />
-                        : <>{priceButtonText}</>
-                      }
+                      {anyBusy ? (
+                        <div
+                          className="spinner"
+                          style={{
+                            borderTopColor: "var(--white)",
+                            borderColor: "rgba(255,255,255,0.25)",
+                          }}
+                        />
+                      ) : (
+                        <>{priceButtonText}</>
+                      )}
                     </button>
                   </td>
                 </tr>
@@ -561,11 +756,19 @@ export default function UpgradePage() {
         <div className="faq-section">
           <div className="section-label">FAQs</div>
           <div className="section-headline">Common questions</div>
-          <div className="section-sub" style={{ marginBottom: 24 }}>Everything you need to know before upgrading.</div>
+          <div className="section-sub" style={{ marginBottom: 24 }}>
+            Everything you need to know before upgrading.
+          </div>
           <div className="faq-list">
             {FAQS.map((faq, i) => (
-              <div key={i} className={`faq-item${faqOpen === i ? " open" : ""}`}>
-                <div className="faq-q" onClick={() => setFaqOpen(faqOpen === i ? null : i)}>
+              <div
+                key={i}
+                className={`faq-item${faqOpen === i ? " open" : ""}`}
+              >
+                <div
+                  className="faq-q"
+                  onClick={() => setFaqOpen(faqOpen === i ? null : i)}
+                >
                   <div className="faq-q-text">{faq.q}</div>
                   <div className="faq-chevron">▾</div>
                 </div>
@@ -592,7 +795,8 @@ export default function UpgradePage() {
           <span className="bottom-cta-icon">🚀</span>
           <h2 className="bottom-cta-title">Ready to take control?</h2>
           <p className="bottom-cta-sub">
-            Join thousands of people who finally understand their money. Start your free trial today.
+            Join thousands of people who finally understand their money. Start
+            your free trial today.
           </p>
           <button
             className="bottom-cta-btn"
@@ -601,22 +805,38 @@ export default function UpgradePage() {
           >
             {anyBusy ? (
               <>
-                <div className="spinner" style={{ borderTopColor: "var(--white)", borderColor: "rgba(255,255,255,0.25)" }} />
+                <div
+                  className="spinner"
+                  style={{
+                    borderTopColor: "var(--white)",
+                    borderColor: "rgba(255,255,255,0.25)",
+                  }}
+                />
                 {verifying ? "Verifying…" : "Processing…"}
               </>
             ) : (
-              <>{isPremium ? "Manage subscription" : `Start upgrade — ₦${price}/mo`}</>
+              <>
+                {isPremium
+                  ? "Manage subscription"
+                  : `Start upgrade — ₦${price}/mo`}
+              </>
             )}
           </button>
           <div className="bottom-cta-notes">
-            {["Secure checkout", "Cancel any time", "Instant activation"].map((n) => (
-              <div key={n} className="bottom-cta-note">{n}</div>
-            ))}
+            {["Secure checkout", "Cancel any time", "Instant activation"].map(
+              (n) => (
+                <div key={n} className="bottom-cta-note">
+                  {n}
+                </div>
+              ),
+            )}
           </div>
           <div className="flw-trust">
             <span className="flw-text">Secured by</span>
             <span className="flw-logo">Flutterwave</span>
-            <span className="flw-text">— SSL encrypted — PCI DSS compliant</span>
+            <span className="flw-text">
+              — SSL encrypted — PCI DSS compliant
+            </span>
           </div>
         </div>
       </div>
